@@ -7,11 +7,11 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import com.lunax.telegramBot.utils.message.MessageUtils;
-import com.lunax.telegramBot.utils.message.ButtonHandler;
-import com.lunax.telegramBot.handlers.Button1Handler;
-import com.lunax.telegramBot.handlers.Button2Handler;
-import com.lunax.telegramBot.handlers.Button4Handler;
+import com.lunax.telegramBot.component.handler.Button1Handler;
+import com.lunax.telegramBot.component.handler.Button2Handler;
+import com.lunax.telegramBot.component.handler.Button4Handler;
+import com.lunax.telegramBot.component.navigation.components.ButtonHandler;
+import com.lunax.telegramBot.component.navigation.components.MessageUtils;
 
 import lombok.extern.slf4j.Slf4j;
 import java.util.HashMap;

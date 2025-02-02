@@ -1,13 +1,14 @@
-package com.lunax.telegramBot.handlers;
+package com.lunax.telegramBot.component.handler;
 
-import com.lunax.telegramBot.utils.message.ButtonHandler;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
-public class Button4Handler implements ButtonHandler {
+import com.lunax.telegramBot.component.navigation.components.ButtonHandler;
+
+public class Button1Handler implements ButtonHandler {
     private final String buttonText;
     private final String callbackData;
 
-    public Button4Handler(String buttonText) {
+    public Button1Handler(String buttonText) {
         this.buttonText = buttonText;
         this.callbackData = this.getClass().getSimpleName() + "_" + buttonText.replaceAll("\\s+", "_").toLowerCase();
     }
@@ -24,7 +25,8 @@ public class Button4Handler implements ButtonHandler {
 
     @Override
     public void handleCallback(Update update) {
-        System.out.println("Button 4 clicked with update: " + update);
-        // Button 4 specific handling logic
+        // Access the update object directly
+        System.out.println("Button 1 clicked with update: " + update);
+        // Button 1 specific handling logic
     }
 }

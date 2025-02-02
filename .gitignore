@@ -38,5 +38,6 @@ build/
 
 ### VS Code ###
 .vscode/
->>>>>>> 0df808e (Changed the programming language to java, also added the program backbone)
 application.properties
+./src/main/resources/application.properties
+>>>>>>> 0df808e (Changed the programming language to java, also added the program backbone)
