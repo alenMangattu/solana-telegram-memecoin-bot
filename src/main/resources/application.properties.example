@@ -22,3 +22,7 @@ logging.level.org.postgresql.Driver=DEBUG
 logging.level.org.springframework.cache=DEBUG
 
 logging.level.org.springframework.web.filter.CommonsRequestLoggingFilter=DEBUG
+
+encryption.keys.path=./keys
+wallets.path=./wallets
+encryption.key.rotation.days=2

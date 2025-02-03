@@ -9,6 +9,7 @@ DROP TABLE IF EXISTS exception_logs CASCADE;
 DROP TABLE IF EXISTS transaction_history CASCADE;
 DROP TABLE IF EXISTS trading_automation CASCADE;
 DROP TABLE IF EXISTS copy_trading CASCADE;
+DROP TABLE IF EXISTS encryption_key_metadata CASCADE;
 DROP TABLE IF EXISTS wallets CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 
@@ -158,3 +159,25 @@ CREATE TABLE token_holdings (
     CONSTRAINT fk_token_wallet FOREIGN KEY (wallet_id) REFERENCES wallets(wallet_id) ON DELETE CASCADE,
     CONSTRAINT unique_wallet_token UNIQUE (wallet_id, token_symbol)
 );
+
+-- ================================================
+-- 12. Create the "encryption_key_metadata" table
+-- ================================================
+CREATE TABLE encryption_key_metadata (
+    id SERIAL PRIMARY KEY,
+    wallet_id UUID NOT NULL,
+    version INTEGER NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP NOT NULL,
+    active BOOLEAN NOT NULL DEFAULT TRUE,
+    CONSTRAINT fk_wallet_key FOREIGN KEY (wallet_id) REFERENCES wallets(wallet_id) ON DELETE CASCADE
+);
+
+-- Create unique constraint to ensure only one active key per wallet
+CREATE UNIQUE INDEX uq_active_wallet_key ON encryption_key_metadata (wallet_id) WHERE active = TRUE;
+
+-- Create index for faster key lookups
+CREATE INDEX idx_encryption_key_metadata_wallet_active ON encryption_key_metadata(wallet_id, active);
+
+-- Create index for expired keys lookup
+CREATE INDEX idx_encryption_key_metadata_expires ON encryption_key_metadata(expires_at) WHERE active = TRUE;
