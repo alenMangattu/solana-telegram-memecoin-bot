@@ -23,7 +23,7 @@ public class BotConfig {
             TelegramBotsApi telegramBotsApi;
             try {
                 telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
-            telegramBotsApi.registerBot(botController);
+                telegramBotsApi.registerBot(botController);
             } catch (TelegramApiException e) {
                 log.error("Error initializing Telegram API, {}", e.getMessage());
                 e.printStackTrace();

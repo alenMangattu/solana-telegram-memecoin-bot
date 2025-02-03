@@ -10,44 +10,53 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import com.lunax.telegramBot.component.handler.Button1Handler;
 import com.lunax.telegramBot.component.handler.Button2Handler;
 import com.lunax.telegramBot.component.handler.Button4Handler;
+import com.lunax.telegramBot.component.navigation.HandlerRegistry;
 import com.lunax.telegramBot.component.navigation.components.ButtonHandler;
 import com.lunax.telegramBot.component.navigation.components.MessageUtils;
+import com.lunax.telegramBot.component.navigation.states.Home;
 
 import lombok.extern.slf4j.Slf4j;
-import java.util.HashMap;
-import java.util.Map;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 @Slf4j
+@Component
 public class BotController extends TelegramLongPollingBot {
 
     private final String botUsername;
-    private final Map<String, ButtonHandler> buttonHandlers;
+    
+    @Autowired
+    private Home home;
+
+    @Autowired
+    private HandlerRegistry handlerRegistry;
 
     public BotController(String botUsername, String botToken) {
         super(botToken);
         this.botUsername = botUsername;
         MessageUtils.setBotInstance(this);
-        this.buttonHandlers = new HashMap<>();
     }
 
     @Override
     public void onUpdateReceived(Update update) {
         if (update.hasCallbackQuery()) {
             String callbackData = update.getCallbackQuery().getData();
-            ButtonHandler handler = buttonHandlers.get(callbackData);
+            ButtonHandler handler = handlerRegistry.getHandler(callbackData);
             
             if (handler != null) {
                 handler.handleCallback(update);
-                SendMessage response = new SendMessage();
-                response.setChatId(update.getCallbackQuery().getMessage().getChatId());
-                response.setText("Handled by " + handler.getClass().getSimpleName() + " with text: " + handler.getButtonText());
-                try {
-                    execute(response);
-                } catch (TelegramApiException e) {
-                    log.error("Error sending message, {}", e.getMessage());
-                }
+                // SendMessage response = new SendMessage();
+                // response.setChatId(update.getCallbackQuery().getMessage().getChatId());
+                // response.setText("✅ Action completed successfully!");
+                // execute(response);
+            } else {
+                log.warn("No handler found for callback data: {}", callbackData);
             }
         } else if (update.hasMessage()) {
+            if (update.getMessage().getText().startsWith("/start")) {
+                home.executeVoid(update);
+                return;
+            }
             Message message = update.getMessage();
             log.info("Received: {}", message.getText());
             try {
@@ -68,13 +77,6 @@ public class BotController extends TelegramLongPollingBot {
                         new Button4Handler("Special button 4")
                     }
                 };
-                
-                // Register the new handlers in the map
-                for (ButtonHandler[] row : buttonHandlers) {
-                    for (ButtonHandler handler : row) {
-                        this.buttonHandlers.put(handler.getCallbackData(), handler);
-                    }
-                }
                 
                 MessageUtils.sendInlineKeyboard(message, "Choose an option:", buttonHandlers);
             } catch (TelegramApiException e) {
