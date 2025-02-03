@@ -114,6 +114,12 @@
 		  <version>2.3.1</version>
 		</dependency>
 
+		<dependency>
+		    <groupId>com.mmorrell</groupId>
+		    <artifactId>solanaj</artifactId>
+		    <version>1.19.2</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>

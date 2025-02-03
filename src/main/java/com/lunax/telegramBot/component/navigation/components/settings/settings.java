@@ -1,13 +1,13 @@
-package com.lunax.telegramBot.component.navigation.states.settings;
+package com.lunax.telegramBot.component.navigation.components.settings;
 
 import org.telegram.telegrambots.meta.api.objects.Update;
 
-import com.lunax.telegramBot.component.navigation.states.StateHandler;
+import com.lunax.telegramBot.component.navigation.components.StateHandler;
 
 public class settings implements StateHandler {
 
     @Override
-    public String getMessage(Update update) {
+    public String execute(Update update) {
         return "Settings - Configure Your Trading Environment";
     }
     

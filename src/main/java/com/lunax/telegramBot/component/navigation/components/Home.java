@@ -1,13 +1,13 @@
-package com.lunax.telegramBot.component.navigation.states;
+package com.lunax.telegramBot.component.navigation.components;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import com.lunax.telegramBot.component.handler.AcceptTosHandler;
-import com.lunax.telegramBot.component.navigation.components.ButtonHandler;
-import com.lunax.telegramBot.component.navigation.components.MessageUtils;
 import com.lunax.telegramBot.service.UserService;
+import com.lunax.telegramBot.utils.components.ButtonHandler;
+import com.lunax.telegramBot.utils.components.MessageUtils;
 
 @Component
 public class Home implements StateHandler {
@@ -52,11 +52,10 @@ public class Home implements StateHandler {
         if (!userService.hasAcceptedTos(telegramId)) {
             System.out.println("User has not yet accepted the TOS");
             userService.updateTosAcceptance(telegramId, false);
-            MessageUtils.sendInlineKeyboard(update.getMessage(), tos, buttonHandlers); 
+            MessageUtils.sendInlineKeyboard(update, tos, buttonHandlers); 
             return;
         }
         
-        System.out.println("User has accepted the TOS");
-        MessageUtils.sendMessage(update.getMessage(), "Home");
+        MessageUtils.sendMessage(update, "Home");
     }
 }

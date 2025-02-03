@@ -1,4 +1,4 @@
-package com.lunax.telegramBot.component.navigation.components;
+package com.lunax.telegramBot.utils.components;
 
 import org.telegram.telegrambots.meta.api.objects.Update;
 

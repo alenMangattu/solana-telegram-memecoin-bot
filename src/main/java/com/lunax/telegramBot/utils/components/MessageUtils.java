@@ -1,4 +1,4 @@
-package com.lunax.telegramBot.component.navigation.components;
+package com.lunax.telegramBot.utils.components;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,6 +8,8 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.MaybeInaccessibleMessage;
+import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -23,7 +25,23 @@ public class MessageUtils {
         botInstance = bot;
     }
 
-    public static void sendInlineKeyboard(Message message, String text, ButtonHandler[][] buttonHandlers) {
+    private static Message getMessage(Update update) {
+        if (update.hasMessage()) {
+            return update.getMessage();
+        } else if (update.hasCallbackQuery()) {
+            MaybeInaccessibleMessage maybeMessage = update.getCallbackQuery().getMessage();
+            if (maybeMessage instanceof Message msg) {
+                return msg;
+            }
+        }
+        log.error("No valid message found in update");
+        return null;
+    }
+
+    public static void sendInlineKeyboard(Update update, String text, ButtonHandler[][] buttonHandlers) {
+        Message message = getMessage(update);
+        if (message == null) return;
+
         InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
 
@@ -52,7 +70,10 @@ public class MessageUtils {
         }
     }
 
-    public static void sendMessage(Message message, String text) {
+    public static void sendMessage(Update update, String text) {
+        Message message = getMessage(update);
+        if (message == null) return;
+
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(message.getChatId().toString());
         sendMessage.setText(text);
@@ -63,7 +84,9 @@ public class MessageUtils {
         }
     }
 
-    public static void editMessage(Message message, String text, ButtonHandler[][] buttonHandlers) {
+    public static void editMessage(Update update, String text, ButtonHandler[][] buttonHandlers) {
+        Message message = getMessage(update);
+        if (message == null) return;
         
         EditMessageText editMessage = EditMessageText.builder()
             .chatId(message.getChatId().toString())
@@ -100,7 +123,10 @@ public class MessageUtils {
         }
     }
 
-    public static void deleteMessage(Message message) {
+    public static void deleteMessage(Update update) {
+        Message message = getMessage(update);
+        if (message == null) return;
+
         DeleteMessage deleteMessage = new DeleteMessage();
         deleteMessage.setChatId(message.getChatId().toString());
         deleteMessage.setMessageId(message.getMessageId());
