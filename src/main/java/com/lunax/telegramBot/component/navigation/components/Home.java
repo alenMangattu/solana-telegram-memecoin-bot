@@ -12,7 +12,9 @@ import com.lunax.telegramBot.component.handler.HomePageButtons.TradeMemeCoin;
 import com.lunax.telegramBot.model.db.User;
 import com.lunax.telegramBot.model.db.Wallet;
 import com.lunax.telegramBot.model.repository.WalletRepository;
+import com.lunax.telegramBot.model.session.ChatState;
 import com.lunax.telegramBot.service.UserService;
+import com.lunax.telegramBot.service.StateService;
 import com.lunax.telegramBot.utils.SolanaUtils;
 import com.lunax.telegramBot.utils.components.ButtonHandler;
 import com.lunax.telegramBot.utils.components.MessageUtils;
@@ -43,6 +45,9 @@ public class Home implements StateHandler {
     @Autowired
     private Settings settings;
 
+    @Autowired
+    private StateService stateService;
+
     public static String tos = """
             Welcome to Solana Meme Coin Bot
 
@@ -59,6 +64,13 @@ public class Home implements StateHandler {
     public void executeVoid(Update update) {
         Long telegramId = update.getMessage().getFrom().getId();
         System.out.println("From ID: " + telegramId);
+
+        // Only clear state if we're coming from a different state
+        ChatState currentState = stateService.getState(telegramId);
+        if (currentState != ChatState.IDLE && currentState != null) {
+            stateService.clearStateData(telegramId);
+            stateService.setState(telegramId, null);
+        }
 
         ButtonHandler[][] buttonHandlers = {{
             acceptTosHandler

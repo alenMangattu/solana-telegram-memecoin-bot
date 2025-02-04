@@ -8,7 +8,6 @@ spring.datasource.username=
 spring.datasource.password=
 spring.datasource.url=
 
-
 spring.jpa.show-sql=true
 spring.jpa.properties.hibernate.format_sql=true
 spring.jpa.hibernate.ddl-auto=update
@@ -26,3 +25,7 @@ logging.level.org.springframework.web.filter.CommonsRequestLoggingFilter=DEBUG
 encryption.keys.path=./keys
 wallets.path=./wallets
 encryption.key.rotation.days=2
+
+solana.cluster=TESTNET
+solana.cluster.url=https://api.testnet.solana.com
+solana.home.dir=${user.home}/.config/solana
