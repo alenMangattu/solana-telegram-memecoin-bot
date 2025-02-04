@@ -15,11 +15,15 @@ public class UserService {
     
     @Autowired
     private UserRepository userRepository;
-    
+   
     @Cacheable(value = "tosAcceptance", key = "#telegramId")
     public boolean hasAcceptedTos(Long telegramId) {
         Optional<User>  user = userRepository.findByTelegramId(telegramId); 
         return user.isPresent() && userRepository.isAcceptedTos(telegramId);
+    }
+    
+    public Optional<User> findByTelegramId(Long telegramId) {
+        return userRepository.findByTelegramId(telegramId);
     }
     
     @CachePut(value = "tosAcceptance", key = "#telegramId")

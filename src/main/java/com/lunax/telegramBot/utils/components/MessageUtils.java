@@ -63,6 +63,7 @@ public class MessageUtils {
         sendMessage.setChatId(message.getChatId());
         sendMessage.setText(text);
         sendMessage.setReplyMarkup(markup);
+        sendMessage.enableMarkdown(true);
         try {
             botInstance.execute(sendMessage);
         } catch (TelegramApiException e) {
@@ -77,6 +78,7 @@ public class MessageUtils {
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(message.getChatId().toString());
         sendMessage.setText(text);
+        sendMessage.enableMarkdown(true);
         try {
             botInstance.execute(sendMessage);
         } catch (TelegramApiException e) {
@@ -115,6 +117,7 @@ public class MessageUtils {
             editMessage.setReplyMarkup(markup);
         }
 
+        editMessage.enableMarkdown(true);
         try {
             botInstance.execute(editMessage);
         } catch (TelegramApiException e) {

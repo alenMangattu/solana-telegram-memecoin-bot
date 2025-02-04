@@ -5,6 +5,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.Map;
+
 import javax.crypto.SecretKey;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,15 +13,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
-import com.lunax.telegramBot.utils.SolanaUtils;
-import com.lunax.telegramBot.utils.EncryptionUtils;
-import com.lunax.telegramBot.utils.WalletKeyManager;
-import com.lunax.telegramBot.utils.components.ButtonHandler;
+import com.lunax.telegramBot.model.db.User;
 import com.lunax.telegramBot.model.db.Wallet;
 import com.lunax.telegramBot.model.repository.UserRepository;
 import com.lunax.telegramBot.model.repository.WalletRepository;
-import com.lunax.telegramBot.model.db.User;
 import com.lunax.telegramBot.service.UserService;
+import com.lunax.telegramBot.utils.EncryptionUtils;
+import com.lunax.telegramBot.utils.SolanaUtils;
+import com.lunax.telegramBot.utils.WalletKeyManager;
+import com.lunax.telegramBot.utils.components.ButtonHandler;
+import com.lunax.telegramBot.utils.components.MessageUtils;
 
 @Component
 public class CreateNewWallet implements ButtonHandler {
@@ -93,7 +95,13 @@ public class CreateNewWallet implements ButtonHandler {
             wallet.setUser(user);
             wallet.setWalletAddress(publicKey);
             wallet.setWalletLabel("Solana Wallet"); // Default label, can be customized later
-            walletRepository.save(wallet);
+            
+            // First save the wallet to get its ID
+            wallet = walletRepository.save(wallet);
+
+            // Then update the user's current wallet
+            user.setCurrentWallet(wallet.getWalletId());
+            user = userRepository.save(user);
 
             // Generate encryption key
             SecretKey encryptionKey = EncryptionUtils.generateEncryptionKey();
@@ -119,6 +127,14 @@ public class CreateNewWallet implements ButtonHandler {
             // Create initial key version with rotation policy
             walletKeyManager.createNewKeyVersion(wallet.getWalletId());
 
+            MessageUtils.editMessage(update, "⏳ Generating wallet...", null);
+
+            Thread.sleep(750);
+
+            String text = "✨ Wallet generated successfully!\n\nPublic Key: `" + publicKey + "`";
+            MessageUtils.editMessage(update, text, null);
+            MessageUtils.sendMessage(update, "You need to deposite 1SOL to `" + publicKey + "` wallet to start using it. (click to copy)");
+            MessageUtils.sendMessage(update, "You can type /home or /start to go to the main menu.");
         } catch (Exception e) {
             throw new RuntimeException("Failed to create and store wallet securely", e);
         }

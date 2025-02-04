@@ -5,9 +5,19 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import com.lunax.telegramBot.component.handler.AcceptTosHandler;
+import com.lunax.telegramBot.component.handler.HomePageButtons.CreateMemeCoin;
+import com.lunax.telegramBot.component.handler.HomePageButtons.MyMemeCoins;
+import com.lunax.telegramBot.component.handler.HomePageButtons.Settings;
+import com.lunax.telegramBot.component.handler.HomePageButtons.TradeMemeCoin;
+import com.lunax.telegramBot.model.db.User;
+import com.lunax.telegramBot.model.db.Wallet;
+import com.lunax.telegramBot.model.repository.WalletRepository;
 import com.lunax.telegramBot.service.UserService;
+import com.lunax.telegramBot.utils.SolanaUtils;
 import com.lunax.telegramBot.utils.components.ButtonHandler;
 import com.lunax.telegramBot.utils.components.MessageUtils;
+
+import java.util.List;
 
 @Component
 public class Home implements StateHandler {
@@ -17,6 +27,21 @@ public class Home implements StateHandler {
 
     @Autowired
     private AcceptTosHandler acceptTosHandler;
+
+    @Autowired
+    private WalletRepository walletRepository;
+
+    @Autowired
+    private CreateMemeCoin createMemeCoin;
+
+    @Autowired
+    private TradeMemeCoin tradeMemeCoin;
+
+    @Autowired
+    private MyMemeCoins myMemeCoins;
+
+    @Autowired
+    private Settings settings;
 
     public static String tos = """
             Welcome to Solana Meme Coin Bot
@@ -29,16 +54,6 @@ public class Home implements StateHandler {
 
             Do you accept these terms?
             """;
-
-    @Override
-    public String execute(Update update) {
-        Long telegramId = update.getMessage().getFrom().getId();
-        if (!userService.hasAcceptedTos(telegramId)) {
-            userService.updateTosAcceptance(telegramId, false);
-            return tos;
-        }
-        return "Home";
-    }
 
     @Override
     public void executeVoid(Update update) {
@@ -55,7 +70,35 @@ public class Home implements StateHandler {
             MessageUtils.sendInlineKeyboard(update, tos, buttonHandlers); 
             return;
         }
+       
+        String text = "*Welcome to LunaxBot home page*\n\n";
+
+        User user = userService.findByTelegramId(telegramId)
+            .orElseThrow(() -> new RuntimeException("User not found"));
         
-        MessageUtils.sendMessage(update, "Home");
+        text += "*Your Wallets:*\n";
+        List<Wallet> wallets = walletRepository.findByUser(user);
+        
+        if (wallets.isEmpty()) {
+            text += "No wallets found. Create or import a wallet to get started.\n";
+        } else {
+            int i = 0;
+            for (Wallet wallet : wallets) {
+                text += "Wallet " + (i + 1) + ":";
+                if (wallet.getWalletId().equals(user.getCurrentWallet())) {
+                    text += " (current)";
+                }
+                text += "\nBalance: `" + SolanaUtils.getBalance(wallet.getWalletAddress()) + " SOL`\n";
+                text += "Address: `" + wallet.getWalletAddress() + "`\n";
+            }
+        }
+
+        text += "\n\nSelect an option below:";
+
+        ButtonHandler[][] buttonHandlers2 = {{createMemeCoin, tradeMemeCoin}, 
+                                            {myMemeCoins}, 
+                                            {settings}};
+
+        MessageUtils.sendInlineKeyboard(update, text, buttonHandlers2);
     }
 }

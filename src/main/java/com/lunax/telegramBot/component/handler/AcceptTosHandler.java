@@ -43,7 +43,7 @@ public class AcceptTosHandler implements ButtonHandler {
         Long telegramId = update.getCallbackQuery().getFrom().getId();
         userService.updateTosAcceptance(telegramId, true);
         
-        MessageUtils.editMessage(update, "*Terms of Service Accepted* ✅\nYou can now use all bot features!", null);
+        MessageUtils.editMessage(update, "*Terms of Service Accepted* ✅", null);
         createWallet.executeVoid(update);
     }
 }
