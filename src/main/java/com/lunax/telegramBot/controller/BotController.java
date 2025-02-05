@@ -7,6 +7,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import com.lunax.telegramBot.component.handler.HomePageButtons.CreateMemeCoin;
 import com.lunax.telegramBot.component.navigation.HandlerRegistry;
 import com.lunax.telegramBot.component.navigation.components.Home;
+import com.lunax.telegramBot.component.navigation.components.settings.SettingsImpl;
 import com.lunax.telegramBot.model.session.ChatState;
 import com.lunax.telegramBot.service.StateService;
 import com.lunax.telegramBot.utils.components.ButtonHandler;
@@ -25,6 +26,9 @@ public class BotController extends TelegramLongPollingBot {
     
     @Autowired
     private Home home;
+
+    @Autowired
+    private SettingsImpl settings;
 
     @Autowired
     private HandlerRegistry handlerRegistry;
@@ -70,6 +74,8 @@ public class BotController extends TelegramLongPollingBot {
                 // Handle the start command
                 if (message.getText().startsWith("/start")) {
                     home.executeVoid(update);
+                } else if (message.getText().startsWith("/settings")) {
+                    settings.executeVoid(update);
                 }
                 return;
             }
@@ -77,6 +83,11 @@ public class BotController extends TelegramLongPollingBot {
             // Only check state for non-command messages that might need state handling
             Long telegramId = message.getFrom().getId();
             ChatState currentState = stateService.getState(telegramId);
+            
+            if (currentState == null || currentState == ChatState.IDLE) {
+                home.executeVoid(update);
+                return;
+            }
             
             if (currentState != null && currentState.isMemecoinCreation()) {
                 createMemeCoin.handleMessage(update);

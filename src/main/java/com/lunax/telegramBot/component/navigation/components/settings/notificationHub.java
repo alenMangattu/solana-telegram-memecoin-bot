@@ -7,8 +7,7 @@ import com.lunax.telegramBot.component.navigation.components.StateHandler;
 public class notificationHub implements StateHandler {
 
     @Override
-    public String execute(Update update) {
-        return "Notification Hub - Manage Your Alert Preferences";
+    public void executeVoid(Update update) {
     }
     
 }

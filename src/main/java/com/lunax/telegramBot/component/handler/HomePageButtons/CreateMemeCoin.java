@@ -12,7 +12,6 @@ import com.lunax.telegramBot.utils.components.ButtonHandler;
 import com.lunax.telegramBot.utils.components.MessageUtils;
 import com.lunax.telegramBot.model.session.ChatState;
 import com.lunax.telegramBot.model.db.User;
-import com.lunax.telegramBot.model.db.Wallet;
 import com.lunax.telegramBot.service.UserService;
 import com.lunax.telegramBot.service.StateService;
 import com.lunax.telegramBot.utils.SolanaUtils;

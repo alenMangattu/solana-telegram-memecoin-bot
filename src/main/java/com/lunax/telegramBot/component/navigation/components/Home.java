@@ -1,5 +1,7 @@
 package com.lunax.telegramBot.component.navigation.components;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -13,13 +15,13 @@ import com.lunax.telegramBot.model.db.User;
 import com.lunax.telegramBot.model.db.Wallet;
 import com.lunax.telegramBot.model.repository.WalletRepository;
 import com.lunax.telegramBot.model.session.ChatState;
-import com.lunax.telegramBot.service.UserService;
 import com.lunax.telegramBot.service.StateService;
+import com.lunax.telegramBot.service.UserService;
 import com.lunax.telegramBot.utils.SolanaUtils;
 import com.lunax.telegramBot.utils.components.ButtonHandler;
 import com.lunax.telegramBot.utils.components.MessageUtils;
 
-import java.util.List;
+import jakarta.annotation.PostConstruct;
 
 @Component
 public class Home implements StateHandler {
@@ -47,6 +49,17 @@ public class Home implements StateHandler {
 
     @Autowired
     private StateService stateService;
+
+    private ButtonHandler[][] buttonHandlers2;
+
+    @PostConstruct
+    private void init() {
+        this.buttonHandlers2 = new ButtonHandler[][]{
+            {createMemeCoin, tradeMemeCoin}, 
+            {myMemeCoins}, 
+            {settings}
+        };
+    }
 
     public static String tos = """
             Welcome to Solana Meme Coin Bot
@@ -82,7 +95,13 @@ public class Home implements StateHandler {
             MessageUtils.sendInlineKeyboard(update, tos, buttonHandlers); 
             return;
         }
-       
+        String text = this.generateHomeText(telegramId);
+        ButtonHandler[][] button = this.getButtonHandlers();
+        MessageUtils.sendInlineKeyboard(update, text, button);
+    }
+
+    public String generateHomeText(Long telegramId) {
+
         String text = "*Welcome to LunaxBot home page*\n\n";
 
         User user = userService.findByTelegramId(telegramId)
@@ -104,13 +123,13 @@ public class Home implements StateHandler {
                 text += "Address: `" + wallet.getWalletAddress() + "`\n";
             }
         }
-
+        
         text += "\n\nSelect an option below:";
+        
+        return text;
+    }
 
-        ButtonHandler[][] buttonHandlers2 = {{createMemeCoin, tradeMemeCoin}, 
-                                            {myMemeCoins}, 
-                                            {settings}};
-
-        MessageUtils.sendInlineKeyboard(update, text, buttonHandlers2);
+    public ButtonHandler[][] getButtonHandlers() {
+        return this.buttonHandlers2;
     }
 }
