@@ -26,11 +26,11 @@ public class SolanaCliUtils {
      * @param name Token name
      * @param symbol Token symbol
      * @param decimals Number of decimal places for the token
-     * @param metadataUri URI to the token metadata JSON
+     * @param metadataJson URI to the token metadata JSON
      * @return Token mint address
      */
-    public String createMemecoin(String walletKeyPath, String name, String symbol, int decimals, String metadataUri) throws Exception {
-        // Create token using Token-2022 program
+    public String createMemecoin(String walletKeyPath, String name, String symbol, int decimals, String metadataJson) throws Exception {
+        // Create token using Token-2022 program with metadata enabled
         ProcessBuilder createToken = new ProcessBuilder(
             "spl-token", 
             "create-token",
@@ -40,6 +40,7 @@ public class SolanaCliUtils {
             "--url", clusterUrl,
             "--fee-payer", walletKeyPath
         );
+        
         Process process = createToken.start();
         String output = new String(process.getInputStream().readAllBytes());
         process.waitFor(30, TimeUnit.SECONDS);
@@ -51,17 +52,18 @@ public class SolanaCliUtils {
         // Extract token address from output
         String tokenAddress = output.split("Creating token ")[1].split("\n")[0].trim();
         
-        // Initialize metadata
+        // Initialize metadata with name, symbol and URI
         ProcessBuilder initMetadata = new ProcessBuilder(
             "spl-token",
             "initialize-metadata",
             tokenAddress,
             name,
             symbol,
-            metadataUri,
+            metadataJson, // This should be the URI to the uploaded metadata JSON
             "--url", clusterUrl,
             "--fee-payer", walletKeyPath
         );
+        
         process = initMetadata.start();
         process.waitFor(30, TimeUnit.SECONDS);
         

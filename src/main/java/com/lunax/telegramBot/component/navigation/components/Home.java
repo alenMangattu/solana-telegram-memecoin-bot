@@ -7,10 +7,10 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import com.lunax.telegramBot.component.handler.AcceptTosHandler;
-import com.lunax.telegramBot.component.handler.HomePageButtons.CreateMemeCoin;
 import com.lunax.telegramBot.component.handler.HomePageButtons.MyMemeCoins;
 import com.lunax.telegramBot.component.handler.HomePageButtons.Settings;
 import com.lunax.telegramBot.component.handler.HomePageButtons.TradeMemeCoin;
+import com.lunax.telegramBot.component.handler.HomePageButtons.MemeCoinCreations.AskMemeCoinData;
 import com.lunax.telegramBot.model.db.User;
 import com.lunax.telegramBot.model.db.Wallet;
 import com.lunax.telegramBot.model.repository.WalletRepository;
@@ -36,7 +36,7 @@ public class Home implements StateHandler {
     private WalletRepository walletRepository;
 
     @Autowired
-    private CreateMemeCoin createMemeCoin;
+    private AskMemeCoinData createMemeCoin;
 
     @Autowired
     private TradeMemeCoin tradeMemeCoin;

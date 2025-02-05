@@ -1,4 +1,4 @@
-package com.lunax.telegramBot.component.handler.HomePageButtons;
+package com.lunax.telegramBot.component.handler.HomePageButtons.MemeCoinCreations;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,7 +22,7 @@ import java.util.UUID;
 
 @Slf4j
 @Component
-public class CreateMemeCoin implements ButtonHandler {
+public class AskMemeCoinData implements ButtonHandler {
 
     private final String buttonText;
     private final String callbackData;
@@ -37,8 +37,14 @@ public class CreateMemeCoin implements ButtonHandler {
     @Autowired
     private SolanaUtils solanaUtils;
 
-    public CreateMemeCoin(@Value("🪙 Create Meme Coin") String buttonText, 
-                         @Value("create_meme_coin") String callbackData) {
+    @Autowired
+    private CreateMemeCoin createMemeCoin;
+
+    @Autowired
+    private NotConfirmed notConfirmed;
+
+    public AskMemeCoinData(@Value("🪙 Create Meme Coin") String buttonText,
+            @Value("create_meme_coin") String callbackData) {
         this.buttonText = buttonText;
         this.callbackData = callbackData;
         this.objectMapper = new ObjectMapper();
@@ -58,7 +64,7 @@ public class CreateMemeCoin implements ButtonHandler {
     public void handleCallback(Update update) {
         Long telegramId = update.getCallbackQuery().getFrom().getId();
         User user = userService.findByTelegramId(telegramId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         // Check if user has a wallet
         if (user.getCurrentWallet() == null) {
@@ -72,12 +78,12 @@ public class CreateMemeCoin implements ButtonHandler {
         stateService.setStateData(telegramId, stateData);
 
         String message = """
-            🪙 *Create Your Memecoin* (1/6)
-            
-            Let's create your own memecoin! First, what would you like to name your memecoin?
-            
-            _Example: Lunar Moon_
-            """;
+                🪙 *Create Your Memecoin* (1/6)
+
+                Let's create your own memecoin! First, what would you like to name your memecoin?
+
+                _Example: Lunar Moon_
+                """;
 
         MessageUtils.sendMessage(update, message);
         stateService.setState(telegramId, ChatState.AWAITING_MEMECOIN_NAME);
@@ -122,18 +128,18 @@ public class CreateMemeCoin implements ButtonHandler {
 
         stateData.put("name", name);
         stateService.setStateData(telegramId, stateData);
-        
+
         String message = """
-            Great! Now, what should be the ticker symbol for your memecoin? (2/6)
-            
-            _Example: LUNAR_
-            
-            Requirements:
-            - 2-10 characters
-            - Only uppercase letters and numbers
-            - Must be unique
-            """;
-        
+                Great! Now, what should be the ticker symbol for your memecoin? (2/6)
+
+                _Example: LUNAR_
+
+                Requirements:
+                - 2-10 characters
+                - Only uppercase letters and numbers
+                - Must be unique
+                """;
+
         MessageUtils.sendMessage(update, message);
         stateService.setState(telegramId, ChatState.AWAITING_MEMECOIN_SYMBOL);
     }
@@ -141,7 +147,8 @@ public class CreateMemeCoin implements ButtonHandler {
     private void handleMemecoinSymbol(Update update, Long telegramId, String symbol, ObjectNode stateData) {
         symbol = symbol.toUpperCase();
         if (!symbol.matches("^[A-Z0-9]{2,10}$")) {
-            MessageUtils.sendMessage(update, "❌ Symbol must be 2-10 characters and contain only uppercase letters and numbers. Please try again:");
+            MessageUtils.sendMessage(update,
+                    "❌ Symbol must be 2-10 characters and contain only uppercase letters and numbers. Please try again:");
             return;
         }
 
@@ -149,18 +156,18 @@ public class CreateMemeCoin implements ButtonHandler {
 
         stateData.put("symbol", symbol);
         stateService.setStateData(telegramId, stateData);
-        
+
         String message = """
-            Perfect! Now, how many decimals should your token have? (3/6)
-            
-            _Example: 9_
-            
-            Requirements:
-            - Must be a number between 0 and 9
-            - Standard is 9 decimals (like SOL)
-            - Fewer decimals = less divisible tokens
-            """;
-        
+                Perfect! Now, how many decimals should your token have? (3/6)
+
+                _Example: 9_
+
+                Requirements:
+                - Must be a number between 0 and 9
+                - Standard is 9 decimals (like SOL)
+                - Fewer decimals = less divisible tokens
+                """;
+
         MessageUtils.sendMessage(update, message);
         stateService.setState(telegramId, ChatState.AWAITING_MEMECOIN_DECIMALS);
     }
@@ -171,23 +178,23 @@ public class CreateMemeCoin implements ButtonHandler {
             if (decimals < 0 || decimals > 9) {
                 throw new NumberFormatException();
             }
-            
+
             stateData.put("decimals", decimals);
             stateService.setStateData(telegramId, stateData);
-            
+
             String message = """
-                Great! Now, what should be the total supply of your memecoin? (4/6)
-                
-                _Example: 1000000000_
-                
-                Requirements:
-                - Must be a positive number
-                - Maximum 1 quadrillion (1,000,000,000,000,000)
-                """;
-            
+                    Great! Now, what should be the total supply of your memecoin? (4/6)
+
+                    _Example: 1000000000_
+
+                    Requirements:
+                    - Must be a positive number
+                    - Maximum 1 quadrillion (1,000,000,000,000,000)
+                    """;
+
             MessageUtils.sendMessage(update, message);
             stateService.setState(telegramId, ChatState.AWAITING_MEMECOIN_SUPPLY);
-            
+
         } catch (NumberFormatException e) {
             MessageUtils.sendMessage(update, "❌ Please enter a valid number between 0 and 9:");
         }
@@ -199,19 +206,19 @@ public class CreateMemeCoin implements ButtonHandler {
             if (supply <= 0 || supply > 1_000_000_000_000_000.0) {
                 throw new NumberFormatException();
             }
-            
+
             stateData.put("supply", supply);
             stateService.setStateData(telegramId, stateData);
-            
+
             String message = """
-                Great! Now, provide a brief description for your memecoin. (5/6)
-                
-                _Example: The first lunar-themed memecoin on Solana!_
-                """;
-            
+                    Great! Now, provide a brief description for your memecoin. (5/6)
+
+                    _Example: The first lunar-themed memecoin on Solana!_
+                    """;
+
             MessageUtils.sendMessage(update, message);
             stateService.setState(telegramId, ChatState.AWAITING_MEMECOIN_DESCRIPTION);
-            
+
         } catch (NumberFormatException e) {
             MessageUtils.sendMessage(update, "❌ Please enter a valid number between 0 and 1 quadrillion:");
         }
@@ -225,82 +232,60 @@ public class CreateMemeCoin implements ButtonHandler {
 
         stateData.put("description", description);
         stateService.setStateData(telegramId, stateData);
-        
+
         String message = """
-            Almost done! Finally, send me an image or GIF for your memecoin's logo. (6/6)
-            
-            Requirements:
-            - File size: max 5MB
-            - Format: JPG, PNG, or GIF
-            """;
-        
+                Almost done! Finally, send me an image or GIF for your memecoin's logo. (6/6)
+
+                Requirements:
+                - File size: max 5MB
+                - Format: JPG, PNG, or GIF
+                - Dimensions: 512x512 or 1024x1024
+                """;
+
         MessageUtils.sendMessage(update, message);
         stateService.setState(telegramId, ChatState.AWAITING_MEMECOIN_IMAGE);
     }
 
     private void handleMemecoinImage(Update update, Long telegramId, Message message, ObjectNode stateData) {
-        // Check if message has photo or document
-        if (!message.hasPhoto() && !message.hasDocument()) {
-            MessageUtils.sendMessage(update, "❌ Please send an image file (JPG, PNG, or GIF):");
+        // Download the image using MessageUtils
+        String imagePath = MessageUtils.downloadImage(update);
+        if (imagePath == null) {
+            MessageUtils.sendMessage(update,
+                    "❌ Invalid image format. Please send a valid image and dimensions (512x512 or 1024x1024) (JPG, PNG, or GIF):");
             return;
         }
 
-        // TODO: Handle image upload to storage service
-        String imageUrl = "placeholder_url";
-        stateData.put("imageUrl", imageUrl);
-        
-        // Get user's current wallet
-        User user = userService.findByTelegramId(telegramId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
-        
-        if (user.getCurrentWallet() == null) {
-            MessageUtils.sendMessage(update, "❌ Please create or select a wallet first!");
-            return;
-        }
-        
-        // Create the memecoin
-        try {
-            UUID walletId = user.getCurrentWallet();
-            String tokenAddress = solanaUtils.createMemecoin(
-                walletId,
-                stateData.get("name").asText(),
-                stateData.get("symbol").asText(),
-                stateData.get("decimals").asInt(),
-                stateData.get("supply").asDouble()
-            );
-            
-            stateData.put("tokenAddress", tokenAddress);
-            stateService.setStateData(telegramId, stateData);
-            
-            String successMessage = String.format("""
-                🎉 Congratulations! Your memecoin has been created!
-                
+        stateData.put("imageUrl", imagePath);
+        stateService.setStateData(telegramId, stateData);
+
+        // Show confirmation message with memecoin details
+        String confirmationMessage = String.format("""
+                📝 *Please confirm your memecoin details:*
+
                 Name: %s
                 Symbol: %s
                 Decimals: %d
                 Supply: %s
-                Token Address: `%s`
+                Description: %s
+
+                Are you sure you want to create this memecoin?
                 
-                Note: To make your token tradeable, you'll need to add liquidity to it.
-                This feature will be available soon!
+                Note: This action cannot be undone.
                 """,
                 stateData.get("name").asText(),
                 stateData.get("symbol").asText(),
                 stateData.get("decimals").asInt(),
                 String.format("%,.0f", stateData.get("supply").asDouble()),
-                tokenAddress
-            );
-            
-            MessageUtils.sendMessage(update, successMessage);
-            
-            // Reset state
-            stateService.setState(telegramId, ChatState.IDLE);
-            stateService.clearStateData(telegramId);
-            
-        } catch (Exception e) {
-            log.error("Error creating memecoin", e);
-            MessageUtils.sendMessage(update, "❌ An error occurred while creating your memecoin. Please try again later.");
-            stateService.setState(telegramId, ChatState.ERROR_STATE);
-        }
+                stateData.get("description").asText()
+        );
+
+        ButtonHandler[][] buttons = {
+            {createMemeCoin},
+            {notConfirmed}
+        };
+
+        MessageUtils.sendImageMessageInlineKeyboard(update, imagePath, confirmationMessage, buttons);
+        // Create inline keyboard with confirmation button
+        stateService.setState(telegramId, ChatState.AWAITING_MEMECOIN_CONFIRMATION);
     }
 }

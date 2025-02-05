@@ -29,3 +29,5 @@ encryption.key.rotation.days=2
 solana.cluster=TESTNET
 solana.cluster.url=https://api.testnet.solana.com
 solana.home.dir=${user.home}/.config/solana
+
+spring.devtools.restart.enabled=false

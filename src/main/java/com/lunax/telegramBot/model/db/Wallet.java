@@ -44,4 +44,12 @@ public class Wallet {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
+
+    public UUID getId() {
+        return walletId;
+    }
+
+    public void setId(UUID id) {
+        this.walletId = id;
+    }
 }

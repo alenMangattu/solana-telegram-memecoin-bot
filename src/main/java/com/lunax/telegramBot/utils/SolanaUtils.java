@@ -22,13 +22,13 @@ public class SolanaUtils {
     private static RpcClient client;
     
     @Autowired
-    private WalletKeyManager walletKeyManager;
+    static private WalletKeyManager walletKeyManager;
     
     @Autowired
-    private WalletRepository walletRepository;
+    static private WalletRepository walletRepository;
     
     @Autowired
-    private SolanaCliUtils solanaCliUtils;
+    static private SolanaCliUtils solanaCliUtils;
     
     @Autowired
     public SolanaUtils(RpcClient rpcClient) {
@@ -90,7 +90,7 @@ public class SolanaUtils {
      * @param supply The total supply of tokens
      * @return The token mint address
      */
-    public String createMemecoin(UUID walletId, String name, String symbol, int decimals, double supply) {
+    public static String createMemecoin(UUID walletId, String name, String symbol, int decimals, double supply) {
         // Security check: Verify wallet exists and belongs to the user
         Wallet wallet = walletRepository.findById(walletId)
             .orElseThrow(() -> new RuntimeException("Wallet not found: " + walletId));
@@ -103,13 +103,10 @@ public class SolanaUtils {
             String keypairPath = solanaCliUtils.saveWalletKeypair(privateKey);
             
             try {
-                // Create metadata JSON
-                String metadataJson = String.format(
-                    "{\"name\":\"%s\",\"symbol\":\"%s\",\"description\":\"A memecoin on Solana\"}",
-                    name, symbol
-                );
+                // Create metadata JSON with required fields
+                String metadataJson = createMetadataJson(name, symbol);
                 
-                // Create token using CLI
+                // Create token using CLI with metadata
                 String tokenAddress = solanaCliUtils.createMemecoin(
                     keypairPath,
                     name,
@@ -143,6 +140,22 @@ public class SolanaUtils {
             log.error("Failed to create memecoin: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to create memecoin: " + e.getMessage(), e);
         }
+    }
+
+    /**
+     * Creates a metadata JSON string for the token
+     */
+    private static String createMetadataJson(String name, String symbol) {
+        return String.format(
+            "{"
+            + "\"name\": \"%s\","
+            + "\"symbol\": \"%s\","
+            + "\"description\": \"A memecoin created on Solana\","
+            + "\"image\": \"https://raw.githubusercontent.com/solana-developers/opos-asset/main/assets/CompressedCoil/image.png\""
+            + "}",
+            name,
+            symbol
+        );
     }
 
     /**

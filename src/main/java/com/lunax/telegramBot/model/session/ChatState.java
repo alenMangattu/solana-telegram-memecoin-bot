@@ -19,6 +19,7 @@ public enum ChatState {
     AWAITING_MEMECOIN_SUPPLY,       // Waiting for total supply
     AWAITING_MEMECOIN_IMAGE,        // Waiting for logo/gif upload
     AWAITING_MEMECOIN_DESCRIPTION,  // Waiting for memecoin description
+    AWAITING_MEMECOIN_CONFIRMATION, // Waiting for confirmation
     CREATING_MEMECOIN,              // Processing memecoin creation
     
     // Memecoin Trading States
@@ -59,6 +60,7 @@ public enum ChatState {
                this == AWAITING_MEMECOIN_SUPPLY ||
                this == AWAITING_MEMECOIN_IMAGE ||
                this == AWAITING_MEMECOIN_DESCRIPTION ||
+               this == AWAITING_MEMECOIN_CONFIRMATION ||
                this == CREATING_MEMECOIN;
     }
 

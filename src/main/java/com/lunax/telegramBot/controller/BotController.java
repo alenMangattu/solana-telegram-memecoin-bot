@@ -4,7 +4,7 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
-import com.lunax.telegramBot.component.handler.HomePageButtons.CreateMemeCoin;
+import com.lunax.telegramBot.component.handler.HomePageButtons.MemeCoinCreations.AskMemeCoinData;
 import com.lunax.telegramBot.component.navigation.HandlerRegistry;
 import com.lunax.telegramBot.component.navigation.components.Home;
 import com.lunax.telegramBot.component.navigation.components.settings.SettingsImpl;
@@ -34,7 +34,7 @@ public class BotController extends TelegramLongPollingBot {
     private HandlerRegistry handlerRegistry;
 
     @Autowired
-    private CreateMemeCoin createMemeCoin;
+    private AskMemeCoinData createMemeCoin;
 
     @Autowired
     private StateService stateService;
