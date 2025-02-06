@@ -1,15 +1,20 @@
 package com.lunax.telegramBot.component.handler.HomePageButtons.MemeCoinCreations;
 
+import java.io.File;
+import java.nio.charset.StandardCharsets;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.lunax.telegramBot.config.SolanaConfig;
 import com.lunax.telegramBot.model.db.User;
 import com.lunax.telegramBot.model.session.ChatState;
 import com.lunax.telegramBot.service.StateService;
 import com.lunax.telegramBot.service.UserService;
+import com.lunax.telegramBot.utils.IpfsUtils;
 import com.lunax.telegramBot.utils.SolanaUtils;
 import com.lunax.telegramBot.utils.components.ButtonHandler;
 import com.lunax.telegramBot.utils.components.MessageUtils;
@@ -31,6 +36,9 @@ public class CreateMemeCoin implements ButtonHandler {
 
     @Autowired
     private SolanaUtils solanaUtils;
+
+    @Autowired
+    private SolanaConfig solanaConfig;
 
     public CreateMemeCoin(@Value("✅ Confirm Creation") String buttonText, 
                          @Value("confirm_memecoin_creation") String callbackData) {
@@ -73,37 +81,97 @@ public class CreateMemeCoin implements ButtonHandler {
             String symbol = stateData.get("symbol").asText();
             int decimals = stateData.get("decimals").asInt();
             double supply = stateData.get("supply").asDouble();
+            
+            String description = stateData.get("description").asText();
+            String image = stateData.get("imageUrl").asText();
+            String createOn = "Luanx telegram bot";
 
             MessageUtils.sendMessage(update, "🔄 Creating your memecoin... Please wait.");
+           
+            // Create metadata
+            String imageUri = createImageUri(image);
+            new File(image).delete();
+            String metadataUri = createMetadataJson(name, symbol, description, imageUri, createOn);
+            MessageUtils.sendMessage(update, "✔ Created metadatas");
 
-            // Create the memecoin
-            String tokenAddress = SolanaUtils.createMemecoin(
-                user.getCurrentWallet(),
+            // Create the memecoin using the instance method
+            String tokenAddress = solanaUtils.createMemecoin(
+                user.getCurrentWallet(),  // This is a UUID
                 name,
                 symbol,
                 decimals,
-                supply
+                supply,
+                metadataUri
             );
 
-            // Send success message with token address
             String successMessage = String.format(
                 "✅ Memecoin created successfully!\n\n" +
                 "Name: %s\n" +
                 "Symbol: %s\n" +
                 "Decimals: %d\n" +
                 "Supply: %.2f\n" +
-                "Token Address: `%s`",
-                name, symbol, decimals, supply, tokenAddress
+                "Token Address: `%s`\n" +
+                "Metadata: %s",
+                name, symbol, decimals, supply, tokenAddress, metadataUri
             );
             MessageUtils.sendMessage(update, successMessage);
 
         } catch (Exception e) {
             log.error("Failed to create memecoin", e);
-            MessageUtils.sendMessage(update, "❌ Failed to create memecoin: " + e.getMessage());
+            String errorMessage = solanaConfig.getClusterUrl().equals("devnet") 
+                ? "❌ Error: " + e.getMessage()
+                : "❌ Failed to create memecoin. Please try again later.";
+            MessageUtils.sendMessage(update, errorMessage);
         } finally {
-            // Reset state
             stateService.setState(telegramId, ChatState.IDLE);
             stateService.clearStateData(telegramId);
         }
     }
+
+    private static String createImageUri(String filename) {
+        // Upload the image file to IPFS
+        String ipfsHash = IpfsUtils.addFile(filename);
+        
+        // Check if the upload was successful
+        if (ipfsHash != null) {
+            // Return the HTTP URL for the uploaded image
+            return IpfsUtils.getIpfsUrl(ipfsHash);
+        } else {
+            // Handle the case where the upload failed
+            log.error("Failed to upload image to IPFS: {}", filename);
+            return null; // or throw an exception based on your error handling strategy
+        }
+    }
+
+    private static String createMetadataJson(String name, String symbol, String description, String image, String createOn) {
+        // Create the metadata JSON string
+        String metadataJson = String.format(
+            "{"
+            + "\"name\": \"%s\","
+            + "\"symbol\": \"%s\","
+            + "\"description\": \"%s\","
+            + "\"image\": \"%s\","
+            + "\"createdOn\": \"%s\""
+            + "}",
+            name,
+            symbol,
+            description,
+            image,
+            createOn
+        );
+
+        // Upload the metadata JSON directly to IPFS as a byte array
+        byte[] metadataBytes = metadataJson.getBytes(StandardCharsets.UTF_8);
+        String ipfsHash = IpfsUtils.addByteArray("metadata.json", metadataBytes);
+        
+        // Check if the upload was successful
+        if (ipfsHash != null) {
+            // Return the HTTP URL for the uploaded metadata
+            return IpfsUtils.getIpfsUrl(ipfsHash);
+        } else {
+            log.error("Failed to upload metadata to IPFS");
+            return null; // or throw an exception based on your error handling strategy
+        }
+    }
+
 }

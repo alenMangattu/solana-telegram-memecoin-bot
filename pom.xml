@@ -48,6 +48,10 @@
             <name>GitHub P2P Apache Maven Packages</name>
             <url>https://maven.pkg.github.com/p2p-org/solanaj</url>
         </repository> -->
+		<repository>
+  		  <id>jitpack.io</id>
+  		  <url>https://jitpack.io</url>
+  		</repository>
     </repositories>
 	<dependencies>
 		<dependency>
@@ -175,6 +179,33 @@
 		    <artifactId>phoenix</artifactId>
 		    <version>1.33.6</version>
 		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/com.github.ipfs/java-ipfs-http-client -->
+		<dependency>
+		    <groupId>com.github.ipfs</groupId>
+		    <artifactId>java-ipfs-http-client</artifactId>
+		    <version>1.4.4</version>
+		</dependency> 
+
+		<dependency>
+		    <groupId>org.junit.jupiter</groupId>
+		    <artifactId>junit-jupiter-api</artifactId>
+		    <version>5.8.1</version>
+		    <scope>test</scope>
+		</dependency>
+		<dependency>
+		    <groupId>org.mockito</groupId>
+		    <artifactId>mockito-core</artifactId>
+		    <version>3.12.4</version>
+		    <scope>test</scope>
+		</dependency>
+		<dependency>
+		    <groupId>org.junit.jupiter</groupId>
+		    <artifactId>junit-jupiter-engine</artifactId>
+		    <version>5.8.1</version>
+		    <scope>test</scope>
+		</dependency>
+
 	</dependencies>
 
 	<build>

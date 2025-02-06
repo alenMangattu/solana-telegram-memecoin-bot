@@ -50,6 +50,9 @@ public class Home implements StateHandler {
     @Autowired
     private StateService stateService;
 
+    @Autowired
+    private SolanaUtils solanaUtils;
+
     private ButtonHandler[][] buttonHandlers2;
 
     @PostConstruct
@@ -119,7 +122,7 @@ public class Home implements StateHandler {
                 if (wallet.getWalletId().equals(user.getCurrentWallet())) {
                     text += " (current)";
                 }
-                text += "\nBalance: `" + SolanaUtils.getBalance(wallet.getWalletAddress()) + " SOL`\n";
+                text += "\nBalance: `" + solanaUtils.getBalance(wallet.getWalletAddress()) + " SOL`\n";
                 text += "Address: `" + wallet.getWalletAddress() + "`\n";
             }
         }

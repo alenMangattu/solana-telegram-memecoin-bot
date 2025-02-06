@@ -53,7 +53,7 @@ public enum ChatState {
      * @return true if in memecoin creation flow
      */
     public boolean isMemecoinCreation() {
-        return this == CREATE_MEMECOIN_START ||
+        return this != null && (this == CREATE_MEMECOIN_START ||
                this == AWAITING_MEMECOIN_NAME ||
                this == AWAITING_MEMECOIN_SYMBOL ||
                this == AWAITING_MEMECOIN_DECIMALS ||
@@ -61,7 +61,7 @@ public enum ChatState {
                this == AWAITING_MEMECOIN_IMAGE ||
                this == AWAITING_MEMECOIN_DESCRIPTION ||
                this == AWAITING_MEMECOIN_CONFIRMATION ||
-               this == CREATING_MEMECOIN;
+               this == CREATING_MEMECOIN);
     }
 
     /**
@@ -69,11 +69,11 @@ public enum ChatState {
      * @return true if in trading flow
      */
     public boolean isMemecoinTrading() {
-        return this == TRADE_MEMECOIN_START ||
+        return this != null && (this == TRADE_MEMECOIN_START ||
                this == AWAITING_TRADE_SYMBOL ||
                this == AWAITING_TRADE_AMOUNT ||
                this == AWAITING_TRADE_TYPE ||
                this == CONFIRMING_TRADE ||
-               this == PROCESSING_TRADE;
+               this == PROCESSING_TRADE);
     }
 }

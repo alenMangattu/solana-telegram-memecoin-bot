@@ -13,4 +13,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByTelegramId(Long telegramId);
     @Query("SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END FROM User u WHERE u.telegramId = :telegramId AND u.acceptedTos = true")
     boolean isAcceptedTos(@Param("telegramId") Long telegramId);
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.wallets WHERE u.telegramId = :telegramId")
+    Optional<User> findByTelegramIdWithWallets(@Param("telegramId") Long telegramId);
 }

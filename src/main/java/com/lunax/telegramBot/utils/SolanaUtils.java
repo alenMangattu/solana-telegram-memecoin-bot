@@ -19,27 +19,27 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Component
 public class SolanaUtils {
-    private static RpcClient client;
+    private final RpcClient client;
     
     @Autowired
-    static private WalletKeyManager walletKeyManager;
+    private WalletKeyManager walletKeyManager;
     
     @Autowired
-    static private WalletRepository walletRepository;
+    private WalletRepository walletRepository;
     
     @Autowired
-    static private SolanaCliUtils solanaCliUtils;
+    private SolanaCliUtils solanaCliUtils;
     
     @Autowired
     public SolanaUtils(RpcClient rpcClient) {
-        client = rpcClient;
+        this.client = rpcClient;
     }
     
     /**
      * Creates a new Solana wallet and returns its public key and private key
      * @return Map containing the public key (as Base58 string) and private key (as Base58 string)
      */
-    public static Map<String, String> createNewWallet() {
+    public Map<String, String> createNewWallet(UUID walletId) throws Exception {
         Account account = new Account();
         Map<String, String> walletInfo = new HashMap<>();
         
@@ -48,10 +48,19 @@ public class SolanaUtils {
         
         // Get the private key and encode it in Base58
         byte[] privateKey = account.getSecretKey();
+        if (privateKey.length != 64) {
+            throw new RuntimeException("Invalid private key length: " + privateKey.length);
+        }
+        
         String encodedPrivateKeyBase58 = Base58.encode(privateKey);
         log.debug("Private key generated");
-        walletInfo.put("privateKey", encodedPrivateKeyBase58);
         
+        // Only store if walletId is provided
+        if (walletId != null) {
+            walletKeyManager.storePrivateKey(walletId, encodedPrivateKeyBase58);
+        }
+        
+        walletInfo.put("privateKey", encodedPrivateKeyBase58);
         return walletInfo;
     }
     
@@ -60,7 +69,7 @@ public class SolanaUtils {
      * @param address The wallet address in Base58 format
      * @return The balance in SOL (as a double)
      */
-    public static double getBalance(String address) {
+    public double getBalance(String address) {
         try {
             log.debug("Getting balance for address: {}", address);
             PublicKey publicKey = new PublicKey(address);
@@ -90,22 +99,25 @@ public class SolanaUtils {
      * @param supply The total supply of tokens
      * @return The token mint address
      */
-    public static String createMemecoin(UUID walletId, String name, String symbol, int decimals, double supply) {
+    public String createMemecoin(UUID walletId, String name, String symbol, int decimals, double supply, String metadataJson) {
+        System.out.println("Creating memecoin for wallet: " + walletId);
+        
         // Security check: Verify wallet exists and belongs to the user
         Wallet wallet = walletRepository.findById(walletId)
             .orElseThrow(() -> new RuntimeException("Wallet not found: " + walletId));
         
+        System.out.println("Found wallet with address: " + wallet.getWalletAddress());
+        
         try {
             // Get the decrypted private key using WalletKeyManager
             String privateKey = walletKeyManager.getPrivateKey(walletId);
+            System.out.println("Retrieved private key length: " + privateKey.length());
             
             // Save private key to temporary file
             String keypairPath = solanaCliUtils.saveWalletKeypair(privateKey);
+            System.out.println("Saved keypair to: " + keypairPath);
             
             try {
-                // Create metadata JSON with required fields
-                String metadataJson = createMetadataJson(name, symbol);
-                
                 // Create token using CLI with metadata
                 String tokenAddress = solanaCliUtils.createMemecoin(
                     keypairPath,
@@ -114,6 +126,8 @@ public class SolanaUtils {
                     decimals,
                     metadataJson
                 );
+                
+                System.out.println("Created token with address: " + tokenAddress);
                 
                 // Mint initial supply
                 long totalSupply = (long) (supply * Math.pow(10, decimals));
@@ -129,33 +143,12 @@ public class SolanaUtils {
                 
                 return tokenAddress;
             } finally {
-                // Clean up temporary keypair file
                 solanaCliUtils.deleteWalletKeypair(keypairPath);
-                
-                // Clear private key from memory
-                privateKey = null;
-                System.gc();
             }
         } catch (Exception e) {
-            log.error("Failed to create memecoin: {}", e.getMessage(), e);
+            log.error("Failed to create memecoin", e);
             throw new RuntimeException("Failed to create memecoin: " + e.getMessage(), e);
         }
-    }
-
-    /**
-     * Creates a metadata JSON string for the token
-     */
-    private static String createMetadataJson(String name, String symbol) {
-        return String.format(
-            "{"
-            + "\"name\": \"%s\","
-            + "\"symbol\": \"%s\","
-            + "\"description\": \"A memecoin created on Solana\","
-            + "\"image\": \"https://raw.githubusercontent.com/solana-developers/opos-asset/main/assets/CompressedCoil/image.png\""
-            + "}",
-            name,
-            symbol
-        );
     }
 
     /**
@@ -163,7 +156,7 @@ public class SolanaUtils {
      * @param address Base58 encoded address
      * @return Account object or null if invalid
      */
-    private static Account getAccountFromAddress(String address) {
+    private Account getAccountFromAddress(String address) {
         try {
             byte[] privateKey = Base58.decode(address);
             return new Account(privateKey);

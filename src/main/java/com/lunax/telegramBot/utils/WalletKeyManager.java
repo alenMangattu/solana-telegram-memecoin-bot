@@ -1,5 +1,6 @@
 package com.lunax.telegramBot.utils;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -15,15 +16,19 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import com.lunax.telegramBot.model.db.EncryptionKeyMetadata;
 import com.lunax.telegramBot.model.repository.EncryptionKeyMetadataRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Component
 public class WalletKeyManager {
     
-    @Value("${encryption.keys.path}")
-    private String encryptionKeysPath;
-   
+    private static final Logger log = LoggerFactory.getLogger(WalletKeyManager.class);
+    
     @Value("${wallets.path}")
     private String walletsPath;
+    
+    @Value("${encryption.keys.path}")
+    private String encryptionKeysPath;
     
     @Value("${encryption.key.rotation.days}")
     private int keyRotationDays;
@@ -112,6 +117,8 @@ public class WalletKeyManager {
 
     private void saveEncryptionKey(UUID walletId, int version, SecretKey key) throws Exception {
         Path keyPath = Paths.get(encryptionKeysPath, getKeyFileName(walletId, version));
+        // Create parent directories if they don't exist
+        Files.createDirectories(keyPath.getParent());
         Files.write(keyPath, EncryptionUtils.serializeKey(key).getBytes());
         Files.setPosixFilePermissions(keyPath, 
             PosixFilePermissions.fromString("rw-------"));
@@ -119,6 +126,8 @@ public class WalletKeyManager {
 
     private void saveEncryptedPrivateKey(UUID walletId, int version, String encryptedKey) throws Exception {
         Path walletPath = Paths.get(walletsPath, getWalletFileName(walletId, version));
+        // Create parent directories if they don't exist
+        Files.createDirectories(walletPath.getParent());
         Files.write(walletPath, encryptedKey.getBytes());
         Files.setPosixFilePermissions(walletPath, 
             PosixFilePermissions.fromString("rw-------"));
@@ -128,21 +137,41 @@ public class WalletKeyManager {
      * Retrieves the private key for a given wallet ID using the active key version
      */
     public String getPrivateKey(UUID walletId) throws Exception {
-        EncryptionKeyMetadata metadata = keyMetadataRepository.findByWalletIdAndActive(walletId, true)
-            .orElseThrow(() -> new Exception("No active encryption key found for wallet: " + walletId));
+        System.out.println("Getting private key for wallet: " + walletId);
+        
+        // First find the active key version
+        String walletFileName = String.format("%s.encrypted", walletId.toString());
+        Path walletPath = Paths.get(walletsPath, walletFileName);
+        
+        System.out.println("Looking for wallet file: " + walletPath);
+        
+        if (!Files.exists(walletPath)) {
+            throw new RuntimeException("Wallet file not found: " + walletPath);
+        }
 
-        // Read the encryption key
-        Path encryptionKeyPath = Paths.get(encryptionKeysPath, 
-            getKeyFileName(walletId, metadata.getVersion()));
-        String serializedKey = new String(Files.readAllBytes(encryptionKeyPath));
-        SecretKey encryptionKey = EncryptionUtils.deserializeKey(serializedKey);
-        
         // Read the encrypted private key
-        Path walletPath = Paths.get(walletsPath, 
-            getWalletFileName(walletId, metadata.getVersion()));
         String encryptedPrivateKey = new String(Files.readAllBytes(walletPath));
+        System.out.println("Read encrypted private key length: " + encryptedPrivateKey.length());
         
-        return EncryptionUtils.decrypt(encryptedPrivateKey, encryptionKey);
+        // Get the encryption key
+        String keyFileName = String.format("%s.key", walletId.toString());
+        Path keyPath = Paths.get(encryptionKeysPath, keyFileName);
+        
+        System.out.println("Looking for key file: " + keyPath);
+        
+        if (!Files.exists(keyPath)) {
+            throw new RuntimeException("Encryption key file not found: " + keyPath);
+        }
+
+        SecretKey encryptionKey = EncryptionUtils.deserializeKey(
+            new String(Files.readAllBytes(keyPath))
+        );
+        
+        // Decrypt and return the private key
+        String privateKey = EncryptionUtils.decrypt(encryptedPrivateKey, encryptionKey);
+        System.out.println("Decrypted private key length: " + privateKey.length());
+        
+        return privateKey;
     }
 
     /**
@@ -179,5 +208,29 @@ public class WalletKeyManager {
             
             keyMetadataRepository.delete(metadata);
         }
+    }
+
+    /**
+     * Stores a new wallet's private key
+     */
+    @Transactional
+    public void storePrivateKey(UUID walletId, String privateKey) throws Exception {
+        // Generate new encryption key
+        SecretKey encryptionKey = EncryptionUtils.generateEncryptionKey();
+        
+        // Store encryption key
+        String keyFileName = String.format("%s.key", walletId.toString());
+        Path keyPath = Paths.get(encryptionKeysPath, keyFileName);
+        Files.createDirectories(keyPath.getParent());
+        Files.write(keyPath, EncryptionUtils.serializeKey(encryptionKey).getBytes());
+        Files.setPosixFilePermissions(keyPath, PosixFilePermissions.fromString("rw-------"));
+        
+        // Encrypt and store private key
+        String encryptedPrivateKey = EncryptionUtils.encrypt(privateKey, encryptionKey);
+        String walletFileName = String.format("%s.encrypted", walletId.toString());
+        Path walletPath = Paths.get(walletsPath, walletFileName);
+        Files.createDirectories(walletPath.getParent());
+        Files.write(walletPath, encryptedPrivateKey.getBytes());
+        Files.setPosixFilePermissions(walletPath, PosixFilePermissions.fromString("rw-------"));
     }
 }

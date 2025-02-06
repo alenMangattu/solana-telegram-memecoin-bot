@@ -11,11 +11,15 @@ import com.lunax.telegramBot.model.repository.UserRepository;
 import com.lunax.telegramBot.model.db.UserState;
 import com.lunax.telegramBot.model.db.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
 @Service
 public class StateService {
+
+    private static final Logger log = LoggerFactory.getLogger(StateService.class);
 
     @Autowired
     private UserStateRepository userStateRepository;
@@ -28,12 +32,26 @@ public class StateService {
 
     @Cacheable(value = "userStates", key = "#telegramId")
     public ChatState getState(Long telegramId) {
-        User user = userRepository.findByTelegramId(telegramId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-                
-        Optional<UserState> userState = userStateRepository.findByUser(user);
-        return userState.map(state -> ChatState.valueOf(state.getCurrentPage()))
-                       .orElse(ChatState.IDLE);
+        Optional<User> userOptional = userRepository.findByTelegramId(telegramId);
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            Optional<UserState> userState = userStateRepository.findByUser(user);
+            return userState
+                .map(state -> {
+                    String statePage = state.getCurrentPage();
+                    if (statePage == null || statePage.isEmpty()) {
+                        return ChatState.IDLE;
+                    }
+                    try {
+                        return ChatState.valueOf(statePage);
+                    } catch (IllegalArgumentException e) {
+                        log.warn("Invalid chat state '{}' for user {}, defaulting to IDLE", statePage, telegramId);
+                        return ChatState.IDLE;
+                    }
+                })
+                .orElse(ChatState.IDLE);
+        }
+        return null;
     }
 
     @CacheEvict(value = "userStates", key = "#telegramId")

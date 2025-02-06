@@ -31,3 +31,5 @@ solana.cluster.url=https://api.testnet.solana.com
 solana.home.dir=${user.home}/.config/solana
 
 spring.devtools.restart.enabled=false
+
+server.port=8888

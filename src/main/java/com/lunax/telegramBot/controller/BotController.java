@@ -8,14 +8,20 @@ import com.lunax.telegramBot.component.handler.HomePageButtons.MemeCoinCreations
 import com.lunax.telegramBot.component.navigation.HandlerRegistry;
 import com.lunax.telegramBot.component.navigation.components.Home;
 import com.lunax.telegramBot.component.navigation.components.settings.SettingsImpl;
+import com.lunax.telegramBot.model.db.User;
+import com.lunax.telegramBot.model.repository.UserRepository;
 import com.lunax.telegramBot.model.session.ChatState;
 import com.lunax.telegramBot.service.StateService;
 import com.lunax.telegramBot.utils.components.ButtonHandler;
 import com.lunax.telegramBot.utils.components.MessageUtils;
+import com.lunax.telegramBot.utils.IpfsUtils;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.cache.annotation.Cacheable;
+
+import java.util.Map;
 
 
 @Slf4j
@@ -39,6 +45,9 @@ public class BotController extends TelegramLongPollingBot {
     @Autowired
     private StateService stateService;
 
+    @Autowired
+    private UserRepository userRepository;
+
     public BotController(String botUsername, String botToken) {
         super(botToken);
         this.botUsername = botUsername;
@@ -59,42 +68,83 @@ public class BotController extends TelegramLongPollingBot {
         } else if (update.hasMessage()) {
             Message message = update.getMessage();
             
-            // Check if it's a command (starts with '/')
-            if (message.hasText() && message.getText().startsWith("/")) {
+            if (message.hasText()) {
+                String messageText = message.getText();
+                if (messageText == null || messageText.isEmpty()) {
+                    log.warn("Received empty message text.");
+                    return; // Ignore empty messages
+                }
+                
                 Long telegramId = message.getFrom().getId();
+                // Check if the user exists in the UserRepository
+                if (!isValidUser(telegramId)) {
+                    MessageUtils.sendMessage(update, "Welcome! It seems you are not registered or have no wallets. You are being redirected to the /start command.");
+                    home.executeVoid(update);
+                    return;
+                }
+                
+                // Check if it's a command (starts with '/')
+                if (messageText.startsWith("/")) {
+                    ChatState currentState = stateService.getState(telegramId);
+                    
+                    // If we were in memecoin creation, clear the state and notify
+                    if (currentState != null && currentState.isMemecoinCreation()) {
+                        stateService.clearStateData(telegramId);
+                        stateService.setState(telegramId, null);
+                        MessageUtils.sendMessage(update, "⚠️ Memecoin creation process terminated.");
+                    }
+                    
+                    // Handle the start command
+                    if (messageText.startsWith("/start")) {
+                        home.executeVoid(update);
+                    } else if (messageText.startsWith("/settings")) {
+                        settings.executeVoid(update);
+                    } else if (messageText.equals("/getfiles")) {
+                        handleGetFilesCommand(update);
+                    }
+                    return;
+                }
+                
+                // Only check state for non-command messages that might need state handling
                 ChatState currentState = stateService.getState(telegramId);
                 
-                // If we were in memecoin creation, clear the state and notify
-                if (currentState != null && currentState.isMemecoinCreation()) {
-                    stateService.clearStateData(telegramId);
-                    stateService.setState(telegramId, null);
-                    MessageUtils.sendMessage(update, "⚠️ Memecoin creation process terminated.");
+                if (currentState == null || currentState == ChatState.IDLE) {
+                    home.executeVoid(update);
+                    return;
                 }
                 
-                // Handle the start command
-                if (message.getText().startsWith("/start")) {
-                    home.executeVoid(update);
-                } else if (message.getText().startsWith("/settings")) {
-                    settings.executeVoid(update);
+                if (currentState.isMemecoinCreation()) {
+                    createMemeCoin.handleMessage(update);
+                } else if (message.hasText()) {
+                    log.info("Received: {}", messageText);
                 }
-                return;
-            }
-            
-            // Only check state for non-command messages that might need state handling
-            Long telegramId = message.getFrom().getId();
-            ChatState currentState = stateService.getState(telegramId);
-            
-            if (currentState == null || currentState == ChatState.IDLE) {
-                home.executeVoid(update);
-                return;
-            }
-            
-            if (currentState != null && currentState.isMemecoinCreation()) {
-                createMemeCoin.handleMessage(update);
-            } else if (message.hasText()) {
-                log.info("Received: {}", message.getText());
+            } else if (message.hasPhoto()) {
+                // Handle the image if the state is waiting for an image
+                Long telegramId = message.getFrom().getId();
+                ChatState currentState = stateService.getState(telegramId);
+                if (currentState == ChatState.AWAITING_MEMECOIN_IMAGE) {
+                    createMemeCoin.handleMessage(update);
+                }
             }
         }
+    }
+
+    private void handleGetFilesCommand(Update update) {
+        Map<String, String> loadedFiles = IpfsUtils.getAllFileLoaded();
+        if (loadedFiles.isEmpty()) {
+            MessageUtils.sendMessage(update, "�� No files have been loaded to IPFS.");
+        } else {
+            StringBuilder response = new StringBuilder("📁 Loaded files in IPFS:\n");
+            loadedFiles.forEach((filePath, ipfsHash) -> 
+                response.append(String.format("File: %s, Hash: %s\n", filePath, ipfsHash))
+            );
+            MessageUtils.sendMessage(update, response.toString());
+        }
+    }
+
+    @Cacheable(value = "userValidation", key = "#telegramId")
+    private boolean isValidUser(Long telegramId) {
+        return userRepository.findByTelegramId(telegramId).isPresent();
     }
 
     @Override

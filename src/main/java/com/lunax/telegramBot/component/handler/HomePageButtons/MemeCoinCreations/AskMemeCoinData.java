@@ -121,7 +121,7 @@ public class AskMemeCoinData implements ButtonHandler {
     }
 
     private void handleMemecoinName(Update update, Long telegramId, String name, ObjectNode stateData) {
-        if (name.length() < 3 || name.length() > 50) {
+        if (name == null || name.length() < 3 || name.length() > 50) {
             MessageUtils.sendMessage(update, "❌ Name must be between 3 and 50 characters. Please try again:");
             return;
         }
@@ -145,16 +145,13 @@ public class AskMemeCoinData implements ButtonHandler {
     }
 
     private void handleMemecoinSymbol(Update update, Long telegramId, String symbol, ObjectNode stateData) {
-        symbol = symbol.toUpperCase();
-        if (!symbol.matches("^[A-Z0-9]{2,10}$")) {
+        if (symbol == null || !symbol.matches("^[A-Z0-9]{2,10}$")) {
             MessageUtils.sendMessage(update,
                     "❌ Symbol must be 2-10 characters and contain only uppercase letters and numbers. Please try again:");
             return;
         }
 
-        // TODO: Check if symbol already exists in database
-
-        stateData.put("symbol", symbol);
+        stateData.put("symbol", symbol.toUpperCase());
         stateService.setStateData(telegramId, stateData);
 
         String message = """
@@ -173,6 +170,11 @@ public class AskMemeCoinData implements ButtonHandler {
     }
 
     private void handleMemecoinDecimals(Update update, Long telegramId, String decimalsStr, ObjectNode stateData) {
+        if (decimalsStr == null) {
+            MessageUtils.sendMessage(update, "❌ Please enter a valid number between 0 and 9:");
+            return;
+        }
+
         try {
             int decimals = Integer.parseInt(decimalsStr);
             if (decimals < 0 || decimals > 9) {
@@ -201,6 +203,11 @@ public class AskMemeCoinData implements ButtonHandler {
     }
 
     private void handleMemecoinSupply(Update update, Long telegramId, String supplyStr, ObjectNode stateData) {
+        if (supplyStr == null) {
+            MessageUtils.sendMessage(update, "❌ Please enter a valid number for supply:");
+            return;
+        }
+
         try {
             double supply = Double.parseDouble(supplyStr);
             if (supply <= 0 || supply > 1_000_000_000_000_000.0) {
@@ -225,7 +232,7 @@ public class AskMemeCoinData implements ButtonHandler {
     }
 
     private void handleMemecoinDescription(Update update, Long telegramId, String description, ObjectNode stateData) {
-        if (description.length() > 500) {
+        if (description == null || description.length() > 500) {
             MessageUtils.sendMessage(update, "❌ Description must be less than 500 characters. Please try again:");
             return;
         }
@@ -247,6 +254,12 @@ public class AskMemeCoinData implements ButtonHandler {
     }
 
     private void handleMemecoinImage(Update update, Long telegramId, Message message, ObjectNode stateData) {
+        if (message == null || !message.hasPhoto()) {
+            MessageUtils.sendMessage(update,
+                    "❌ Please send a valid image or GIF for your memecoin's logo. Ensure the file is in the correct format (JPG, PNG, or GIF) and dimensions (512x512 or 1024x1024).");
+            return;
+        }
+
         // Download the image using MessageUtils
         String imagePath = MessageUtils.downloadImage(update);
         if (imagePath == null) {
