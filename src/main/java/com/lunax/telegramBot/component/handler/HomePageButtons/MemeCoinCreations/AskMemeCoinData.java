@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -18,7 +19,9 @@ import com.lunax.telegramBot.utils.SolanaUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.UUID;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 
 @Slf4j
 @Component
@@ -62,7 +65,16 @@ public class AskMemeCoinData implements ButtonHandler {
 
     @Override
     public void handleCallback(Update update) {
-        Long telegramId = update.getCallbackQuery().getFrom().getId();
+        handleMemecoinName(update);
+    }
+
+    public void handleMemecoinName(Update update) {
+        Long telegramId = null;
+        if (update.hasCallbackQuery()) {
+            telegramId = update.getCallbackQuery().getFrom().getId();
+        } else if (update.hasMessage()) {
+            telegramId = update.getMessage().getFrom().getId();
+        }
         User user = userService.findByTelegramId(telegramId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -87,13 +99,33 @@ public class AskMemeCoinData implements ButtonHandler {
 
         MessageUtils.sendMessage(update, message);
         stateService.setState(telegramId, ChatState.AWAITING_MEMECOIN_NAME);
-    }
 
+    }
+    
     public void handleMessage(Update update) {
         Message message = update.getMessage();
-        Long telegramId = message.getFrom().getId();
+        Long telegramId = null;
+        if (update.hasCallbackQuery()) {
+            telegramId = update.getCallbackQuery().getFrom().getId();
+        } else if (update.hasMessage()) {
+            telegramId = update.getMessage().getFrom().getId();
+        }
+
         ChatState currentState = stateService.getState(telegramId);
+        
+        // If there's no current state, initialize the memecoin creation process
+        if (currentState == null || currentState == ChatState.IDLE) {
+            handleMemecoinName(update);
+            return;
+        }
+
         ObjectNode stateData = stateService.getStateData(telegramId);
+        
+        // Initialize stateData if null
+        if (stateData == null) {
+            stateData = objectMapper.createObjectNode();
+            stateService.setStateData(telegramId, stateData);
+        }
 
         switch (currentState) {
             case AWAITING_MEMECOIN_NAME:
@@ -244,27 +276,41 @@ public class AskMemeCoinData implements ButtonHandler {
                 Almost done! Finally, send me an image or GIF for your memecoin's logo. (6/6)
 
                 Requirements:
-                - File size: max 5MB
+                - File size: max 2MB
                 - Format: JPG, PNG, or GIF
-                - Dimensions: 512x512 or 1024x1024
                 """;
 
         MessageUtils.sendMessage(update, message);
         stateService.setState(telegramId, ChatState.AWAITING_MEMECOIN_IMAGE);
     }
 
-    private void handleMemecoinImage(Update update, Long telegramId, Message message, ObjectNode stateData) {
+    private void handleMemecoinImage(Update update, Long telegramId, Message message, ObjectNode stateData)  {
         if (message == null || !message.hasPhoto()) {
             MessageUtils.sendMessage(update,
-                    "❌ Please send a valid image or GIF for your memecoin's logo. Ensure the file is in the correct format (JPG, PNG, or GIF) and dimensions (512x512 or 1024x1024).");
+                    "❌ Provide a .");
             return;
         }
 
         // Download the image using MessageUtils
-        String imagePath = MessageUtils.downloadImage(update);
-        if (imagePath == null) {
+        String imagePath = "";
+        try {
+            imagePath = MessageUtils.downloadImage(update);
+        } catch (TelegramApiException e) {
+            MessageUtils.sendMessage(update, "❌ Failed to download image: " + e.getMessage());
+            e.printStackTrace();
+        }
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        if (imagePath == null || !isImageFile(imagePath) || !isFileSizeValid(imagePath, 2 * 1024 * 1024)) {
             MessageUtils.sendMessage(update,
-                    "❌ Invalid image format. Please send a valid image and dimensions (512x512 or 1024x1024) (JPG, PNG, or GIF):");
+                    "❌ Invalid image format or size. Please send a valid image (JPG, PNG, or GIF) under 2MB:");
+            if (imagePath != null) {
+                new File(imagePath).delete(); // Delete the image path if not null
+            }
             return;
         }
 
@@ -300,5 +346,32 @@ public class AskMemeCoinData implements ButtonHandler {
         MessageUtils.sendImageMessageInlineKeyboard(update, imagePath, confirmationMessage, buttons);
         // Create inline keyboard with confirmation button
         stateService.setState(telegramId, ChatState.AWAITING_MEMECOIN_CONFIRMATION);
+    }
+
+    private boolean isImageFile(String filePath) {
+        // Implement logic to check if the file is an image (e.g., check file extension)
+        log.info("Checking if file is an image: {}", filePath);
+        return filePath.endsWith(".jpg") || filePath.endsWith(".png");
+    }
+
+    private boolean isFileSizeValid(String filePath, long maxSize) {
+        // Implement logic to check the file size
+        File file = new File(filePath);
+        if (!file.exists()) {
+            log.warn("File does not exist: {}", filePath);
+            return false;
+        }
+        
+        long fileSize = 0;
+        try {
+            fileSize = Files.size(file.toPath());
+        } catch (IOException e) {
+            log.error("Error getting file size for {}: {}", filePath, e.getMessage());
+            return false;
+        }
+        
+        log.info("Checking if file size is valid: {}", fileSize);
+        log.info("Max size: {}", maxSize);
+        return fileSize <= maxSize;
     }
 }

@@ -42,5 +42,5 @@ build/
 # Application properties
 application.properties
 src/main/resources/application.properties
-
+src/main/resources/images/*
 >>>>>>> 0df808e (Changed the programming language to java, also added the program backbone)

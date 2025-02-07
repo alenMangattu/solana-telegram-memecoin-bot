@@ -22,6 +22,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Comparator;
 import java.util.UUID;
 
@@ -30,6 +34,10 @@ import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 public class MessageUtils {
 
@@ -161,46 +169,53 @@ public class MessageUtils {
         }
     }
 
-    public static String downloadImage(Update update) {
+    public static String downloadImage(Update update) throws TelegramApiException {
+        String fileId = getFileIdFromUpdate(update);
+        if (fileId == null) {
+            return null;
+        }
+
+        String mimeType = "image/jpeg"; // Default mime type for photos
+        String fileUrl = String.format("https://api.telegram.org/file/bot%s/%s", botToken, getFilePath(fileId));
+        return downloadImageFromUrl(fileUrl, mimeType);
+    }
+
+    private static String getFileIdFromUpdate(Update update) {
+        if (update.getMessage().hasPhoto()) {
+            List<PhotoSize> photos = update.getMessage().getPhoto();
+            // Get the largest photo (best quality)
+            PhotoSize photo = photos.stream()
+                    .max(Comparator.comparing(PhotoSize::getFileSize))
+                    .orElseThrow();
+            return photo.getFileId();
+        } else if (update.getMessage().hasDocument()) {
+            log.info("Message contains document");
+            var document = update.getMessage().getDocument();
+            String mimeType = document.getMimeType();
+            // Only process if it's an image
+            if (mimeType != null && mimeType.startsWith("image/")) {
+                return document.getFileId();
+            }
+        }
+        return null;
+    }
+
+    private static String getFilePath(String fileId)   {
+        GetFile getFile = new GetFile();
+        getFile.setFileId(fileId);
+        org.telegram.telegrambots.meta.api.objects.File file;
         try {
-            String fileId;
-            String mimeType = null;
+            file = botInstance.execute(getFile);
+        } catch (TelegramApiException e) {
+            // TODO Auto-generated catch block
+            log.error("Failed to get file path for fileId {}: {}", fileId, e.getMessage());
+            return null; // Return null or handle the error appropriately
+        }
+        return file.getFilePath();
+    }
 
-            // Check if the message contains a photo
-            if (update.getMessage().hasPhoto()) {
-                List<PhotoSize> photos = update.getMessage().getPhoto();
-                
-                // Get the largest photo (best quality)
-                PhotoSize photo = photos.stream()
-                        .max(Comparator.comparing(PhotoSize::getFileSize))
-                        .orElseThrow();
-                fileId = photo.getFileId();
-                mimeType = "image/jpeg";
-                
-                // Check photo dimensions - must be square and either 512x512 or 1024x1024
-                int width = photo.getWidth();
-                int height = photo.getHeight();
-                boolean isValidSize = (width == 512 && height == 512) || (width == 1024 && height == 1024);
-                if (!isValidSize) {
-                    return null;
-                }
-            }
-            // Check if the message contains a document (could be GIF or other image types)
-            else if (update.getMessage().hasDocument()) {
-                log.info("Message contains document");
-                var document = update.getMessage().getDocument();
-                mimeType = document.getMimeType();
-
-                // Only process if it's an image
-                if (mimeType != null && mimeType.startsWith("image/")) {
-                    fileId = document.getFileId();
-                } else {
-                    return null;
-                }
-            } else {
-                return null;
-            }
-
+    public static String downloadImageFromUrl(String fileUrl, String mimeType) {
+        try {
             // Create images directory if it doesn't exist
             File directory = new File("src/main/resources/images");
             if (!directory.exists()) {
@@ -210,78 +225,65 @@ public class MessageUtils {
 
             // Generate random filename with UUID
             String fileName = UUID.randomUUID().toString();
-            // Get file from Telegram
-            GetFile getFile = new GetFile();
-            getFile.setFileId(fileId);
-            org.telegram.telegrambots.meta.api.objects.File file = botInstance.execute(getFile);
-            String filePath = file.getFilePath();
-            log.info("File path from Telegram: {}", filePath);
-
-            // Download the file
-            String fileUrl = String.format("https://api.telegram.org/file/bot%s/%s", botToken, filePath);
-            log.info("Generated file URL (token hidden): {}", fileUrl.replaceAll(botToken, "BOT_TOKEN"));
             URI uri = URI.create(fileUrl);
             URL url = uri.toURL();
 
-            // If it's already a PNG or GIF, save directly
-            if ("image/gif".equals(mimeType)) {
-                log.info("Processing GIF file");
-                try (InputStream in = url.openStream()) {
-                    // For GIFs, check dimensions before saving
-                    BufferedImage firstFrame = ImageIO.read(url);
-                    if (firstFrame == null) {
-                        log.error("Failed to read first frame of GIF");
-                        return null;
-                    }
-                    
-                    log.info("GIF dimensions: {}x{}", firstFrame.getWidth(), firstFrame.getHeight());
-                    int width = firstFrame.getWidth();
-                    int height = firstFrame.getHeight();
-                    boolean isValidSize = (width == 512 && height == 512) || (width == 1024 && height == 1024);
-                    if (!isValidSize) {
-                        log.error("Invalid GIF dimensions: {}x{}. Must be 512x512 or 1024x1024", width, height);
-                        return null;
-                    }
-                    
-                    File outputFile = new File(directory, fileName + ".gif");
-                    log.info("Saving GIF to: {}", outputFile.getPath());
-                    java.nio.file.Files.copy(in, outputFile.toPath());
-                    log.info("GIF saved successfully");
-                    return outputFile.getPath();
-                }
-            } else {
-                log.info("Processing non-GIF image");
-                // For other formats, convert to PNG
-                try {
-                    BufferedImage image = ImageIO.read(url);
-                    if (image != null) {
-                        log.info("Image dimensions: {}x{}", image.getWidth(), image.getHeight());
-                        // Check dimensions for non-GIF images
-                        int width = image.getWidth();
-                        int height = image.getHeight();
-                        boolean isValidSize = (width == 512 && height == 512) || (width == 1024 && height == 1024);
-                        if (!isValidSize) {
+            // Set up a trust manager that accepts all certificates for ipfs.io
+            if (url.getHost().equals("ipfs.io")) {
+                TrustManager[] trustAllCerts = new TrustManager[]{
+                    new X509TrustManager() {
+                        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
                             return null;
                         }
-                        
-                        File outputFile = new File(directory, fileName + ".png");
-                        ImageIO.write(image, "PNG", outputFile);
-                        return outputFile.getPath();
-                    } else {
-                        log.error("Failed to read image data");
+                        public void checkClientTrusted(java.security.cert.X509Certificate[] certs, String authType) {
+                        }
+                        public void checkServerTrusted(java.security.cert.X509Certificate[] certs, String authType) {
+                        }
                     }
-                } catch (IOException e) {
-                    return null;
+                };
+
+                try {
+                    SSLContext sc = SSLContext.getInstance("SSL");
+                    sc.init(null, trustAllCerts, new java.security.SecureRandom());
+                    HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+                } catch (KeyManagementException | NoSuchAlgorithmException e) {
+                    log.error("Error setting up SSL context: {}", e.getMessage());
                 }
             }
 
-        } catch (TelegramApiException | IOException e) {
+            // Open connection
+            HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+            // Disable hostname verification for ipfs.io
+            if (url.getHost().equals("ipfs.io")) {
+                connection.setHostnameVerifier((hostname, session) -> true);
+            }
+
+            // Download the image directly
+            try (InputStream in = connection.getInputStream()) {
+                File outputFile = new File(directory, fileName + getFileExtension(mimeType));
+                log.info("Saving image to: {}", outputFile.getPath());
+                java.nio.file.Files.copy(in, outputFile.toPath());
+                log.info("Image saved successfully");
+                return directory.getPath() + "/" + outputFile.getName();
+            }
+
+        } catch (IOException e) {
             log.error("Error downloading image: {}", e.getMessage(), e);
             return null;
         }
+    }
 
-        log.error("Reached end of function without success");
-        return null;
+    private static String getFileExtension(String mimeType) {
+        switch (mimeType) {
+            case "image/jpeg":
+                return ".jpg";
+            case "image/png":
+                return ".png";
+            case "image/gif":
+                return ".gif";
+            default:
+                return "";
+        }
     }
 
     public static void sendFileMessageInlineKeyboard(Update update, String filePath, String text, ButtonHandler[][] buttonHandlers) {
@@ -348,18 +350,27 @@ public class MessageUtils {
         }
 
         try {
-            // Check if the path is a URL or local file
+            // Check if the path is a URL
             if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
-                // For URLs
+                // Use the existing method to download the image
+                String downloadedImagePath = downloadImageFromUrl(imagePath, "image/jpeg");
+                if (downloadedImagePath == null) {
+                    log.error("Failed to download image from URL: {}", imagePath);
+                    return;
+                }
+
                 SendPhoto sendPhoto = new SendPhoto();
                 sendPhoto.setChatId(message.getChatId().toString());
-                sendPhoto.setPhoto(new InputFile(URI.create(imagePath).toURL().openStream(), "image"));
+                sendPhoto.setPhoto(new InputFile(new File(downloadedImagePath)));
                 sendPhoto.setCaption(text);
                 sendPhoto.setParseMode("Markdown");
                 if (buttonHandlers != null) {
                     sendPhoto.setReplyMarkup(markup);
                 }
                 botInstance.execute(sendPhoto);
+                
+                // Delete the downloaded image after sending
+                new File(downloadedImagePath).delete();
             } else {
                 // For local files
                 SendPhoto sendPhoto = new SendPhoto();
@@ -372,7 +383,7 @@ public class MessageUtils {
                 }
                 botInstance.execute(sendPhoto);
             }
-        } catch (TelegramApiException | IOException e) {
+        } catch (TelegramApiException e) {
             log.error("Error sending image message: {}", e.getMessage());
         }
     }

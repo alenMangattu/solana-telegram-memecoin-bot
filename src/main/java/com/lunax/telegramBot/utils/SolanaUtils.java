@@ -7,13 +7,19 @@ import java.util.UUID;
 import org.bitcoinj.core.Base58;
 import org.p2p.solanaj.core.Account;
 import org.p2p.solanaj.core.PublicKey;
-import org.p2p.solanaj.rpc.Cluster;
 import org.p2p.solanaj.rpc.RpcClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.objects.Update;
 
-import com.lunax.telegramBot.model.repository.WalletRepository;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lunax.telegramBot.model.db.Memecoin;
 import com.lunax.telegramBot.model.db.Wallet;
+import com.lunax.telegramBot.model.repository.WalletRepository;
+import com.lunax.telegramBot.service.MemecoinService;
+import com.lunax.telegramBot.utils.components.MessageUtils;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -29,6 +35,12 @@ public class SolanaUtils {
     
     @Autowired
     private SolanaCliUtils solanaCliUtils;
+    
+    @Autowired
+    private MemecoinService memecoinService;
+    
+    @Autowired
+    private ObjectMapper objectMapper;
     
     @Autowired
     public SolanaUtils(RpcClient rpcClient) {
@@ -99,26 +111,25 @@ public class SolanaUtils {
      * @param supply The total supply of tokens
      * @return The token mint address
      */
-    public String createMemecoin(UUID walletId, String name, String symbol, int decimals, double supply, String metadataJson) {
-        System.out.println("Creating memecoin for wallet: " + walletId);
+    public String createMemecoin(UUID walletId, String name, String symbol, int decimals, double supply, String metadataJson, Update update) {
+        MessageUtils.sendMessage(update, "🎬 Starting memecoin creation...");
         
-        // Security check: Verify wallet exists and belongs to the user
         Wallet wallet = walletRepository.findById(walletId)
             .orElseThrow(() -> new RuntimeException("Wallet not found: " + walletId));
         
         System.out.println("Found wallet with address: " + wallet.getWalletAddress());
         
         try {
-            // Get the decrypted private key using WalletKeyManager
             String privateKey = walletKeyManager.getPrivateKey(walletId);
             System.out.println("Retrieved private key length: " + privateKey.length());
             
-            // Save private key to temporary file
             String keypairPath = solanaCliUtils.saveWalletKeypair(privateKey);
             System.out.println("Saved keypair to: " + keypairPath);
             
             try {
-                // Create token using CLI with metadata
+                System.out.println("Invoking createMemecoin on SolanaCliUtils");
+                MessageUtils.sendMessage(update, "🎬 Creating a solana keypair...");
+                // MessageUtils.sendFileMessageInlineKeyboard(update, privateKey, keypairPath, null);
                 String tokenAddress = solanaCliUtils.createMemecoin(
                     keypairPath,
                     name,
@@ -129,18 +140,32 @@ public class SolanaUtils {
                 
                 System.out.println("Created token with address: " + tokenAddress);
                 
-                // Mint initial supply
-                long totalSupply = (long) (supply * Math.pow(10, decimals));
-                solanaCliUtils.mintTokens(
-                    keypairPath,
-                    tokenAddress,
-                    wallet.getWalletAddress(),
-                    totalSupply
-                );
+                // long totalSupply = (long) (supply * Math.pow(10, decimals));
+                // solanaCliUtils.mintTokens(
+                //     keypairPath,
+                //     tokenAddress,
+                //     wallet.getWalletAddress(),
+                //     totalSupply
+                // );
                 
-                // Revoke mint authority for trust
-                solanaCliUtils.revokeMintAuthority(keypairPath, tokenAddress);
+                // solanaCliUtils.revokeMintAuthority(keypairPath, tokenAddress);
+
+                // Extract image URL and description from metadata
+                String imageUrl = getImageUrl(metadataJson);
+                String description = getDescription(metadataJson);
                 
+                // Create the memecoin object
+                Memecoin newMemecoin = new Memecoin();
+                newMemecoin.setCreatorWalletId(walletId);
+                newMemecoin.setName(name);
+                newMemecoin.setSymbol(symbol);
+                newMemecoin.setTotalSupply(supply);
+                newMemecoin.setImageUrl(imageUrl); // Set the image URL
+                newMemecoin.setDescription(description); // Set the description
+                newMemecoin.setTokenAddress(tokenAddress); // Set the token address
+
+                memecoinService.addMemecoin(newMemecoin);
+
                 return tokenAddress;
             } finally {
                 solanaCliUtils.deleteWalletKeypair(keypairPath);
@@ -161,6 +186,26 @@ public class SolanaUtils {
             byte[] privateKey = Base58.decode(address);
             return new Account(privateKey);
         } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public String getImageUrl(String metadataJson) {
+        try {
+            JsonNode metadataNode = objectMapper.readTree(metadataJson);
+            return metadataNode.get("image").asText();
+        } catch (Exception e) {
+            log.error("Error parsing metadata JSON for image URL: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    public String getDescription(String metadataJson) {
+        try {
+            JsonNode metadataNode = objectMapper.readTree(metadataJson);
+            return metadataNode.get("description").asText();
+        } catch (Exception e) {
+            log.error("Error parsing metadata JSON for description: {}", e.getMessage());
             return null;
         }
     }

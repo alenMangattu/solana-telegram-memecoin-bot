@@ -12,6 +12,7 @@ import com.lunax.telegramBot.model.db.User;
 import com.lunax.telegramBot.model.repository.UserRepository;
 import com.lunax.telegramBot.model.session.ChatState;
 import com.lunax.telegramBot.service.StateService;
+import com.lunax.telegramBot.service.UserService;
 import com.lunax.telegramBot.utils.components.ButtonHandler;
 import com.lunax.telegramBot.utils.components.MessageUtils;
 import com.lunax.telegramBot.utils.IpfsUtils;
@@ -46,7 +47,11 @@ public class BotController extends TelegramLongPollingBot {
     private StateService stateService;
 
     @Autowired
-    private UserRepository userRepository;
+    private UserService userService;
+
+
+    @Autowired
+    private AskMemeCoinData askMemeCoinData;
 
     public BotController(String botUsername, String botToken) {
         super(botToken);
@@ -77,8 +82,8 @@ public class BotController extends TelegramLongPollingBot {
                 
                 Long telegramId = message.getFrom().getId();
                 // Check if the user exists in the UserRepository
-                if (!isValidUser(telegramId)) {
-                    MessageUtils.sendMessage(update, "Welcome! It seems you are not registered or have no wallets. You are being redirected to the /start command.");
+                if (!userService.isValidUser(telegramId)) {
+                    MessageUtils.sendMessage(update, "Welcome! It seems you are not registered or have no wallets. You are being redirected to the /start command. LOL");
                     home.executeVoid(update);
                     return;
                 }
@@ -101,6 +106,10 @@ public class BotController extends TelegramLongPollingBot {
                         settings.executeVoid(update);
                     } else if (messageText.equals("/getfiles")) {
                         handleGetFilesCommand(update);
+                    } else if (messageText.equals("/creatememecoin")) {
+                        // Initialize the state before handling the message
+                        stateService.setState(telegramId, ChatState.CREATE_MEMECOIN_START);
+                        askMemeCoinData.handleMemecoinName(update);
                     }
                     return;
                 }
@@ -109,7 +118,8 @@ public class BotController extends TelegramLongPollingBot {
                 ChatState currentState = stateService.getState(telegramId);
                 
                 if (currentState == null || currentState == ChatState.IDLE) {
-                    home.executeVoid(update);
+                    // home.executeVoid(update);
+                    MessageUtils.sendMessage(update, "Unknown command. Please use /start to get started.");
                     return;
                 }
                 
@@ -140,11 +150,6 @@ public class BotController extends TelegramLongPollingBot {
             );
             MessageUtils.sendMessage(update, response.toString());
         }
-    }
-
-    @Cacheable(value = "userValidation", key = "#telegramId")
-    private boolean isValidUser(Long telegramId) {
-        return userRepository.findByTelegramId(telegramId).isPresent();
     }
 
     @Override

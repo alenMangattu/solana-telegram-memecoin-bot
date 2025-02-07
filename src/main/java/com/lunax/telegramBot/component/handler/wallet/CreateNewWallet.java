@@ -77,6 +77,7 @@ public class CreateNewWallet implements ButtonHandler {
     public void handleCallback(Update update) {
         try {
             Long telegramUserId = update.getCallbackQuery().getFrom().getId();
+            System.out.println("CreateNewWallet callback for userId: " + telegramUserId);
             
             if (!userService.hasAcceptedTos(telegramUserId)) {
                 throw new RuntimeException("Please accept the Terms of Service before creating a wallet");
@@ -91,8 +92,10 @@ public class CreateNewWallet implements ButtonHandler {
                 });
 
             MessageUtils.editMessage(update, "⏳ Generating wallet...", null);
+            System.out.println("Calling solanaService.createNewWallet for user: " + user.getTelegramId());
 
             Wallet wallet = solanaService.createNewWallet(user, encryptionKeysPath, walletsPath);
+            System.out.println("New wallet created with address: " + wallet.getWalletAddress());
             
             // Update user's current wallet
             user.setCurrentWallet(wallet.getWalletId());

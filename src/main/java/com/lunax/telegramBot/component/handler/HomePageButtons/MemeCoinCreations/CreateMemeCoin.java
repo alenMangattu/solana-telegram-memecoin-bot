@@ -86,13 +86,16 @@ public class CreateMemeCoin implements ButtonHandler {
             String image = stateData.get("imageUrl").asText();
             String createOn = "Luanx telegram bot";
 
-            MessageUtils.sendMessage(update, "🔄 Creating your memecoin... Please wait.");
+            MessageUtils.sendMessage(update, "🏗️ Memecoin building process started...");
            
             // Create metadata
             String imageUri = createImageUri(image);
             new File(image).delete();
             String metadataUri = createMetadataJson(name, symbol, description, imageUri, createOn);
-            MessageUtils.sendMessage(update, "✔ Created metadatas");
+            MessageUtils.sendMessage(update, "⏳ Uploaded metadata to file server...");
+
+            // Allow extra time for IPFS gateway propagation
+            Thread.sleep(5000); // wait 5 seconds before initializing metadata
 
             // Create the memecoin using the instance method
             String tokenAddress = solanaUtils.createMemecoin(
@@ -101,7 +104,8 @@ public class CreateMemeCoin implements ButtonHandler {
                 symbol,
                 decimals,
                 supply,
-                metadataUri
+                metadataUri,
+                update
             );
 
             String successMessage = String.format(
@@ -109,19 +113,14 @@ public class CreateMemeCoin implements ButtonHandler {
                 "Name: %s\n" +
                 "Symbol: %s\n" +
                 "Decimals: %d\n" +
-                "Supply: %.2f\n" +
-                "Token Address: `%s`\n" +
-                "Metadata: %s",
-                name, symbol, decimals, supply, tokenAddress, metadataUri
+                "Supply: %s\n" + // Changed from %.2f to %s to match the type of supply
+                "Token Address: `%s` (Tap to copy)\n",
+                name, symbol, decimals, String.format("%,.0f", supply), tokenAddress // Correctly format supply as a string
             );
             MessageUtils.sendMessage(update, successMessage);
 
         } catch (Exception e) {
-            log.error("Failed to create memecoin", e);
-            String errorMessage = solanaConfig.getClusterUrl().equals("devnet") 
-                ? "❌ Error: " + e.getMessage()
-                : "❌ Failed to create memecoin. Please try again later.";
-            MessageUtils.sendMessage(update, errorMessage);
+            MessageUtils.sendMessage(update, "❌ Internal error. Please try again later. (The memcoin might have been created, but the bot failed to send the message so check your memecoin page)");
         } finally {
             stateService.setState(telegramId, ChatState.IDLE);
             stateService.clearStateData(telegramId);

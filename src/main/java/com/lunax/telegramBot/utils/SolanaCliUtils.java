@@ -30,10 +30,10 @@ public class SolanaCliUtils {
      * @param name Token name
      * @param symbol Token symbol
      * @param decimals Number of decimal places for the token
-     * @param metadataJson URI to the token metadata JSON
+     * @param metadataUri URI to the token metadata JSON
      * @return Token mint address
      */
-    public String createMemecoin(String walletKeyPath, String name, String symbol, int decimals, String metadataJson) throws Exception {
+    public String createMemecoin(String walletKeyPath, String name, String symbol, int decimals, String metadataUri) throws Exception {
         System.out.println("Creating memecoin with keypair: " + walletKeyPath);
         
         // First create the token
@@ -66,14 +66,15 @@ public class SolanaCliUtils {
         // Wait a bit for the transaction to be confirmed
         Thread.sleep(2000);
         
-        // Initialize metadata with name, symbol and URI
+        // Initialize metadata with POSITIONAL arguments (instead of --name, --symbol, --uri)
+        System.out.println("Fixing the metadata initialization command...");
         ProcessBuilder initMetadata = new ProcessBuilder(
             "spl-token",
             "initialize-metadata",
-            tokenAddress,
-            "--name", name,          // Add --name flag
-            "--symbol", symbol,      // Add --symbol flag
-            "--uri", metadataJson,   // Add --uri flag
+            tokenAddress,  // TOKEN_MINT_ADDRESS
+            name,          // TOKEN_NAME (positional)
+            symbol,        // TOKEN_SYMBOL (positional)
+            metadataUri,  // TOKEN_URI (positional)
             "--url", clusterUrl,
             "--fee-payer", walletKeyPath,
             "--mint-authority", walletKeyPath
@@ -87,6 +88,7 @@ public class SolanaCliUtils {
         error = new String(process.getErrorStream().readAllBytes());
         process.waitFor(30, TimeUnit.SECONDS);
 
+        System.out.println("Meta");
         System.out.println("Metadata output: " + output);
         System.out.println("Metadata error: " + error);
 

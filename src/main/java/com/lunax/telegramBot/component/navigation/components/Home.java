@@ -22,9 +22,13 @@ import com.lunax.telegramBot.utils.components.ButtonHandler;
 import com.lunax.telegramBot.utils.components.MessageUtils;
 
 import jakarta.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Component
 public class Home implements StateHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(Home.class);
 
     @Autowired
     private UserService userService;
@@ -79,11 +83,18 @@ public class Home implements StateHandler {
     @Override
     public void executeVoid(Update update) {
         Long telegramId = update.getMessage().getFrom().getId();
+        String username = update.getMessage().getFrom().getUserName();
         System.out.println("From ID: " + telegramId);
+
+        // Check if user exists, create if not
+        if (!userService.isValidUser(telegramId)) {
+            log.info("Creating new user with telegram ID: {}", telegramId);
+            userService.createUser(telegramId, username);
+        }
 
         // Only clear state if we're coming from a different state
         ChatState currentState = stateService.getState(telegramId);
-        if (currentState != ChatState.IDLE && currentState != null) {
+        if (currentState == null || currentState != ChatState.IDLE) {
             stateService.clearStateData(telegramId);
             stateService.setState(telegramId, null);
         }

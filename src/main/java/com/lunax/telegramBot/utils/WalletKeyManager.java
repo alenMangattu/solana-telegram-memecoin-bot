@@ -8,12 +8,14 @@ import java.nio.file.attribute.PosixFilePermissions;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.Optional;
 
 import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Propagation;
 import com.lunax.telegramBot.model.db.EncryptionKeyMetadata;
 import com.lunax.telegramBot.model.repository.EncryptionKeyMetadataRepository;
 import org.slf4j.Logger;
@@ -40,9 +42,12 @@ public class WalletKeyManager {
     }
 
     /**
-     * Creates a new encryption key version for a wallet
+     * Creates a new encryption key version for a wallet.
+     * 
+     * By setting propagation to MANDATORY we ensure this method 
+     * runs within an already present (outer) transaction.
      */
-    @Transactional
+    @Transactional(propagation = Propagation.MANDATORY)
     public void createNewKeyVersion(UUID walletId) throws Exception {
         // Get the current version number
         int nextVersion = keyMetadataRepository.findFirstByWalletIdOrderByVersionDesc(walletId)
@@ -63,7 +68,7 @@ public class WalletKeyManager {
             String newEncryptedPrivateKey = EncryptionUtils.encrypt(privateKey, newKey);
             saveEncryptedPrivateKey(walletId, nextVersion, newEncryptedPrivateKey);
             
-            // Update metadata
+            // Update metadata: deactivate previous active key
             deactivateOldKeys(walletId);
         } else {
             // Just save the new key if this is the first time
@@ -137,56 +142,54 @@ public class WalletKeyManager {
      * Retrieves the private key for a given wallet ID using the active key version
      */
     public String getPrivateKey(UUID walletId) throws Exception {
-        System.out.println("Getting private key for wallet: " + walletId);
+        log.info("Retrieving private key for wallet: {}", walletId);
         
-        // First find the active key version
-        String walletFileName = String.format("%s.encrypted", walletId.toString());
+        EncryptionKeyMetadata metadata = keyMetadataRepository.findByWalletIdAndActive(walletId, true)
+            .orElseThrow(() -> new Exception("No active encryption key found for wallet: " + walletId));
+        
+        log.info("Active encryption key version: {}", metadata.getVersion());
+
+        // Try versioned files first
+        String walletFileName = getWalletFileName(walletId, metadata.getVersion());
+        String keyFileName = getKeyFileName(walletId, metadata.getVersion());
         Path walletPath = Paths.get(walletsPath, walletFileName);
+        Path keyPath = Paths.get(encryptionKeysPath, keyFileName);
         
-        System.out.println("Looking for wallet file: " + walletPath);
-        
+        // If version 1 and versioned files don't exist, try legacy unversioned files
+        if (metadata.getVersion() == 1 && (!Files.exists(walletPath) || !Files.exists(keyPath))) {
+            log.info("Trying legacy unversioned files for wallet: {}", walletId);
+            walletFileName = String.format("%s.encrypted", walletId.toString());
+            keyFileName = String.format("%s.key", walletId.toString());
+            walletPath = Paths.get(walletsPath, walletFileName);
+            keyPath = Paths.get(encryptionKeysPath, keyFileName);
+        }
+
         if (!Files.exists(walletPath)) {
             throw new RuntimeException("Wallet file not found: " + walletPath);
         }
-
-        // Read the encrypted private key
-        String encryptedPrivateKey = new String(Files.readAllBytes(walletPath));
-        System.out.println("Read encrypted private key length: " + encryptedPrivateKey.length());
-        
-        // Get the encryption key
-        String keyFileName = String.format("%s.key", walletId.toString());
-        Path keyPath = Paths.get(encryptionKeysPath, keyFileName);
-        
-        System.out.println("Looking for key file: " + keyPath);
-        
         if (!Files.exists(keyPath)) {
             throw new RuntimeException("Encryption key file not found: " + keyPath);
         }
 
-        SecretKey encryptionKey = EncryptionUtils.deserializeKey(
-            new String(Files.readAllBytes(keyPath))
-        );
+        String encryptedPrivateKey = new String(Files.readAllBytes(walletPath));
+        SecretKey encryptionKey = EncryptionUtils.deserializeKey(new String(Files.readAllBytes(keyPath)));
         
-        // Decrypt and return the private key
-        String privateKey = EncryptionUtils.decrypt(encryptedPrivateKey, encryptionKey);
-        System.out.println("Decrypted private key length: " + privateKey.length());
-        
-        return privateKey;
+        log.info("Using key file: {} for wallet file: {}", keyPath, walletPath);
+        return EncryptionUtils.decrypt(encryptedPrivateKey, encryptionKey);
     }
 
     /**
      * Checks if a wallet's private key exists and is accessible
      */
     public boolean hasPrivateKey(UUID walletId) {
-        return keyMetadataRepository.findByWalletIdAndActive(walletId, true)
-            .map(metadata -> {
-                Path encryptionKeyPath = Paths.get(encryptionKeysPath, 
-                    getKeyFileName(walletId, metadata.getVersion()));
-                Path walletPath = Paths.get(walletsPath, 
-                    getWalletFileName(walletId, metadata.getVersion()));
-                return Files.exists(encryptionKeyPath) && Files.exists(walletPath);
-            })
-            .orElse(false);
+        Optional<EncryptionKeyMetadata> metadataOpt = keyMetadataRepository.findByWalletIdAndActive(walletId, true);
+        if (metadataOpt.isPresent()) {
+            EncryptionKeyMetadata metadata = metadataOpt.get();
+            Path encryptionKeyPath = Paths.get(encryptionKeysPath, getKeyFileName(walletId, metadata.getVersion()));
+            Path walletPath = Paths.get(walletsPath, getWalletFileName(walletId, metadata.getVersion()));
+            return Files.exists(encryptionKeyPath) && Files.exists(walletPath);
+        }
+        return false;
     }
 
     /**
@@ -213,24 +216,65 @@ public class WalletKeyManager {
     /**
      * Stores a new wallet's private key
      */
-    @Transactional
+    @Transactional(propagation = Propagation.MANDATORY)
     public void storePrivateKey(UUID walletId, String privateKey) throws Exception {
+        log.info("Storing private key for wallet: {}", walletId);
+        
         // Generate new encryption key
         SecretKey encryptionKey = EncryptionUtils.generateEncryptionKey();
+        log.info("Generated new encryption key for wallet: {}", walletId);
         
-        // Store encryption key
-        String keyFileName = String.format("%s.key", walletId.toString());
+        // Use version 1 for the initial storage
+        int version = 1;
+        log.debug("Using version {} for storing private key", version);
+        
+        // Store encryption key with versioned file name
+        String keyFileName = getKeyFileName(walletId, version);
         Path keyPath = Paths.get(encryptionKeysPath, keyFileName);
+        log.debug("Key file path: {}", keyPath);
+        
         Files.createDirectories(keyPath.getParent());
         Files.write(keyPath, EncryptionUtils.serializeKey(encryptionKey).getBytes());
         Files.setPosixFilePermissions(keyPath, PosixFilePermissions.fromString("rw-------"));
+        log.info("Stored encryption key at: {}", keyPath);
         
-        // Encrypt and store private key
+        // Encrypt and store private key using the versioned file name
         String encryptedPrivateKey = EncryptionUtils.encrypt(privateKey, encryptionKey);
-        String walletFileName = String.format("%s.encrypted", walletId.toString());
+        String walletFileName = getWalletFileName(walletId, version);
         Path walletPath = Paths.get(walletsPath, walletFileName);
+        log.debug("Wallet file path: {}", walletPath);
+        
         Files.createDirectories(walletPath.getParent());
         Files.write(walletPath, encryptedPrivateKey.getBytes());
         Files.setPosixFilePermissions(walletPath, PosixFilePermissions.fromString("rw-------"));
+        log.info("Stored encrypted private key at: {}", walletPath);
+        
+        log.info("Successfully stored private key and encryption key for wallet ID: {}", walletId);
+
+        // Check if an active encryption key metadata record exists
+        if (!keyMetadataRepository.findByWalletIdAndActive(walletId, true).isPresent()) {
+            // No active record found—check if there is an existing (inactive) record
+            Optional<EncryptionKeyMetadata> latestMetaOpt =
+                keyMetadataRepository.findFirstByWalletIdOrderByVersionDesc(walletId);
+            if (latestMetaOpt.isPresent()) {
+                EncryptionKeyMetadata latestMeta = latestMetaOpt.get();
+                // Reactivate the existing record
+                latestMeta.setActive(true);
+                keyMetadataRepository.saveAndFlush(latestMeta);
+                log.info("Reactivated previously inactive encryption key metadata record for wallet: {}", walletId);
+            } else {
+                // Create a new active record if none exists at all
+                EncryptionKeyMetadata metadata = new EncryptionKeyMetadata();
+                metadata.setWalletId(walletId);
+                metadata.setVersion(version);
+                metadata.setCreatedAt(LocalDateTime.now());
+                metadata.setExpiresAt(LocalDateTime.now().plusDays(keyRotationDays));
+                metadata.setActive(true);
+                keyMetadataRepository.saveAndFlush(metadata);
+                log.info("Created new encryption key metadata record for wallet: {}", walletId);
+            }
+        } else {
+            log.info("Active encryption key metadata record already exists for wallet: {}", walletId);
+        }
     }
 }
