@@ -24,6 +24,12 @@ public class BotConfig {
             try {
                 telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
                 telegramBotsApi.registerBot(botController);
+                
+                // Add shutdown hook
+                Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                    log.info("Shutting down bot session...");
+                    botController.onClosing();
+                }));
             } catch (TelegramApiException e) {
                 log.error("Error initializing Telegram API, {}", e.getMessage());
                 e.printStackTrace();

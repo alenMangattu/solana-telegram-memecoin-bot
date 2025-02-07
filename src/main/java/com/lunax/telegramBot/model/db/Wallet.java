@@ -36,12 +36,34 @@ public class Wallet {
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
+        if (walletId == null) {
+            walletId = UUID.randomUUID();
+        }
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+        if (updatedAt == null) {
+            updatedAt = LocalDateTime.now();
+        }
     }
 
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+
+    public UUID getId() {
+        return walletId;
+    }
+
+    public void setId(UUID id) {
+        this.walletId = id;
+    }
+
+    public Wallet(User user, String walletAddress) {
+        this.user = user;
+        this.walletAddress = walletAddress;
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
 }

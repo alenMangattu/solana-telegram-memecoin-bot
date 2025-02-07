@@ -18,6 +18,7 @@ import com.lunax.telegramBot.model.db.Wallet;
 import com.lunax.telegramBot.model.repository.UserRepository;
 import com.lunax.telegramBot.model.repository.WalletRepository;
 import com.lunax.telegramBot.service.UserService;
+import com.lunax.telegramBot.service.SolanaService;
 import com.lunax.telegramBot.utils.EncryptionUtils;
 import com.lunax.telegramBot.utils.SolanaUtils;
 import com.lunax.telegramBot.utils.WalletKeyManager;
@@ -33,12 +34,15 @@ public class CreateNewWallet implements ButtonHandler {
     private final UserRepository userRepository;
     private final WalletKeyManager walletKeyManager;
     private final UserService userService;
-    
+    private final SolanaUtils solanaUtils;
+    private final SolanaService solanaService;
+
     @Value("${encryption.keys.path}")
     private String encryptionKeysPath;
     
     @Value("${wallets.path}")
     private String walletsPath;
+
 
     @Autowired
     public CreateNewWallet(@Value("🔑 Create New Wallet") String buttonText, 
@@ -46,13 +50,17 @@ public class CreateNewWallet implements ButtonHandler {
                           WalletRepository walletRepository,
                           UserRepository userRepository,
                           WalletKeyManager walletKeyManager,
-                          UserService userService) {
+                          UserService userService, 
+                          SolanaUtils solanaUtils,
+                          SolanaService solanaService) {
         this.buttonText = buttonText;
         this.callbackData = callbackData;
         this.walletRepository = walletRepository;
         this.userRepository = userRepository;
         this.walletKeyManager = walletKeyManager;
         this.userService = userService;
+        this.solanaUtils = solanaUtils;
+        this.solanaService = solanaService;
     }
 
     @Override
@@ -68,72 +76,37 @@ public class CreateNewWallet implements ButtonHandler {
     @Override
     public void handleCallback(Update update) {
         try {
-            Map<String, String> walletInfo = SolanaUtils.createNewWallet();
-            
-            String publicKey = walletInfo.get("publicKey");
-            String privateKey = walletInfo.get("privateKey");
-            
-            // Get the user from the update
             Long telegramUserId = update.getCallbackQuery().getFrom().getId();
+            System.out.println("CreateNewWallet callback for userId: " + telegramUserId);
             
-            // Check if user has accepted ToS
             if (!userService.hasAcceptedTos(telegramUserId)) {
                 throw new RuntimeException("Please accept the Terms of Service before creating a wallet");
             }
             
-            // Get or create user
             User user = userRepository.findByTelegramId(telegramUserId)
                 .orElseGet(() -> {
                     User newUser = new User();
                     newUser.setTelegramId(telegramUserId);
-                    newUser.setAcceptedTos(true); // We already checked this above
+                    newUser.setAcceptedTos(true);
                     return userRepository.save(newUser);
                 });
 
-            // Create and save the wallet
-            Wallet wallet = new Wallet();
-            wallet.setUser(user);
-            wallet.setWalletAddress(publicKey);
-            wallet.setWalletLabel("Solana Wallet"); // Default label, can be customized later
-            
-            // First save the wallet to get its ID
-            wallet = walletRepository.save(wallet);
-
-            // Then update the user's current wallet
-            user.setCurrentWallet(wallet.getWalletId());
-            user = userRepository.save(user);
-
-            // Generate encryption key
-            SecretKey encryptionKey = EncryptionUtils.generateEncryptionKey();
-            
-            // Store encryption key in a separate secure location
-            String encryptionKeyFileName = wallet.getWalletId().toString() + ".key";
-            Path encryptionKeyPath = Paths.get(encryptionKeysPath, encryptionKeyFileName);
-            Files.createDirectories(encryptionKeyPath.getParent());
-            Files.write(encryptionKeyPath, 
-                       EncryptionUtils.serializeKey(encryptionKey).getBytes());
-            Files.setPosixFilePermissions(encryptionKeyPath, 
-                PosixFilePermissions.fromString("rw-------")); // Only owner can read/write
-            
-            // Encrypt and store private key
-            String encryptedPrivateKey = EncryptionUtils.encrypt(privateKey, encryptionKey);
-            String walletFileName = wallet.getWalletId().toString() + ".encrypted";
-            Path walletPath = Paths.get(walletsPath, walletFileName);
-            Files.createDirectories(walletPath.getParent());
-            Files.write(walletPath, encryptedPrivateKey.getBytes());
-            Files.setPosixFilePermissions(walletPath, 
-                PosixFilePermissions.fromString("rw-------")); // Only owner can read/write
-                
-            // Create initial key version with rotation policy
-            walletKeyManager.createNewKeyVersion(wallet.getWalletId());
-
             MessageUtils.editMessage(update, "⏳ Generating wallet...", null);
+            System.out.println("Calling solanaService.createNewWallet for user: " + user.getTelegramId());
+
+            Wallet wallet = solanaService.createNewWallet(user, encryptionKeysPath, walletsPath);
+            System.out.println("New wallet created with address: " + wallet.getWalletAddress());
+            
+            // Update user's current wallet
+            user.setCurrentWallet(wallet.getWalletId());
+            userRepository.save(user);
 
             Thread.sleep(750);
 
-            String text = "✨ Wallet generated successfully!\n\nPublic Key: `" + publicKey + "`";
+            String text = "✨ Wallet generated successfully!\n\nPublic Key: `" + wallet.getWalletAddress() + "`";
             MessageUtils.editMessage(update, text, null);
-            MessageUtils.sendMessage(update, "You need to deposite 1SOL to `" + publicKey + "` wallet to start using it. (click to copy)");
+            MessageUtils.sendMessage(update, "You need to deposit 1 SOL to `" + wallet.getWalletAddress() + 
+                "` wallet to start using it. (click to copy)");
             MessageUtils.sendMessage(update, "You can type /home or /start to go to the main menu.");
         } catch (Exception e) {
             throw new RuntimeException("Failed to create and store wallet securely", e);

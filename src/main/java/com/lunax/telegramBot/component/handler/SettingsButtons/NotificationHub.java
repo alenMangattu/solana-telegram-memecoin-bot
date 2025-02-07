@@ -1,5 +1,6 @@
-package com.lunax.telegramBot.component.handler.HomePageButtons;
+package com.lunax.telegramBot.component.handler.SettingsButtons;
 
+import org.apache.logging.log4j.core.tools.picocli.CommandLine.Command;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -7,13 +8,13 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import com.lunax.telegramBot.utils.components.ButtonHandler;
 
 @Component
-public class CreateMemeCoin implements ButtonHandler {
+public class NotificationHub implements ButtonHandler {
 
     private final String buttonText;
     private final String callbackData;
 
-    public CreateMemeCoin(@Value("🪙 Create Meme Coin") String buttonText, 
-                           @Value("create_meme_coin") String callbackData) {
+    public NotificationHub(@Value("🔔 Notification Hub") String buttonText, 
+                      @Value("notification_hub") String callbackData) {
         this.buttonText = buttonText;
         this.callbackData = callbackData;
     }

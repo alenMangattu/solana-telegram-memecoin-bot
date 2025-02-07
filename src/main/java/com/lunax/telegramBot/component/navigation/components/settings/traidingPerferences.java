@@ -7,8 +7,8 @@ import com.lunax.telegramBot.component.navigation.components.StateHandler;
 public class traidingPerferences implements StateHandler {
 
     @Override
-    public String execute(Update update) {
-        return "Trading Preferences - Customize Your Trading Strategy";
+    public void executeVoid(Update update) {
+    
     }
     
 }

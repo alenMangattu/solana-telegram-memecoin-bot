@@ -7,8 +7,8 @@ import com.lunax.telegramBot.component.navigation.components.StateHandler;
 public class houseOfRules implements StateHandler {
 
     @Override
-    public String execute(Update update) {
-        return "House of Rules - Trading Guidelines and Policies";
+    public void executeVoid(Update update) {
+    //
     }
     
 }

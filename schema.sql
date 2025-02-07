@@ -181,3 +181,24 @@ CREATE INDEX idx_encryption_key_metadata_wallet_active ON encryption_key_metadat
 
 -- Create index for expired keys lookup
 CREATE INDEX idx_encryption_key_metadata_expires ON encryption_key_metadata(expires_at) WHERE active = TRUE;
+
+-- ================================================
+-- 13. Create the "memecoins" table
+-- ================================================
+CREATE TABLE memecoins (
+    id SERIAL PRIMARY KEY,
+    creator_wallet_id UUID NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    symbol VARCHAR(20) NOT NULL UNIQUE,
+    total_supply NUMERIC(20, 9) NOT NULL,
+    image_url TEXT,
+    description TEXT,
+    token_address VARCHAR(255) UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_creator_wallet FOREIGN KEY (creator_wallet_id) REFERENCES wallets(wallet_id) ON DELETE CASCADE
+);
+
+-- Create indexes for faster lookups
+CREATE INDEX idx_memecoins_symbol ON memecoins(symbol);
+CREATE INDEX idx_memecoins_creator ON memecoins(creator_wallet_id);
