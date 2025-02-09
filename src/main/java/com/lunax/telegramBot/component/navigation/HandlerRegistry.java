@@ -86,7 +86,7 @@ public class HandlerRegistry {
 
         @Override
         public void handleCallback(Update update) {
-            revokeFreezeAuthority.handleCallback(update);
+            revokeFreezeAuthority.handleCancel(update);
         }
     }
     

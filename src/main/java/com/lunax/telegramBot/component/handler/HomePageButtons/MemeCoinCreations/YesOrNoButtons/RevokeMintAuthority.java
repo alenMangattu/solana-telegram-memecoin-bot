@@ -58,7 +58,8 @@ public class RevokeMintAuthority implements ButtonHandler {
         ObjectNode stateData = stateService.getStateData(telegramId);
         stateData.put("revokeMintAuthority", false);
         stateService.setStateData(telegramId, stateData);
-        
+       
+        MessageUtils.editMessage(update, "Revoking mint authority set to: " + (stateData.get("revokeMintAuthority").asBoolean() ? "true" : "false") + " (6/8)", null);
         // Ask about freeze authority next
         askFreezeAuthority(update);
     }

@@ -155,7 +155,7 @@ public class CreateMemeCoin implements ButtonHandler {
             + "\"name\": \"%s\","
             + "\"symbol\": \"%s\","
             + "\"description\": \"%s\","
-            + "\"image\": \"%s\","
+            + "\"image\": \"%s\""
             // + "\"createdOn\": \"%s\""
             + "}",
             name,

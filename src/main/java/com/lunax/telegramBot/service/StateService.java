@@ -81,9 +81,10 @@ public class StateService {
                 
         UserState userState = userStateRepository.findByUser(user)
                 .orElse(new UserState());
-        return userState.getStateData() != null ? 
-               (ObjectNode) userState.getStateData() : 
-               objectMapper.createObjectNode();
+        if (userState.getStateData() instanceof ObjectNode) {
+            return (ObjectNode) userState.getStateData();
+        }
+        return objectMapper.createObjectNode();
     }
 
     @CacheEvict(value = "stateData", key = "#telegramId")
