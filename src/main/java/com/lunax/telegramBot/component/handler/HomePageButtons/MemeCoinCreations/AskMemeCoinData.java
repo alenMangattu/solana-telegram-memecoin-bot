@@ -12,6 +12,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.lunax.telegramBot.utils.components.ButtonHandler;
 import com.lunax.telegramBot.utils.components.MessageUtils;
 import com.lunax.telegramBot.model.session.ChatState;
+import com.lunax.telegramBot.component.handler.HomePageButtons.MemeCoinCreations.YesOrNoButtons.RevokeFreezeAuthority;
+import com.lunax.telegramBot.component.handler.HomePageButtons.MemeCoinCreations.YesOrNoButtons.RevokeMintAuthority;
 import com.lunax.telegramBot.model.db.User;
 import com.lunax.telegramBot.service.UserService;
 import com.lunax.telegramBot.service.StateService;
@@ -46,6 +48,13 @@ public class AskMemeCoinData implements ButtonHandler {
     @Autowired
     private NotConfirmed notConfirmed;
 
+    @Autowired
+    private AddLiquidity addLiquidity;
+
+    @Autowired
+    private RevokeMintAuthority revokeMintAuthority;
+
+
     public AskMemeCoinData(@Value("🪙 Create Meme Coin") String buttonText,
             @Value("create_meme_coin") String callbackData) {
         this.buttonText = buttonText;
@@ -65,6 +74,9 @@ public class AskMemeCoinData implements ButtonHandler {
 
     @Override
     public void handleCallback(Update update) {
+        String callbackData = update.getCallbackQuery().getData();
+        log.debug("Received callback data: {}", callbackData);
+        
         handleMemecoinName(update);
     }
 
@@ -90,7 +102,7 @@ public class AskMemeCoinData implements ButtonHandler {
         stateService.setStateData(telegramId, stateData);
 
         String message = """
-                🪙 *Create Your Memecoin* (1/6)
+                🪙 *Create Your Memecoin* (1/8)
 
                 Let's create your own memecoin! First, what would you like to name your memecoin?
 
@@ -162,7 +174,7 @@ public class AskMemeCoinData implements ButtonHandler {
         stateService.setStateData(telegramId, stateData);
 
         String message = """
-                Great! Now, what should be the ticker symbol for your memecoin? (2/6)
+                Great! Now, what should be the ticker symbol for your memecoin? (2/8)
 
                 _Example: LUNAR_
 
@@ -187,7 +199,7 @@ public class AskMemeCoinData implements ButtonHandler {
         stateService.setStateData(telegramId, stateData);
 
         String message = """
-                Perfect! Now, how many decimals should your token have? (3/6)
+                Perfect! Now, how many decimals should your token have? (3/8)
 
                 _Example: 9_
 
@@ -217,7 +229,7 @@ public class AskMemeCoinData implements ButtonHandler {
             stateService.setStateData(telegramId, stateData);
 
             String message = """
-                    Great! Now, what should be the total supply of your memecoin? (4/6)
+                    Great! Now, what should be the total supply of your memecoin? (4/8)
 
                     _Example: 1000000000_
 
@@ -250,7 +262,7 @@ public class AskMemeCoinData implements ButtonHandler {
             stateService.setStateData(telegramId, stateData);
 
             String message = """
-                    Great! Now, provide a brief description for your memecoin. (5/6)
+                    Great! Now, provide a brief description for your memecoin. (5/8)
 
                     _Example: The first lunar-themed memecoin on Solana!_
                     """;
@@ -272,22 +284,43 @@ public class AskMemeCoinData implements ButtonHandler {
         stateData.put("description", description);
         stateService.setStateData(telegramId, stateData);
 
+        // After description, ask about mint authority
         String message = """
-                Almost done! Finally, send me an image or GIF for your memecoin's logo. (6/6)
+                🔒 *Authority Settings* (6/8)
 
-                Requirements:
-                - File size: max 2MB
-                - Format: JPG, PNG, or GIF
+                Would you like to revoke the mint authority?
+                This means no more tokens can be minted after creation.
+
+                Note: This action cannot be undone.
                 """;
 
-        MessageUtils.sendMessage(update, message);
-        stateService.setState(telegramId, ChatState.AWAITING_MEMECOIN_IMAGE);
+        ButtonHandler[][] buttons = {
+            {
+                new ButtonHandler() {
+                    public String getButtonText() { return "Yes"; }
+                    public String getCallbackData() { return "revoke_mint_authority_confirm"; }
+                    public void handleCallback(Update update) {
+                        revokeMintAuthority.handleCallback(update);
+                    }
+                },
+                new ButtonHandler() {
+                    public String getButtonText() { return "No"; }
+                    public String getCallbackData() { return "revoke_mint_authority_cancel"; }
+                    public void handleCallback(Update update) {
+                        revokeMintAuthority.handleCancel(update);
+                    }
+                }
+            }
+        };
+
+        MessageUtils.sendInlineKeyboard(update, message, buttons);
+        stateService.setState(telegramId, ChatState.AWAITING_REVOKE_MINT_AUTHORITY_CONFIRMATION);
     }
 
     private void handleMemecoinImage(Update update, Long telegramId, Message message, ObjectNode stateData)  {
         if (message == null || !message.hasPhoto()) {
             MessageUtils.sendMessage(update,
-                    "❌ Provide a .");
+                    "❌ Provide a valid image.");
             return;
         }
 
@@ -307,7 +340,7 @@ public class AskMemeCoinData implements ButtonHandler {
 
         if (imagePath == null || !isImageFile(imagePath) || !isFileSizeValid(imagePath, 2 * 1024 * 1024)) {
             MessageUtils.sendMessage(update,
-                    "❌ Invalid image format or size. Please send a valid image (JPG, PNG, or GIF) under 2MB:");
+                    "❌ Invalid image format or size. Please send a valid image (JPG or PNG) under 2MB:");
             if (imagePath != null) {
                 new File(imagePath).delete(); // Delete the image path if not null
             }
@@ -321,11 +354,13 @@ public class AskMemeCoinData implements ButtonHandler {
         String confirmationMessage = String.format("""
                 📝 *Please confirm your memecoin details:*
 
-                Name: %s
-                Symbol: %s
-                Decimals: %d
-                Supply: %s
-                Description: %s
+                **Name**: %s
+                **Symbol**: %s
+                **Decimals**: %d
+                **Supply**: %s
+                **Description**: %s
+                **Revoke Mint Authority**: %s
+                **Revoke Freeze Authority**: %s
 
                 Are you sure you want to create this memecoin?
                 
@@ -335,11 +370,14 @@ public class AskMemeCoinData implements ButtonHandler {
                 stateData.get("symbol").asText(),
                 stateData.get("decimals").asInt(),
                 String.format("%,.0f", stateData.get("supply").asDouble()),
-                stateData.get("description").asText()
+                stateData.get("description").asText(),
+                stateData.has("revokeMintAuthority") ? (stateData.get("revokeMintAuthority").asBoolean() ? "Yes" : "No") : "No",
+                stateData.has("revokeFreezeAuthority") ? (stateData.get("revokeFreezeAuthority").asBoolean() ? "Yes" : "No") : "No"
         );
 
         ButtonHandler[][] buttons = {
             {createMemeCoin},
+            {addLiquidity},
             {notConfirmed}
         };
 

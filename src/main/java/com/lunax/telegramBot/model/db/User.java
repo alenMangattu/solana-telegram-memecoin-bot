@@ -65,4 +65,5 @@ public class User {
     public void setWallets(List<Wallet> wallets) {
         this.wallets = wallets;
     }
+
 }

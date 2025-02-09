@@ -51,14 +51,15 @@ public class NotConfirmed implements ButtonHandler {
             }
         }
 
-        MessageUtils.sendMessage(update, "Clearing previous configurations...");
         try {
             //Fake it cuz why not
             Thread.sleep(50);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        MessageUtils.sendMessage(update, "Restarting Memecoin Creation");
+
+        MessageUtils.sendMessage(update, "⚠️ Memecoin process restarted.");
+
         stateService.clearStateData(telegramId);
         
         // Instead of calling askMemeCoinData directly, we'll just set up the initial state

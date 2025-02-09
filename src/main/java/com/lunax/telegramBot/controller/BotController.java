@@ -4,6 +4,7 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+import com.lunax.telegramBot.component.handler.HomePageButtons.MemeCoinCreations.AddLiquidity;
 import com.lunax.telegramBot.component.handler.HomePageButtons.MemeCoinCreations.AskMemeCoinData;
 import com.lunax.telegramBot.component.navigation.HandlerRegistry;
 import com.lunax.telegramBot.component.navigation.components.Home;
@@ -52,6 +53,9 @@ public class BotController extends TelegramLongPollingBot {
 
     @Autowired
     private AskMemeCoinData askMemeCoinData;
+
+    @Autowired
+    private AddLiquidity addLiquidity;
 
     public BotController(String botUsername, String botToken) {
         super(botToken);
@@ -125,6 +129,9 @@ public class BotController extends TelegramLongPollingBot {
                 
                 if (currentState.isMemecoinCreation()) {
                     createMemeCoin.handleMessage(update);
+                } else if (currentState.isLiquidityAddition()) {
+                    // Call the method in AddLiquidity to handle the token amount input
+                    addLiquidity.handleMessage(update);
                 } else if (message.hasText()) {
                     log.info("Received: {}", messageText);
                 }
