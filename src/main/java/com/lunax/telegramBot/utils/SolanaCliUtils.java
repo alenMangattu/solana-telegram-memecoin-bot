@@ -184,7 +184,7 @@ public class SolanaCliUtils {
             "spl-token",
             "mint",
             tokenAddress,
-            String.valueOf(amount),
+            String.valueOf((long) amount),  // Convert double to long
             tokenAccount,  // This is the recipient token account
             "--url", clusterUrl,
             "--fee-payer", walletKeyPath,

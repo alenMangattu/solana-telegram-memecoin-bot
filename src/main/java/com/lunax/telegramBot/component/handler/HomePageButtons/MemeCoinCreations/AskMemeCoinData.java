@@ -371,8 +371,8 @@ public class AskMemeCoinData implements ButtonHandler {
                 stateData.get("decimals").asInt(),
                 String.format("%,.0f", stateData.get("supply").asDouble()),
                 stateData.get("description").asText(),
-                stateData.get("revokeMintAuthority").asBoolean() ? "Yes" : "No",
-                stateData.get("revokeFreezeAuthority").asBoolean() ? "Yes" : "No"
+                stateData.has("revokeMintAuthority") ? (stateData.get("revokeMintAuthority").asBoolean() ? "Yes" : "No") : "No",
+                stateData.has("revokeFreezeAuthority") ? (stateData.get("revokeFreezeAuthority").asBoolean() ? "Yes" : "No") : "No"
         );
 
         ButtonHandler[][] buttons = {

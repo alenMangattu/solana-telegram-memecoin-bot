@@ -47,7 +47,8 @@ public class RevokeMintAuthority implements ButtonHandler {
         stateService.setStateData(telegramId, stateData);
         
         // Log the action
-        MessageUtils.editMessage(update, "Revoking mint authority set to: " + (stateData.get("revokeMintAuthority").asBoolean() ? "true" : "false") + " (6/8)", null);
+        boolean revokeMintAuthority = stateData.has("revokeMintAuthority") && stateData.get("revokeMintAuthority").asBoolean();
+        MessageUtils.editMessage(update, "Revoking mint authority set to: " + (revokeMintAuthority ? "true" : "false") + " (6/8)", null);
         
         // Ask about freeze authority next
         askFreezeAuthority(update);
@@ -59,7 +60,8 @@ public class RevokeMintAuthority implements ButtonHandler {
         stateData.put("revokeMintAuthority", false);
         stateService.setStateData(telegramId, stateData);
        
-        MessageUtils.editMessage(update, "Revoking mint authority set to: " + (stateData.get("revokeMintAuthority").asBoolean() ? "true" : "false") + " (6/8)", null);
+        boolean revokeMintAuthority = stateData.has("revokeMintAuthority") && stateData.get("revokeMintAuthority").asBoolean();
+        MessageUtils.editMessage(update, "Revoking mint authority set to: " + (revokeMintAuthority ? "true" : "false") + " (6/8)", null);
         // Ask about freeze authority next
         askFreezeAuthority(update);
     }
