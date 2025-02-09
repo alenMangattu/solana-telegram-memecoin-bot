@@ -40,7 +40,7 @@ public class CreateMemeCoin implements ButtonHandler {
     @Autowired
     private SolanaConfig solanaConfig;
 
-    public CreateMemeCoin(@Value("✅ Confirm Creation") String buttonText, 
+    public CreateMemeCoin(@Value("✅ Confirm Token Creation") String buttonText, 
                          @Value("confirm_memecoin_creation") String callbackData) {
         this.buttonText = buttonText;
         this.callbackData = callbackData;
@@ -84,6 +84,10 @@ public class CreateMemeCoin implements ButtonHandler {
             
             String description = stateData.get("description").asText();
             String image = stateData.get("imageUrl").asText();
+
+            boolean revokeMintAuthority = stateData.get("revokeMintAuthority").asBoolean();
+            boolean revokeFreezeAuthority = stateData.get("revokeFreezeAuthority").asBoolean();
+
             String createOn = "Luanx telegram bot";
 
             MessageUtils.sendMessage(update, "🏗️ Memecoin building process started...");
@@ -105,6 +109,8 @@ public class CreateMemeCoin implements ButtonHandler {
                 decimals,
                 supply,
                 metadataUri,
+                revokeMintAuthority,
+                revokeFreezeAuthority,
                 update
             );
 
@@ -150,13 +156,13 @@ public class CreateMemeCoin implements ButtonHandler {
             + "\"symbol\": \"%s\","
             + "\"description\": \"%s\","
             + "\"image\": \"%s\","
-            + "\"createdOn\": \"%s\""
+            // + "\"createdOn\": \"%s\""
             + "}",
             name,
             symbol,
             description,
-            image,
-            createOn
+            image
+            // createOn
         );
 
         // Upload the metadata JSON directly to IPFS as a byte array

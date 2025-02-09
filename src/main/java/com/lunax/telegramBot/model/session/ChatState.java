@@ -30,6 +30,17 @@ public enum ChatState {
     CONFIRMING_TRADE,               // Confirming trade details
     PROCESSING_TRADE,               // Processing the trade
     
+    // Liquidity Addition States
+    ADD_LIQUIDITY_START,           // Starting liquidity addition process
+    AWAITING_LIQUIDITY_AMOUNT,     // Waiting for token amount
+    AWAITING_SOL_AMOUNT,          // Waiting for SOL amount
+    AWAITING_LIQUIDITY_CONFIRMATION, // Waiting for final confirmation
+    PROCESSING_LIQUIDITY,         // Processing liquidity addition
+    
+    // Revoke Authority States
+    AWAITING_REVOKE_MINT_AUTHORITY_CONFIRMATION, // New state for revoking mint authority
+    AWAITING_REVOKE_FREEZE_AUTHORITY_CONFIRMATION, // New state for revoking freeze authority
+    
     ERROR_STATE;        // Error occurred during processing
 
     /**
@@ -61,7 +72,9 @@ public enum ChatState {
                this == AWAITING_MEMECOIN_IMAGE ||
                this == AWAITING_MEMECOIN_DESCRIPTION ||
                this == AWAITING_MEMECOIN_CONFIRMATION ||
-               this == CREATING_MEMECOIN);
+               this == CREATING_MEMECOIN ||
+               this == AWAITING_REVOKE_MINT_AUTHORITY_CONFIRMATION ||
+               this == AWAITING_REVOKE_FREEZE_AUTHORITY_CONFIRMATION);
     }
 
     /**
@@ -75,5 +88,17 @@ public enum ChatState {
                this == AWAITING_TRADE_TYPE ||
                this == CONFIRMING_TRADE ||
                this == PROCESSING_TRADE);
+    }
+
+    /**
+     * Check if the state is related to liquidity addition
+     * @return true if in liquidity addition flow
+     */
+    public boolean isLiquidityAddition() {
+        return this != null && (this == ADD_LIQUIDITY_START ||
+               this == AWAITING_LIQUIDITY_AMOUNT ||
+               this == AWAITING_SOL_AMOUNT ||
+               this == AWAITING_LIQUIDITY_CONFIRMATION ||
+               this == PROCESSING_LIQUIDITY);
     }
 }

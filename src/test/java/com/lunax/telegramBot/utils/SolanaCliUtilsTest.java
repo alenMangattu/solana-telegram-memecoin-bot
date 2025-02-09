@@ -89,7 +89,7 @@ public class SolanaCliUtilsTest {
         String walletKeyPath = tempDir.resolve("test-keypair.json").toString();
         String tokenAddress = "tokenAddress123";
         String tokenAccount = "tokenAccount123";
-        long amount = 1000000L;
+        double amount = 1000000L;
 
         Process processMock = mock(Process.class);
         when(processMock.waitFor(anyLong(), any())).thenReturn(true);
@@ -100,7 +100,7 @@ public class SolanaCliUtilsTest {
 
         // Act & Assert
         assertDoesNotThrow(() -> 
-            solanaCliUtils.mintTokens(walletKeyPath, tokenAddress, tokenAccount, amount));
+            solanaCliUtils.mintTokens(walletKeyPath, tokenAddress, amount));
     }
 
     @Test
