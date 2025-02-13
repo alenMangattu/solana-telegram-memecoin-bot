@@ -41,6 +41,9 @@ build/
 
 # Application properties
 application.properties
-src/main/resources/application.properties
-src/main/resources/images/*
+java/src/main/resources/application.properties
+java/src/main/resources/images/*
+typescript/node_modules/*
+typescript/bun.lock
+
 >>>>>>> 0df808e (Changed the programming language to java, also added the program backbone)
