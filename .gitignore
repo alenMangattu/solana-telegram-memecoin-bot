@@ -41,9 +41,15 @@ build/
 
 # Application properties
 application.properties
+<<<<<<< HEAD
 java/src/main/resources/application.properties
 java/src/main/resources/images/*
 typescript/node_modules/*
 typescript/bun.lock
 
+=======
+src/main/resources/application.properties
+src/main/resources/images/*
+logs/*
+>>>>>>> 6e18b39 (Update .gitignore)
 >>>>>>> 0df808e (Changed the programming language to java, also added the program backbone)

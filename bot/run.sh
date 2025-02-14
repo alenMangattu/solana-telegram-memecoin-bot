@@ -1,0 +1,1 @@
+cd /home/computer/dev/java/lunax/bot ; /usr/bin/env /usr/lib/jvm/java-23-openjdk/bin/java @/tmp/cp_daw0vz3yqbiu8gr3bw78rhutc.argfile com.lunax.telegramBot.TelegramBotApplication 

@@ -33,11 +33,15 @@ import org.springframework.http.*;
 import java.util.Collections;
 import java.io.IOException;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import lombok.Data;
 
 @Slf4j
 @Component
 public class SolanaUtils {
     private final RpcClient client;
+    private final RestTemplate restTemplate;
+    private final String apiBaseUrl;
+    private final ObjectMapper objectMapper;
     
     @Autowired
     private WalletKeyManager walletKeyManager;
@@ -52,21 +56,62 @@ public class SolanaUtils {
     private MemecoinService memecoinService;
     
     @Autowired
-    private ObjectMapper objectMapper;
-    
-    @Autowired
     private UserService userService;
     
     @Autowired
-    public SolanaUtils(RpcClient rpcClient) {
+    public SolanaUtils(
+        RpcClient rpcClient,
+        @Value("${solana.api.base-url:http://localhost:3000}") String apiBaseUrl,
+        RestTemplate restTemplate,
+        ObjectMapper objectMapper
+    ) {
         this.client = rpcClient;
+        this.apiBaseUrl = apiBaseUrl;
+        this.restTemplate = restTemplate;
+        this.objectMapper = objectMapper;
     }
    
     @Value("${solana.cluster.url}")
     private String clusterUrl;
 
-    //private final RestTemplate restTemplate = new RestTemplate();
-    
+    /**
+     * Generic method to make HTTP requests to the TypeScript API
+     */
+    private <T> ResponseEntity<T> makeRequest(
+        String endpoint,
+        HttpMethod method,
+        Object body,
+        Class<T> responseType
+    ) {
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<?> requestEntity = body != null
+                ? new HttpEntity<>(body, headers)
+                : new HttpEntity<>(headers);
+
+            log.info("Making {} request to {}", method, endpoint);
+            if (body != null) {
+                log.debug("Request body: {}", objectMapper.writeValueAsString(body));
+            }
+
+            ResponseEntity<T> response = restTemplate.exchange(
+                apiBaseUrl + endpoint,
+                method,
+                requestEntity,
+                responseType
+            );
+
+            log.info("Response status: {}", response.getStatusCode());
+            log.debug("Response body: {}", objectMapper.writeValueAsString(response.getBody()));
+
+            return response;
+        } catch (Exception e) {
+            log.error("Error making request to {}: {}", endpoint, e.getMessage(), e);
+            throw new RuntimeException("API request failed: " + e.getMessage(), e);
+        }
+    }
 
     /**
      * Creates a new Solana wallet and returns its public key and private key
@@ -104,117 +149,92 @@ public class SolanaUtils {
      */
     public double getBalance(String address) {
         try {
-            log.debug("Getting balance for address: {}", address);
-            PublicKey publicKey = new PublicKey(address);
-            
-            try {
-                long lamports = client.getApi().getBalance(publicKey);
-                System.out.println(lamports);
-                double solBalance = lamports / 1000000000.0;
-                System.out.println(solBalance);
-                return solBalance;
-            } catch (Exception rpcError) {
-                log.error("RPC Error: {}", rpcError.getMessage(), rpcError);
-                throw new RuntimeException("RPC call failed", rpcError);
-            }
+            log.info("Getting balance for address: {}", address);
+            ResponseEntity<BalanceResponse> response = makeRequest(
+                "/api/wallet/balance/" + address,
+                HttpMethod.GET,
+                null,
+                BalanceResponse.class
+            );
+            return response.getBody().getBalance();
         } catch (Exception e) {
-            log.error("General Error: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to get balance for address: " + address, e);
+            log.error("Failed to get balance for address {}: {}", address, e.getMessage());
+            throw new RuntimeException("Failed to get balance", e);
         }
+    }
+
+    @Data
+    private static class BalanceResponse {
+        private double balance;
     }
 
     /**
      * Creates a new memecoin token on Solana.
      * 
-     * @param walletId The wallet ID to use for token creation
+     * @param walletPrivateKey The wallet private key
      * @param name The name of the token
      * @param symbol The token symbol
      * @param decimals Number of decimal places for the token
      * @param supply The total token supply
-     * @param metadataJson The token metadata JSON
+     * @param metadataUri The token metadata URI
      * @param revokeMintAuthority Flag to revoke the mint authority upon creation
      * @param revokeFreezeAuthority Flag to revoke the freeze authority upon creation
      * @param update The Telegram update object
      * @return The token mint address
      */
-    public String createMemecoin(UUID walletId, String name, String symbol, int decimals, double supply, 
-                                 String metadataJson, boolean revokeMintAuthority, boolean revokeFreezeAuthority, 
-                                 Update update) {
-        MessageUtils.sendMessage(update, "🎬 Starting memecoin creation...");
-        
+    public String createMemecoin(
+        String walletPrivateKey,
+        String name,
+        String symbol,
+        int decimals,
+        double supply,
+        String metadataUri,
+        boolean revokeMintAuthority,
+        boolean revokeFreezeAuthority,
+        Update update
+    ) {
         try {
-            Wallet wallet = walletRepository.findById(walletId)
-                .orElseThrow(() -> new RuntimeException("Wallet not found: " + walletId));
-            
-            System.out.println("Found wallet with address: " + wallet.getWalletAddress());
-            
-            String privateKey = walletKeyManager.getPrivateKey(walletId);
-            System.out.println("Retrieved private key length: " + privateKey.length());
-            
-            String keypairPath = solanaCliUtils.saveWalletKeypair(privateKey);
-            System.out.println("Saved keypair to: " + keypairPath);
-            
-            try {
-                System.out.println("Invoking createMemecoin on SolanaCliUtils");
-                MessageUtils.sendMessage(update, "🎬 Creating a solana keypair...");
-                
-                String tokenAddress = solanaCliUtils.createMemecoin(
-                    keypairPath,
-                    name,
-                    symbol,
-                    decimals,
-                    metadataJson
-                );
+            log.info("Creating memecoin: {} ({}) with supply {}", name, symbol, supply);
 
-                MessageUtils.sendMessage(update, "Minting " + supply + " tokens to the token address...");
-                String tokenAccount = solanaCliUtils.mintTokens(keypairPath, tokenAddress, supply);
-                MessageUtils.sendMessage(update, "Created token account: " + tokenAccount);
-                
-                // Revoke mint authority if requested
-                if (revokeMintAuthority) {
-                    solanaCliUtils.revokeMintAuthority(keypairPath, tokenAddress);
-                    MessageUtils.sendMessage(update, "✅ Revoked mint authority for token: " + tokenAddress);
-                }
-                
-                // Revoke freeze authority if requested
-                if (revokeFreezeAuthority) {
-                    try {
-                        solanaCliUtils.revokeFreezeAuthority(keypairPath, tokenAddress);
-                        MessageUtils.sendMessage(update, "✅ Revoked freeze authority for token: " + tokenAddress);
-                    } catch (RuntimeException e) {
-                        if (e.getMessage().contains("already disabled")) {
-                            MessageUtils.sendMessage(update, "ℹ️ Freeze authority was already disabled - this is good!");
-                        } else {
-                            throw e;
-                        }
-                    }
-                }
-                
-                // Extract image URL and description from metadata
-                String imageUrl = getImageUrl(metadataJson);
-                String description = getDescription(metadataJson);
-                
-                // Create the memecoin object
-                Memecoin newMemecoin = new Memecoin();
-                newMemecoin.setCreatorWalletId(walletId);
-                newMemecoin.setName(name);
-                newMemecoin.setSymbol(symbol);
-                newMemecoin.setTotalSupply(supply);
-                newMemecoin.setImageUrl(imageUrl);
-                newMemecoin.setDescription(description);
-                newMemecoin.setTokenAddress(tokenAddress);
-                
-                memecoinService.addMemecoin(newMemecoin);
-                MessageUtils.sendMessage(update, "✅ Successfully created memecoin: " + name);
+            // Create request object
+            CreateMemecoinRequest request = new CreateMemecoinRequest();
+            request.setName(name);
+            request.setSymbol(symbol);
+            request.setDecimals(decimals);
+            request.setSupply(supply);
+            request.setMetadataUri(metadataUri);
+            request.setRevokeMintAuthority(revokeMintAuthority);
+            request.setRevokeFreezeAuthority(revokeFreezeAuthority);
+            request.setWalletPrivateKey(walletPrivateKey);
 
-                return tokenAddress;
-            } finally {
-                solanaCliUtils.deleteWalletKeypair(keypairPath);
-            }
+            // Make API request
+            ResponseEntity<CreateMemecoinResponse> response = makeRequest(
+                "/api/memecoin/create",
+                HttpMethod.POST,
+                request,
+                CreateMemecoinResponse.class
+            );
+
+            String tokenAddress = response.getBody().getTokenAddress();
+
+            // Create Memecoin entity - use the public key from the private key
+            Account account = new Account(Base58.decode(walletPrivateKey));
+            String publicKey = account.getPublicKey().toString();
+            
+            Memecoin newMemecoin = new Memecoin();
+            newMemecoin.setCreatorWalletId(UUID.fromString(publicKey));
+            newMemecoin.setName(name);
+            newMemecoin.setSymbol(symbol);
+            newMemecoin.setTotalSupply(supply);
+            newMemecoin.setTokenAddress(tokenAddress);
+            
+            // Save to database
+            memecoinService.addMemecoin(newMemecoin);
+
+            return tokenAddress;
         } catch (Exception e) {
-            log.error("Failed to create memecoin", e);
-            MessageUtils.sendMessage(update, "❌ Error creating memecoin: " + e.getMessage());
-            throw new RuntimeException("Failed to create memecoin: " + e.getMessage(), e);
+            log.error("Failed to create memecoin {}: {}", name, e.getMessage());
+            throw new RuntimeException("Failed to create memecoin: " + e.getMessage());
         }
     }
 
@@ -223,6 +243,7 @@ public class SolanaUtils {
      * @param address Base58 encoded address
      * @return Account object or null if invalid
      */
+    @SuppressWarnings("unused")
     private Account getAccountFromAddress(String address) {
         try {
             byte[] privateKey = Base58.decode(address);
@@ -272,75 +293,80 @@ public class SolanaUtils {
         }
     }
 
-    public boolean addLiquidity(Long telegramId, double tokenAmount, double solAmount) {
+    @Data
+    private static class CreateMemecoinRequest {
+        private String name;
+        private String symbol;
+        private int decimals;
+        private double supply;
+        private String metadataUri;
+        private boolean revokeMintAuthority;
+        private boolean revokeFreezeAuthority;
+        private String walletPrivateKey;
+    }
+
+    @Data
+    private static class CreateMemecoinResponse {
+        private String tokenAddress;
+    }
+
+    @Data
+    private static class AddLiquidityRequest {
+        private String tokenMint;
+        private double tokenAmount;
+        private double solAmount;
+        private String walletPrivateKey;
+    }
+
+    @Data
+    private static class AddLiquidityResponse {
+        private String signature;
+    }
+
+    public String addLiquidity(
+        String tokenMint,
+        double tokenAmount,
+        double solAmount,
+        String walletPrivateKey
+    ) {
         try {
-            // Retrieve the user's wallet
-            User user = userService.findByTelegramId(telegramId)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+            log.info("Adding liquidity for token: {}", tokenMint);
             
-            // Retrieve the Wallet object using the currentWallet UUID
-            Wallet currentWallet = user.getWallets().stream()
-                    .filter(wallet -> wallet.getWalletId().equals(user.getCurrentWallet()))
-                    .findFirst()
-                    .orElse(null);
+            AddLiquidityRequest request = new AddLiquidityRequest();
+            request.setTokenMint(tokenMint);
+            request.setTokenAmount(tokenAmount);
+            request.setSolAmount(solAmount);
+            request.setWalletPrivateKey(walletPrivateKey);
 
-            if (currentWallet == null) {
-                throw new RuntimeException("Current wallet not found for user.");
-            }
-
-            String walletAddress = currentWallet.getWalletAddress(); // Now this is safe
-
-            // Construct the command to add liquidity
-            ProcessBuilder addLiquidityCommand = new ProcessBuilder(
-                "spl-token",
-                "add-liquidity", // This is a hypothetical command; replace with the actual command if different
-                "--token", walletAddress, // Token address
-                "--amount", String.valueOf(tokenAmount), // Token amount
-                "--sol", String.valueOf(solAmount), // SOL amount
-                "--url", clusterUrl, // Cluster URL
-                "--fee-payer", walletAddress // Fee payer
+            ResponseEntity<AddLiquidityResponse> response = makeRequest(
+                "/api/liquidity/add",
+                HttpMethod.POST,
+                request,
+                AddLiquidityResponse.class
             );
 
-            Process process = addLiquidityCommand.start();
-            process.waitFor(30, TimeUnit.SECONDS);
-
-            if (process.exitValue() != 0) {
-                String error = new String(process.getErrorStream().readAllBytes());
-                throw new RuntimeException("Failed to add liquidity: " + error);
-            }
-
-            return true; // Indicate success
+            return response.getBody().getSignature();
         } catch (Exception e) {
-            log.error("Error adding liquidity: {}", e.getMessage());
-            return false; // Indicate failure
+            log.error("Failed to add liquidity for token {}: {}", tokenMint, e.getMessage());
+            throw new RuntimeException("Failed to add liquidity", e);
         }
     }
 
-    private String resolveTokenAddress(String tokenIdentifier) throws Exception {
-        // If it's already an address, validate and return it
-        if (tokenIdentifier.matches("^[1-9A-HJ-NP-Za-km-z]{32,44}$")) {
-            return tokenIdentifier;
-        }
-        
-        // Otherwise, look up the address by symbol
-        return solanaCliUtils.resolveTokenSymbol(tokenIdentifier);
+    @SuppressWarnings("unused")
+    private String resolveTokenAddress(String tokenIdentifier) {
+        // Implementation
+        return null; // Placeholder return, actual implementation needed
     }
   
+    @SuppressWarnings("unused")
     private JsonNode getTokenMetadata(String tokenAddress) {
-        try {
-            return solanaCliUtils.getTokenMetadata(tokenAddress);
-        } catch (Exception e) {
-            log.error("Error getting token metadata: {}", e.getMessage());
-            return null;
-        }
+        // Implementation
+        return null; // Placeholder return, actual implementation needed
     }
 
+    @SuppressWarnings("unused")
     private JsonNode getUserTokenHoldings(String tokenAddress, String userWalletAddress) {
-        try {
-            return solanaCliUtils.getUserTokenAccount(tokenAddress, userWalletAddress);
-        } catch (Exception e) {
-            log.error("Error getting user holdings: {}", e.getMessage());
-            return null;
-        }
+        // Implementation
+        return null; // Placeholder return, actual implementation needed
     }
 }

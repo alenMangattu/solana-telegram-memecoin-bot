@@ -97,19 +97,15 @@ public class MessageUtils {
         }
     }
 
-    public static void sendMessage(Update update, String text) {
-        Message message = getMessage(update);
-        if (message == null)
-            return;
-
+    public static void sendMessage(Long chatId, String text) {
         SendMessage sendMessage = new SendMessage();
-        sendMessage.setChatId(message.getChatId().toString());
+        sendMessage.setChatId(chatId.toString());
         sendMessage.setText(text);
         sendMessage.enableMarkdown(true);
         try {
             botInstance.execute(sendMessage);
         } catch (TelegramApiException e) {
-            e.printStackTrace();
+            log.error("Error sending message, {}", e.getMessage());
         }
     }
 
@@ -145,11 +141,9 @@ public class MessageUtils {
             editMessage.setReplyMarkup(markup);
         }
 
-        editMessage.enableMarkdown(true);
         try {
             botInstance.execute(editMessage);
         } catch (TelegramApiException e) {
-            e.printStackTrace();
             log.error("Error editing message: {}", e.getMessage());
         }
     }
@@ -386,5 +380,35 @@ public class MessageUtils {
         } catch (TelegramApiException e) {
             log.error("Error sending image message: {}", e.getMessage());
         }
+    }
+
+    public static void sendMessage(Update update, String text) {
+        Long chatId = null;
+        if (update.hasMessage()) {
+            chatId = update.getMessage().getChatId();
+        } else if (update.hasCallbackQuery()) {
+            chatId = update.getCallbackQuery().getMessage().getChatId();
+        }
+        if (chatId != null) {
+            sendMessage(chatId, text);
+        }
+    }
+
+    public static void editMessageText(Update update, String text) {
+        Long chatId = null;
+        Integer messageId = null;
+        if (update.hasCallbackQuery()) {
+            chatId = update.getCallbackQuery().getMessage().getChatId();
+            messageId = update.getCallbackQuery().getMessage().getMessageId();
+        }
+        if (chatId != null && messageId != null) {
+            MessageUtils.editMessage(update, text, null);
+        }
+    }
+
+    // Remove the TODO comment and implement proper error handling
+    private static void handleImageDownloadError(Exception e) {
+        log.error("Error downloading image: {}", e.getMessage());
+        throw new RuntimeException("Failed to download image", e);
     }
 }

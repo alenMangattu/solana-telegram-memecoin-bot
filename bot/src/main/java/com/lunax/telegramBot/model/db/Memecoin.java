@@ -38,7 +38,8 @@ public class Memecoin {
     @Column(name = "image_url")
     private String imageUrl;
 
-    @Column(name = "description")
+    // @Column(name = "description")
+    @Column(name = "description", nullable = false)
     private String description;
 
     @Column(name = "token_address", unique = true)
@@ -49,4 +50,12 @@ public class Memecoin {
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt = LocalDateTime.now();
-} 
+
+    public void setCreatorWalletId(UUID walletId) {
+        this.creatorWalletId = walletId;
+    }
+
+    public UUID getCreatorWalletId() {
+        return this.creatorWalletId;
+    }
+}
