@@ -1,30 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>3.2.2</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
+
 	<groupId>com.lunax</groupId>
 	<artifactId>telegramBot</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>telegramBot</name>
 	<description>Demo project for Spring Boot</description>
-	<url/>
+	<url />
 	<licenses>
-		<license/>
+		<license />
 	</licenses>
 	<developers>
-		<developer/>
+		<developer />
 	</developers>
 	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
+		<connection />
+		<developerConnection />
+		<tag />
+		<url />
 	</scm>
 	<properties>
 		<java.version>17</java.version>
@@ -43,16 +45,16 @@
 		</dependencies>
 	</dependencyManagement>
 	<repositories>
-        <!-- <repository>
+		<!-- <repository>
             <id>github</id>
             <name>GitHub P2P Apache Maven Packages</name>
             <url>https://maven.pkg.github.com/p2p-org/solanaj</url>
         </repository> -->
 		<repository>
-  		  <id>jitpack.io</id>
-  		  <url>https://jitpack.io</url>
-  		</repository>
-    </repositories>
+			<id>jitpack.io</id>
+			<url>https://jitpack.io</url>
+		</repository>
+	</repositories>
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -98,15 +100,15 @@
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.telegram/telegrambots-spring-boot-starter -->
 		<dependency>
-		    <groupId>org.telegram</groupId>
-		    <artifactId>telegrambots-spring-boot-starter</artifactId>
-		    <version>6.9.7.1</version>
+			<groupId>org.telegram</groupId>
+			<artifactId>telegrambots-spring-boot-starter</artifactId>
+			<version>6.9.7.1</version>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/org.telegram/telegrambots-abilities -->
 		<dependency>
-		    <groupId>org.telegram</groupId>
-		    <artifactId>telegrambots-abilities</artifactId>
-		    <version>8.2.0</version>
+			<groupId>org.telegram</groupId>
+			<artifactId>telegrambots-abilities</artifactId>
+			<version>8.2.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -129,9 +131,9 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-		  <groupId>org.slf4j</groupId>
-		  <artifactId>slf4j-simple</artifactId>
-		  <version>2.0.9</version>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-simple</artifactId>
+			<version>2.0.9</version>
 		</dependency>
 		<!-- JPA and Hibernate -->
 		<dependency>
@@ -152,67 +154,77 @@
 			<artifactId>hibernate-validator</artifactId>
 		</dependency>
 		<dependency>
-		  <groupId>javax.xml.bind</groupId>
-		  <artifactId>jaxb-api</artifactId>
-		  <version>2.3.1</version>
+			<groupId>javax.xml.bind</groupId>
+			<artifactId>jaxb-api</artifactId>
+			<version>2.3.1</version>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/com.mmorrell/solanaj -->
 		<dependency>
-		    <groupId>com.mmorrell</groupId>
-		    <artifactId>solanaj</artifactId>
-		    <version>1.20.3</version>
+			<groupId>com.mmorrell</groupId>
+			<artifactId>solanaj</artifactId>
+			<version>1.20.3</version>
 		</dependency>
 
 
 		<!-- https://mvnrepository.com/artifact/com.mmorrell/solanaj-programs -->
 		<dependency>
-		    <groupId>com.mmorrell</groupId>
-		    <artifactId>solanaj-programs</artifactId>
-		    <version>1.33.6</version>
-		    <type>pom</type>
+			<groupId>com.mmorrell</groupId>
+			<artifactId>solanaj-programs</artifactId>
+			<version>1.33.6</version>
+			<type>pom</type>
 		</dependency>
 
 
 		<dependency>
-		    <groupId>com.mmorrell</groupId>
-		    <artifactId>phoenix</artifactId>
-		    <version>1.33.6</version>
+			<groupId>com.mmorrell</groupId>
+			<artifactId>phoenix</artifactId>
+			<version>1.33.6</version>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/com.github.ipfs/java-ipfs-http-client -->
 		<dependency>
-		    <groupId>com.github.ipfs</groupId>
-		    <artifactId>java-ipfs-http-client</artifactId>
-		    <version>1.4.4</version>
-		</dependency> 
+			<groupId>com.github.ipfs</groupId>
+			<artifactId>java-ipfs-http-client</artifactId>
+			<version>1.4.4</version>
+		</dependency>
 
 		<dependency>
-		    <groupId>org.junit.jupiter</groupId>
-		    <artifactId>junit-jupiter-api</artifactId>
-		    <version>5.8.1</version>
-		    <scope>test</scope>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-api</artifactId>
+			<version>5.8.1</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
-		    <groupId>org.mockito</groupId>
-		    <artifactId>mockito-core</artifactId>
-		    <version>3.12.4</version>
-		    <scope>test</scope>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<version>3.12.4</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
-		    <groupId>org.junit.jupiter</groupId>
-		    <artifactId>junit-jupiter-engine</artifactId>
-		    <version>5.8.1</version>
-		    <scope>test</scope>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-engine</artifactId>
+			<version>5.8.1</version>
+			<scope>test</scope>
 		</dependency>
 
 		<!-- Add Metaplex dependency -->
 		<dependency>
-		    <groupId>com.mmorrell</groupId>
-		    <artifactId>metaplex</artifactId>
-		    <version>1.33.6</version>
+			<groupId>com.mmorrell</groupId>
+			<artifactId>metaplex</artifactId>
+			<version>1.33.6</version>
 		</dependency>
 
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>

@@ -53,3 +53,5 @@ const getPoolKeys = async (ammId: string, connection: Connection) => {
         }
     }
 };
+
+export { getPoolKeys };

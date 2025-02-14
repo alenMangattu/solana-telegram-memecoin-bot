@@ -352,27 +352,27 @@ public class AskMemeCoinData implements ButtonHandler {
 
         // Show confirmation message with memecoin details
         String confirmationMessage = String.format("""
-                📝 *Please confirm your memecoin details:*
+                📝 *please confirm your memecoin details:*
 
-                **Name**: %s
-                **Symbol**: %s
-                **Decimals**: %d
-                **Supply**: %s
-                **Description**: %s
-                **Revoke Mint Authority**: %s
-                **Revoke Freeze Authority**: %s
+                **name**: %s
+                **symbol**: %s
+                **decimals**: %d
+                **supply**: %s
+                **description**: %s
+                **revoke mint authority**: %s
+                **revoke freeze authority**: %s
 
-                Are you sure you want to create this memecoin?
+                are you sure you want to create this memecoin?
                 
-                Note: This action cannot be undone.
+                note: this action cannot be undone.
                 """,
                 stateData.get("name").asText(),
                 stateData.get("symbol").asText(),
                 stateData.get("decimals").asInt(),
                 String.format("%,.0f", stateData.get("supply").asDouble()),
                 stateData.get("description").asText(),
-                stateData.has("revokeMintAuthority") ? (stateData.get("revokeMintAuthority").asBoolean() ? "Yes" : "No") : "No",
-                stateData.has("revokeFreezeAuthority") ? (stateData.get("revokeFreezeAuthority").asBoolean() ? "Yes" : "No") : "No"
+                stateData.has("revokemintauthority") ? (stateData.get("revokemintauthority").asBoolean() ? "yes" : "no") : "no",
+                stateData.has("revokefreezeauthority") ? (stateData.get("revokefreezeauthority").asBoolean() ? "yes" : "no") : "no"
         );
 
         ButtonHandler[][] buttons = {
