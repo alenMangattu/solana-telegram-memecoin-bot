@@ -51,7 +51,7 @@ public class MessageUtils {
         botToken = bot.getBotToken();
     }
 
-    private static Message getMessage(Update update) {
+    public static Message getMessage(Update update) {
         if (update.hasMessage()) {
             return update.getMessage();
         } else if (update.hasCallbackQuery()) {
@@ -405,12 +405,17 @@ public class MessageUtils {
             messageId = update.getCallbackQuery().getMessage().getMessageId();
         }
         if (chatId != null && messageId != null) {
-            // Check if the new text is different from the current message text
+            // Check if the new text is different from the current message text or caption
             Message message = getMessage(update);
-            if (!message.getText().equals(text)) {
+            String currentText = message.getText();
+            String currentCaption = message.getCaption();
+            
+            // Compare with either text or caption
+            if ((currentText == null || !currentText.equals(text)) && 
+                (currentCaption == null || !currentCaption.equals(text))) {
                 MessageUtils.editMessage(update, text, null);
             } else {
-                log.warn("Edit skipped: new text is the same as the current message text.");
+                log.warn("Edit skipped: new text is the same as the current message text/caption.");
             }
         }
     }

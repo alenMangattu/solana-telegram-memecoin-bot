@@ -352,27 +352,27 @@ public class AskMemeCoinData implements ButtonHandler {
 
         // Show confirmation message with memecoin details
         String confirmationMessage = String.format("""
-                📝 *please confirm your memecoin details:*
+                📝 *Please Confirm Your Memecoin Details*
 
-                **name**: %s
-                **symbol**: %s
-                **decimals**: %d
-                **supply**: %s
-                **description**: %s
-                **revoke mint authority**: %s
-                **revoke freeze authority**: %s
+                Name: %s
+                Symbol: %s
+                Decimals: %d
+                Supply: %s
+                Description: %s
+                Revoke Mint Authority: %s
+                Revoke Freeze Authority: %s
 
-                are you sure you want to create this memecoin?
+                Are you sure you want to create this memecoin?
                 
-                note: this action cannot be undone.
+                Note: This action cannot be undone.
                 """,
                 stateData.get("name").asText(),
                 stateData.get("symbol").asText(),
                 stateData.get("decimals").asInt(),
                 String.format("%,.0f", stateData.get("supply").asDouble()),
                 stateData.get("description").asText(),
-                stateData.has("revokemintauthority") ? (stateData.get("revokemintauthority").asBoolean() ? "yes" : "no") : "no",
-                stateData.has("revokefreezeauthority") ? (stateData.get("revokefreezeauthority").asBoolean() ? "yes" : "no") : "no"
+                stateData.has("revokeMintAuthority") ? (stateData.get("revokeMintAuthority").asBoolean() ? "Yes" : "No") : "No",
+                stateData.has("revokeFreezeAuthority") ? (stateData.get("revokeFreezeAuthority").asBoolean() ? "Yes" : "No") : "No"
         );
 
         ButtonHandler[][] buttons = {
@@ -381,8 +381,12 @@ public class AskMemeCoinData implements ButtonHandler {
             {notConfirmed}
         };
 
+        // Store the confirmation message in the state data
+        stateData.put("confirmationMessage", confirmationMessage);
+        stateService.setStateData(telegramId, stateData);
+
+        // Send the image with the confirmation message
         MessageUtils.sendImageMessageInlineKeyboard(update, imagePath, confirmationMessage, buttons);
-        // Create inline keyboard with confirmation button
         stateService.setState(telegramId, ChatState.AWAITING_MEMECOIN_CONFIRMATION);
     }
 

@@ -280,3 +280,54 @@
 {"level":"info","message":"Cleaned up keypair file: /home/computer/.config/solana/temp/5793e6da-b49e-44e4-8eae-b72fc745cb3c.json","timestamp":"2025-02-15T11:02:58.225Z"}
 {"level":"info","message":"Server running on port 3000","timestamp":"2025-02-15T14:14:56.806Z"}
 {"level":"info","message":"Server running on port 3000","timestamp":"2025-02-15T14:21:33.219Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-15T15:03:43.112Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-15T15:04:18.743Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-15T15:04:19.492Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-15T15:04:21.916Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-15T15:05:41.705Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-15T15:05:45.302Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-15T15:05:48.261Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-15T15:05:50.715Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-15T15:05:55.768Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-15T15:06:00.551Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-15T15:06:01.594Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-15T15:06:25.177Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-15T15:06:25.856Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-15T15:06:31.089Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-15T15:06:38.903Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-15T15:06:41.069Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-15T15:06:45.800Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-15T15:06:52.964Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-15T15:08:05.866Z"}
+{"level":"info","message":"Creating memecoin PLESE WORK lol (999999999) with supply 99999999","timestamp":"2025-02-15T15:19:14.575Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/84ddb4d7-b6f8-4fce-aa24-32bec40a2efb.json","timestamp":"2025-02-15T15:19:14.583Z"}
+{"level":"info","message":"Token created with address: 7WuwaZaoWuT5Jss6jEgdw8Gp4nKMxFNWxosxChgeWBct","timestamp":"2025-02-15T15:19:17.702Z"}
+{"level":"info","message":"Metadata created successfully","timestamp":"2025-02-15T15:19:18.905Z"}
+{"level":"info","message":"Minted 99999999 tokens to 8DwcZpUTe5ghTU8Mn9Xjrw5RWczX5bhDMEJrRMUAAafM","timestamp":"2025-02-15T15:19:27.438Z"}
+{"level":"info","message":"Mint authority revoked","timestamp":"2025-02-15T15:19:30.232Z"}
+{"level":"info","message":"Cleaned up keypair file: /home/computer/.config/solana/temp/84ddb4d7-b6f8-4fce-aa24-32bec40a2efb.json","timestamp":"2025-02-15T15:19:30.233Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-15T15:21:31.493Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-15T15:21:37.178Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-15T15:21:38.386Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-15T15:22:06.945Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-15T15:22:11.615Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-15T15:22:17.836Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-15T15:22:23.311Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-15T15:22:34.249Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-15T15:22:37.117Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-15T15:22:55.190Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-15T15:22:56.009Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-15T15:22:59.006Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-15T15:23:29.345Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-15T15:23:36.471Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-15T15:24:02.939Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-15T15:24:06.023Z"}
+{"level":"info","message":"Creating memecoin THIS IS A COOL COIN (VEIEIEIEIE) with supply 67234673274","timestamp":"2025-02-15T15:26:16.640Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/96cd5d08-9a6b-4267-9e87-3fe25ecc70b3.json","timestamp":"2025-02-15T15:26:16.644Z"}
+{"level":"info","message":"Token created with address: 8ACnfy5vb9L19rRnwpWJGJ9kpcnT9Vu44MvcziaFejcd","timestamp":"2025-02-15T15:26:23.010Z"}
+{"level":"info","message":"Metadata created successfully","timestamp":"2025-02-15T15:26:25.768Z"}
+{"level":"info","message":"Minted 67234673274 tokens to A2SMMrr8SdebhGkwgUxkCkg4fruwWAKf3aUuGaK3qwbb","timestamp":"2025-02-15T15:26:32.955Z"}
+{"level":"info","message":"Mint authority revoked","timestamp":"2025-02-15T15:26:34.812Z"}
+{"level":"info","message":"Cleaned up keypair file: /home/computer/.config/solana/temp/96cd5d08-9a6b-4267-9e87-3fe25ecc70b3.json","timestamp":"2025-02-15T15:26:34.814Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-15T15:27:09.943Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-15T15:27:10.907Z"}

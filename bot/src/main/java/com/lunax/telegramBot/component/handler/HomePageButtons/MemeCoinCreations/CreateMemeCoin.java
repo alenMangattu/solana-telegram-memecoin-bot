@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -73,6 +74,13 @@ public class CreateMemeCoin implements ButtonHandler {
         // Verify user is in correct state
         if (stateService.getState(telegramId) != ChatState.AWAITING_MEMECOIN_CONFIRMATION) {
             MessageUtils.sendMessage(update, "❌ Invalid state. Please start over.");
+            return;
+        }
+
+        // Get message content - handle both text and caption cases
+        Message message = MessageUtils.getMessage(update);
+        if (message == null) {
+            MessageUtils.sendMessage(update, "❌ Error: Callback message is missing.");
             return;
         }
 
@@ -148,7 +156,7 @@ public class CreateMemeCoin implements ButtonHandler {
             if (metadataUri == null) {
                 throw new RuntimeException("Failed to create metadata JSON");
             }
-            MessageUtils.sendMessage(update, "⏳ Uploaded metadata to IPFS...");
+            MessageUtils.sendMessage(update, "⏳ Uploading metadata to IPFS...");
 
             // Allow extra time for IPFS gateway propagation
             Thread.sleep(5000);
