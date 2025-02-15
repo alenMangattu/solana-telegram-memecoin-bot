@@ -278,3 +278,5 @@
 {"level":"info","message":"Minted 7347327327328 tokens to BzNRz1Yw4W1ihRJ2bM4fmHdWc6fgR6RsuSKL4RFKEfHb","timestamp":"2025-02-15T11:02:55.458Z"}
 {"level":"info","message":"Mint authority revoked","timestamp":"2025-02-15T11:02:58.224Z"}
 {"level":"info","message":"Cleaned up keypair file: /home/computer/.config/solana/temp/5793e6da-b49e-44e4-8eae-b72fc745cb3c.json","timestamp":"2025-02-15T11:02:58.225Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-15T14:14:56.806Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-15T14:21:33.219Z"}

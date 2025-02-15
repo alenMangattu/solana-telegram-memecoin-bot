@@ -11,7 +11,7 @@ import { Metadata } from '@metaplex-foundation/mpl-token-metadata';
 import bs58 from 'bs58';
 import logger from './logger';
 import type { WalletInfo, MemecoinConfig, TokenMetadata } from './types';
-import { getPoolKeys } from './raydium';
+import { getPoolKeys } from './raydium/raydium';
 import axios from 'axios';
 import path from 'path';
 import os from 'os';
