@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import express from 'express';
 import dotenv from 'dotenv';
 import { server } from './utils/server';
@@ -59,7 +58,8 @@ process.on('SIGTERM', () => {
  *   metadataUri: string (URL),
  *   revokeMintAuthority: boolean,
  *   revokeFreezeAuthority: boolean,
- *   walletPrivateKey: string
+ *   walletPrivateKey: string,
+ *   chatId: number
  * }
  * Response: {
  *   tokenAddress: string
@@ -77,6 +77,3 @@ process.on('SIGTERM', () => {
  *   signature: string
  * }
  */
-=======
-console.log("Bella Raga! ");
->>>>>>> 78e8847 (Modified the token progam from token 2022 -> standard token program (metadata still doesnt work))

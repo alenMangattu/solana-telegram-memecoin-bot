@@ -2,7 +2,6 @@
   "name": "solana_wrapper",
   "module": "index.ts",
   "type": "module",
-<<<<<<< HEAD
   "scripts": {
     "start": "bun run index.ts",
     "dev": "bun --watch run index.ts"
@@ -11,25 +10,17 @@
     "@types/bun": "latest",
     "@types/express": "^4.17.21",
     "@types/node": "^22.13.1"
-=======
-  "devDependencies": {
-    "@types/bun": "latest"
->>>>>>> 78e8847 (Modified the token progam from token 2022 -> standard token program (metadata still doesnt work))
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
   "dependencies": {
-<<<<<<< HEAD
     "@metaplex-foundation/mpl-token-metadata": "^2.13.0",
-=======
->>>>>>> 78e8847 (Modified the token progam from token 2022 -> standard token program (metadata still doesnt work))
     "@project-serum/serum": "^0.13.65",
     "@raydium-io/raydium-sdk": "^1.3.1-beta.58",
     "@solana/spl-token": "^0.4.12",
     "@solana/spl-token-swap": "^0.4.4",
     "@solana/web3.js": "^1.98.0",
-<<<<<<< HEAD
     "axios": "^1.7.9",
     "bs58": "^6.0.0",
     "buffer-layout": "^1.2.2",
@@ -38,11 +29,5 @@
     "express-rate-limit": "^7.2.0",
     "winston": "^3.12.0",
     "zod": "^3.22.4"
-=======
-    "@types/node": "^22.13.1",
-    "bs58": "^6.0.0",
-    "buffer-layout": "^1.2.2",
-    "dotenv": "^16.4.7"
->>>>>>> 78e8847 (Modified the token progam from token 2022 -> standard token program (metadata still doesnt work))
   }
 }

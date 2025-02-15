@@ -1,4 +1,4 @@
-import { Connection, Keypair, PublicKey, Transaction } from '@solana/web3.js';
+import { Connection, Keypair, PublicKey, Transaction, type Commitment } from '@solana/web3.js';
 import {
     createMint,
     getOrCreateAssociatedTokenAccount,
@@ -37,7 +37,13 @@ export class SolanaUtils {
     private readonly CACHE_DURATION = 3600000; // 1 hour
 
     constructor(clusterUrl: string) {
-        this.connection = new Connection(clusterUrl, 'confirmed');
+        this.connection = new Connection(clusterUrl, {
+            commitment: 'confirmed',
+            disableRetryOnRateLimit: false,
+            confirmTransactionInitialTimeout: 60000 as number,
+            // Disable WebSocket subscriptions to avoid connection issues
+            wsEndpoint: '' // Changed to an empty string to match the expected type
+        });
         this.tokenListCache = new Map();
         this.lastCacheUpdate = 0;
     }
@@ -80,7 +86,6 @@ export class SolanaUtils {
         try {
             logger.info(`Creating memecoin ${name} (${symbol}) with supply ${supply}`);
             
-            // Create update callback function
             const updateCallback = async (message: string) => {
                 try {
                     if (!chatId) {
@@ -88,10 +93,11 @@ export class SolanaUtils {
                         return;
                     }
 
-                    // Send message to Java backend
-                    await axios.post('http://localhost:8080/api/telegram/send', {
+                    await axios.post('http://localhost:8888/api/telegram/send', {
                         chatId: chatId,
                         text: message
+                    }).catch(error => {
+                        logger.error('Failed to send update message:', error);
                     });
                 } catch (error) {
                     logger.error('Failed to send update message:', error);
@@ -100,20 +106,41 @@ export class SolanaUtils {
             
             const keypairPath = await this.saveWalletKeypair(walletPrivateKey);
             
-            const tokenAddress = await this.createTokenWithCli(
-                keypairPath,
-                name,
-                symbol,
-                decimals,
-                supply,
-                metadataUri,
-                revokeMintAuthority,
-                revokeFreezeAuthority,
-                updateCallback
-            );
+            // Add retry logic for token creation
+            let retries = 3;
+            let tokenAddress: string | null = null;
+            
+            while (retries > 0 && !tokenAddress) {
+                try {
+                    await updateCallback(`Starting creation of memecoin: ${name} (${symbol}).`);
+                    
+                    tokenAddress = await this.createTokenWithCli(
+                        keypairPath,
+                        name,
+                        symbol,
+                        decimals,
+                        supply,
+                        metadataUri,
+                        revokeMintAuthority,
+                        revokeFreezeAuthority,
+                        updateCallback
+                    );
+                    break;
+                } catch (error) {
+                    retries--;
+                    if (retries === 0) throw error;
+                    logger.warn(`Token creation failed, retrying... (${retries} attempts left)`);
+                    await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds before retry
+                }
+            }
 
             await this.cleanupKeypairFile(keypairPath);
 
+            if (!tokenAddress) {
+                throw new Error('Failed to create token after multiple attempts');
+            }
+
+            await updateCallback(`Memecoin ${name} (${symbol}) created successfully with address: ${tokenAddress}.`);
             return tokenAddress;
         } catch (error: unknown) {
             logger.error('Error creating memecoin:', error);
@@ -407,5 +434,15 @@ export class SolanaUtils {
             logger.error('Error creating metadata:', error);
             throw new Error(`Failed to create metadata: ${error instanceof Error ? error.message : String(error)}`);
         }
+    }
+
+    // Update confirmTransaction to use polling instead of WebSocket subscription
+    private async confirmTransaction(signature: string, commitment: Commitment = 'confirmed'): Promise<void> {
+        const latestBlockhash = await this.connection.getLatestBlockhash();
+        await this.connection.confirmTransaction({
+            signature,
+            blockhash: latestBlockhash.blockhash,
+            lastValidBlockHeight: latestBlockhash.lastValidBlockHeight
+        }, commitment);
     }
 } 
