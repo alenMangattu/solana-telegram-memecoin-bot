@@ -104,7 +104,7 @@ public class BotController extends TelegramLongPollingBot {
                     }
                     
                     // Handle the start command
-                    if (messageText.startsWith("/start")) {
+                    if (messageText.startsWith("/start") || messageText.startsWith("/home")) {
                         home.executeVoid(update);
                     } else if (messageText.startsWith("/settings")) {
                         settings.executeVoid(update);
@@ -114,6 +114,8 @@ public class BotController extends TelegramLongPollingBot {
                         // Initialize the state before handling the message
                         stateService.setState(telegramId, ChatState.CREATE_MEMECOIN_START);
                         askMemeCoinData.handleMemecoinName(update);
+                    } else {
+                        MessageUtils.sendMessage(update, "Unknown command. Please use /start to get started.");
                     }
                     return;
                 }

@@ -12,6 +12,14 @@ public class CacheConfig {
     
     @Bean
     public CacheManager cacheManager() {
-        return new ConcurrentMapCacheManager("tosAcceptance", "userWallets", "userStates", "stateData", "userValidation");
+        return new ConcurrentMapCacheManager(
+            "tosAcceptance", 
+            "userWallets", 
+            "userStates", 
+            "stateData", 
+            "userValidation",
+            "userInfo",
+            "walletsByUser"
+        );
     }
 }
