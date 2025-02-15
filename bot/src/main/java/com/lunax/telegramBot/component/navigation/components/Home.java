@@ -137,6 +137,7 @@ public class Home implements StateHandler {
             MessageUtils.editMessageInlineKeyboard(update, text, button);
         else
             MessageUtils.sendInlineKeyboard(update, text, button);
+
     }
 
     @Override

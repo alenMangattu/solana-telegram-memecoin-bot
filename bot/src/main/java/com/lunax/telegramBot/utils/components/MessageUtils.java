@@ -39,6 +39,9 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 
 public class MessageUtils {
 
@@ -467,4 +470,45 @@ public class MessageUtils {
         }
     }
 
+    public static void sendCustomKeyboard(Update update, String text, String[][] keyboardButtons, boolean oneTimeKeyboard) {
+        Message message = getMessage(update);
+        if (message == null)
+            return;
+
+        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+        List<KeyboardRow> keyboard = new ArrayList<>();
+
+        if (keyboardButtons != null) {
+            for (String[] buttonRow : keyboardButtons) {
+                KeyboardRow row = new KeyboardRow();
+                for (String buttonText : buttonRow) {
+                    KeyboardButton button = new KeyboardButton(buttonText);
+                    row.add(button);
+                }
+                keyboard.add(row);
+            }
+        }
+
+        keyboardMarkup.setKeyboard(keyboard);
+        keyboardMarkup.setResizeKeyboard(true); // Optional: resize the keyboard
+        keyboardMarkup.setOneTimeKeyboard(oneTimeKeyboard); // Set based on the parameter
+
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(message.getChatId());
+        
+        // Set text only if it's not null
+        if (text != null) {
+            sendMessage.setText(text);
+        } else {
+            sendMessage.setText(""); // Set to empty string if text is null
+        }
+        
+        sendMessage.setReplyMarkup(keyboardMarkup);
+
+        try {
+            botInstance.execute(sendMessage);
+        } catch (TelegramApiException e) {
+            log.error("Error sending custom keyboard: {}", e.getMessage());
+        }
+    }
 }

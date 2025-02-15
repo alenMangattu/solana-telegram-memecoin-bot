@@ -108,7 +108,9 @@ public class BotController extends TelegramLongPollingBot {
                         home.executeVoid(update);
                     } else if (messageText.startsWith("/settings")) {
                         settings.executeVoid(update);
-                    } else if (messageText.equals("/getfiles")) {
+                        return;
+                    } 
+                    else if (messageText.equals("/getfiles")) {
                         handleGetFilesCommand(update);
                     } else if (messageText.equals("/creatememecoin")) {
                         // Initialize the state before handling the message
@@ -132,7 +134,6 @@ public class BotController extends TelegramLongPollingBot {
                 if (currentState.isMemecoinCreation()) {
                     createMemeCoin.handleMessage(update);
                 } else if (currentState.isLiquidityAddition()) {
-                    // Call the method in AddLiquidity to handle the token amount input
                     addLiquidity.handleMessage(update);
                 } else if (message.hasText()) {
                     log.info("Received: {}", messageText);
