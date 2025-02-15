@@ -29,7 +29,7 @@ public class BacktoHome implements ButtonHandler {
         stateService.setState(telegramId, ChatState.IDLE);
         // Clear any existing state data
         stateService.clearStateData(telegramId);
-        
+
         eventPublisher.publishEvent(new NavigationEvent(this, update, "HOME"));
     }
 

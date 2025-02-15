@@ -1,36 +1,33 @@
-package com.lunax.telegramBot.component.handler.HomePageButtons.MemeCoinCreations;
+package com.lunax.telegramBot.component.handler.HomePageButtons.MemeCoinCreations.InitialLiquidity;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.lunax.telegramBot.model.session.ChatState;
+import com.lunax.telegramBot.service.StateService;
 import com.lunax.telegramBot.utils.components.ButtonHandler;
 import com.lunax.telegramBot.utils.components.MessageUtils;
-import com.lunax.telegramBot.model.session.ChatState;
-import com.lunax.telegramBot.model.db.User;
-import com.lunax.telegramBot.service.UserService;
-import com.lunax.telegramBot.service.StateService;
-import com.lunax.telegramBot.utils.SolanaUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Component
+@Component("initialLiquidityAddLiquidity")
 public class AddLiquidity implements ButtonHandler {
 
     private final String buttonText;
     private final String callbackData;
 
     @Autowired
-    private UserService userService;
-
-    @Autowired
     private StateService stateService;
 
     @Autowired
-    private SolanaUtils solanaUtils;
+    private ConfirmLiquidity confirmLiquidity;
+
+    @Autowired
+    private ReEnterLiquidity cancelLiquidity;
 
     public AddLiquidity(@Value("Add Liquidity") String buttonText,
                         @Value("add_liquidity") String callbackData) {
@@ -54,7 +51,7 @@ public class AddLiquidity implements ButtonHandler {
         log.debug("User {} initiated liquidity addition.", telegramId);
         
         String message = """
-                💱 *Add Liquidity* (1/5)
+                💱 *Add Liquidity* (1/4)
                 
                 Please enter the token symbol or address you want to swap from:
                 
@@ -83,6 +80,9 @@ public class AddLiquidity implements ButtonHandler {
             case AWAITING_TO_AMOUNT:
                 handleToAmountInput(update, telegramId, update.getMessage().getText(), stateData);
                 break;
+            case AWAITING_LP_BURN_AMOUNT:
+                handleLpBurnAmount(update, telegramId, update.getMessage().getText(), stateData);
+                break;
             default:
                 log.warn("Unexpected state for user {}: {}", telegramId, currentState);
                 MessageUtils.sendMessage(update, "❌ Unexpected state. Please start the liquidity addition process again.");
@@ -95,7 +95,7 @@ public class AddLiquidity implements ButtonHandler {
         stateService.setStateData(telegramId, stateData);
 
         String message = """
-                💱 *Add Liquidity* (2/5)
+                💱 *Add Liquidity* (2/4)
                 
                 How much %s would you like to swap?
                 
@@ -116,16 +116,12 @@ public class AddLiquidity implements ButtonHandler {
             stateData.put("fromAmount", amount);
             stateService.setStateData(telegramId, stateData);
 
-            String message = """
-                    💱 *Add Liquidity* (3/5)
-                    
-                    Please enter the token symbol or address you want to swap to:
-                    
-                    _Example: USDC or Enter token address_
-                    """;
+            // Retrieve the memecoin symbol from the state data
+            String toToken = stateService.getStateData(telegramId).get("symbol").asText();
 
-            MessageUtils.sendMessage(update, message);
-            stateService.setState(telegramId, ChatState.AWAITING_TO_TOKEN);
+            // Skip to the next step with the memecoin symbol
+            handleToTokenInput(update, telegramId, toToken, stateData); // Pass the memecoin symbol for token
+
         } catch (NumberFormatException e) {
             MessageUtils.sendMessage(update, "❌ Please enter a valid amount.");
         }
@@ -135,14 +131,30 @@ public class AddLiquidity implements ButtonHandler {
         // Validate token/address here
         stateData.put("toToken", token);
         stateService.setStateData(telegramId, stateData);
+        
+        // Retrieve the total supply and decimals from the state data
+        double totalSupply = stateService.getStateData(telegramId).get("supply").asDouble();
+        int decimals = stateService.getStateData(telegramId).get("decimals").asInt();
+
+        // Format the total supply based on the number of decimals
+        String formattedTotalSupply = String.format("%." + decimals + "f", totalSupply)
+            .replaceAll("(?<=\\d)(?=(\\d{3})+(?!\\d))", ","); // Add commas as thousands separators
+
+        /*
+         * 
+         * Regex Pattern: (?<=\\d)(?=(\\d{3})+(?!\\d))
+         * (?<=\\d): This is a positive lookbehind assertion that checks for a digit (\\d) before the current position. It ensures that we only add a comma after a digit.
+         * (?=(\\d{3})+(?!\\d)): This is a positive lookahead assertion that checks for groups of three digits (\\d{3}) that follow the current position, ensuring that there are no more digits after these groups (i.e., it checks that we are at the end of the number).
+        */
 
         String message = """
-                💱 *Add Liquidity* (4/5)
-                
-                How much %s would you like to receive?
-                
+                💱 *Add Liquidity* (3/4)
+
+                How much $%s would you like to receive?
+                Total supply: %s
+
                 _Example: 1000_
-                """.formatted(token);
+                """.formatted(token, formattedTotalSupply);
 
         MessageUtils.sendMessage(update, message);
         stateService.setState(telegramId, ChatState.AWAITING_TO_AMOUNT);
@@ -155,7 +167,62 @@ public class AddLiquidity implements ButtonHandler {
                 throw new NumberFormatException();
             }
             
+            // Retrieve the total supply and decimals from the state data
+            double totalSupply = stateService.getStateData(telegramId).get("supply").asDouble();
+            int decimals = stateService.getStateData(telegramId).get("decimals").asInt();
+            
+            // Check if the amount to receive exceeds the total supply
+            if (amount > totalSupply) {
+                MessageUtils.sendMessage(update, "❌ The amount you want to receive exceeds the total supply of the memecoin.");
+                return; // Exit the method if the check fails
+            }
+            
+            // Check if the amount is compatible with the token's decimal precision
+            double precisionFactor = Math.pow(10, decimals);
+            if (amount * precisionFactor != Math.floor(amount * precisionFactor)) {
+                MessageUtils.sendMessage(update, String.format("❌ The amount must be compatible with the token's decimal precision of %d. Please enter a valid amount.", decimals));
+                return; // Exit the method if the check fails
+            }
+            
             stateData.put("toAmount", amount);
+            stateService.setStateData(telegramId, stateData);
+
+            String message = """
+                    💱 *Add Liquidity* (4/5)
+                    
+                    How many LP tokens would you like to burn?
+                    
+                    • 0: Keep all LP tokens (No burn)
+                    • MAX: Burn all LP tokens
+                    • Or enter a custom amount
+                    
+                    _Note: Burning LP tokens means you won't be able to remove that portion of liquidity later._
+                    """;
+
+            String[][] keyboardButtons = {
+                {"0", "MAX"}
+            };
+
+            MessageUtils.sendCustomKeyboard(update, message, keyboardButtons, true);
+            stateService.setState(telegramId, ChatState.AWAITING_LP_BURN_AMOUNT);
+        } catch (NumberFormatException e) {
+            MessageUtils.sendMessage(update, "❌ Please enter a valid amount.");
+        }
+    }
+
+    private void handleLpBurnAmount(Update update, Long telegramId, String burnAmountStr, ObjectNode stateData) {
+        try {
+            double burnAmount;
+            if (burnAmountStr.equalsIgnoreCase("MAX")) {
+                burnAmount = 100.0; // 100% burn
+            } else {
+                burnAmount = Double.parseDouble(burnAmountStr);
+                if (burnAmount < 0 || burnAmount > 100) {
+                    throw new NumberFormatException();
+                }
+            }
+            
+            stateData.put("lpBurnAmount", burnAmount);
             stateService.setStateData(telegramId, stateData);
 
             // Show confirmation message
@@ -166,56 +233,26 @@ public class AddLiquidity implements ButtonHandler {
                     
                     From: %,.2f %s
                     To: %,.2f %s
+                    LP Burn: %s%%
                     
                     Are you sure you want to proceed?
                     """,
                     stateData.get("fromAmount").asDouble(),
                     stateData.get("fromToken").asText(),
                     stateData.get("toAmount").asDouble(),
-                    stateData.get("toToken").asText()
+                    stateData.get("toToken").asText(),
+                    burnAmountStr.equalsIgnoreCase("MAX") ? "100" : String.format("%.2f", burnAmount)
             );
 
             // Create Yes/No confirmation buttons
             ButtonHandler[][] buttons = {
-                {
-                    new ButtonHandler() {
-                        public String getButtonText() { return "Yes"; }
-                        public String getCallbackData() { return "liquidity_confirm"; }
-                        public void handleCallback(Update update) {
-                            // Call method to add liquidity
-                            // boolean success = solanaUtils.addLiquidity(
-                            //     telegramId,
-                            //     stateData.get("fromToken").asText(),
-                            //     stateData.get("fromAmount").asDouble(),
-                            //     stateData.get("toToken").asText(),
-                            //     stateData.get("toAmount").asDouble()
-                            // );
-                            boolean success = false;
-                            if (success) {
-                                MessageUtils.sendMessage(update, "✅ Liquidity added successfully!");
-                            } else {
-                                MessageUtils.sendMessage(update, "❌ Liquidity addition failed. Please try again.");
-                            }
-                            stateService.setState(telegramId, ChatState.IDLE);
-                            stateService.clearStateData(telegramId);
-                        }
-                    },
-                    new ButtonHandler() {
-                        public String getButtonText() { return "No"; }
-                        public String getCallbackData() { return "liquidity_cancel"; }
-                        public void handleCallback(Update update) {
-                            MessageUtils.sendMessage(update, "❌ Liquidity addition cancelled.");
-                            stateService.setState(telegramId, ChatState.IDLE);
-                            stateService.clearStateData(telegramId);
-                        }
-                    }
-                }
+                { confirmLiquidity, cancelLiquidity },
             };
 
             MessageUtils.sendInlineKeyboard(update, confirmationMessage, buttons);
             stateService.setState(telegramId, ChatState.AWAITING_LIQUIDITY_CONFIRMATION);
         } catch (NumberFormatException e) {
-            MessageUtils.sendMessage(update, "❌ Please enter a valid amount.");
+            MessageUtils.sendMessage(update, "❌ Please enter a valid amount between 0 and 100.");
         }
     }
 } 

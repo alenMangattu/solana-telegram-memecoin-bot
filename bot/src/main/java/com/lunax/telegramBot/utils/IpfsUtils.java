@@ -1,6 +1,5 @@
 package com.lunax.telegramBot.utils;
 
-
 // import org.slf4j.Logger;
 // import org.slf4j.LoggerFactory;
 import java.io.File;
@@ -177,20 +176,24 @@ public class IpfsUtils {
         try {
             // Create a URI first and then convert it to a URL
             URL url = new URI(urlString).toURL();
-            
+
             // Check if the URL is for the IPFS gateway
             if (url.getHost().equals("ipfs.io")) {
                 // Set up a trust manager that accepts all certificates
-                TrustManager[] trustAllCerts = new TrustManager[]{
-                    new X509TrustManager() {
-                        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-                            return null;
+                TrustManager[] trustAllCerts = new TrustManager[] {
+                        new X509TrustManager() {
+                            public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                                return null;
+                            }
+
+                            public void checkClientTrusted(java.security.cert.X509Certificate[] certs,
+                                    String authType) {
+                            }
+
+                            public void checkServerTrusted(java.security.cert.X509Certificate[] certs,
+                                    String authType) {
+                            }
                         }
-                        public void checkClientTrusted(java.security.cert.X509Certificate[] certs, String authType) {
-                        }
-                        public void checkServerTrusted(java.security.cert.X509Certificate[] certs, String authType) {
-                        }
-                    }
                 };
 
                 // Install the all-trusting trust manager

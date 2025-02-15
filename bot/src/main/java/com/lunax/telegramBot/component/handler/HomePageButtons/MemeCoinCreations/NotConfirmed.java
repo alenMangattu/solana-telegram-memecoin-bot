@@ -22,8 +22,8 @@ public class NotConfirmed implements ButtonHandler {
     private final String buttonText;
     private final String callbackData;
 
-    public NotConfirmed(@Value("❌ Restart") String buttonText, 
-                       @Value("not_confirmed") String callbackData) {
+    public NotConfirmed(@Value("Restart") String buttonText,
+            @Value("not_confirmed") String callbackData) {
         this.buttonText = buttonText;
         this.callbackData = callbackData;
     }
@@ -37,10 +37,11 @@ public class NotConfirmed implements ButtonHandler {
     public String getCallbackData() {
         return callbackData;
     }
+
     @Override
     public void handleCallback(Update update) {
         Long telegramId = update.getCallbackQuery().getFrom().getId();
-        
+
         // Delete the previous image if it exists
         ObjectNode stateData = stateService.getStateData(telegramId);
         if (stateData != null && stateData.has("imageUrl")) {
@@ -52,7 +53,7 @@ public class NotConfirmed implements ButtonHandler {
         }
 
         try {
-            //Fake it cuz why not
+            // Fake it cuz why not
             Thread.sleep(50);
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -61,8 +62,9 @@ public class NotConfirmed implements ButtonHandler {
         MessageUtils.sendMessage(update, "⚠️ Memecoin process restarted.");
 
         stateService.clearStateData(telegramId);
-        
-        // Instead of calling askMemeCoinData directly, we'll just set up the initial state
+
+        // Instead of calling askMemeCoinData directly, we'll just set up the initial
+        // state
         stateService.setState(telegramId, ChatState.CREATE_MEMECOIN_START);
         String message = """
                 🪙 *Create Your Memecoin* (1/6)

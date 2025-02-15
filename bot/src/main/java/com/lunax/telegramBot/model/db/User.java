@@ -9,7 +9,6 @@ import java.util.UUID;
 import java.util.List;
 import java.util.ArrayList;
 
-import com.lunax.telegramBot.model.session.ChatState;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.springframework.cache.annotation.Cacheable;

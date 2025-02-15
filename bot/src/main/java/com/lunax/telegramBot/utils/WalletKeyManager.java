@@ -25,15 +25,15 @@ import org.slf4j.LoggerFactory;
 
 @Component
 public class WalletKeyManager {
-    
+
     private static final Logger log = LoggerFactory.getLogger(WalletKeyManager.class);
-    
+
     @Value("${wallets.path}")
     private String walletsPath;
-    
+
     @Value("${encryption.keys.path}")
     private String encryptionKeysPath;
-    
+
     @Value("${encryption.key.rotation.days}")
     private int keyRotationDays;
 
@@ -46,30 +46,30 @@ public class WalletKeyManager {
     /**
      * Creates a new encryption key version for a wallet.
      * 
-     * By setting propagation to MANDATORY we ensure this method 
+     * By setting propagation to MANDATORY we ensure this method
      * runs within an already present (outer) transaction.
      */
     @Transactional(propagation = Propagation.MANDATORY)
     public void createNewKeyVersion(UUID walletId) throws Exception {
         // Get the current version number
         int nextVersion = keyMetadataRepository.findFirstByWalletIdOrderByVersionDesc(walletId)
-            .map(meta -> meta.getVersion() + 1)
-            .orElse(1);
+                .map(meta -> meta.getVersion() + 1)
+                .orElse(1);
 
         // Generate new encryption key
         SecretKey newKey = EncryptionUtils.generateEncryptionKey();
-        
+
         // If there's an existing key, we need to re-encrypt the private key
         if (hasPrivateKey(walletId)) {
             String privateKey = getPrivateKey(walletId); // Get using old key
-            
+
             // Save new key
             saveEncryptionKey(walletId, nextVersion, newKey);
-            
+
             // Re-encrypt private key with new key
             String newEncryptedPrivateKey = EncryptionUtils.encrypt(privateKey, newKey);
             saveEncryptedPrivateKey(walletId, nextVersion, newEncryptedPrivateKey);
-            
+
             // Update metadata: deactivate previous active key
             deactivateOldKeys(walletId);
         } else {
@@ -95,7 +95,7 @@ public class WalletKeyManager {
     public void rotateExpiredKeys() {
         LocalDateTime now = LocalDateTime.now();
         List<EncryptionKeyMetadata> expiringKeys = keyMetadataRepository.findExpiredActiveKeys(now);
-        
+
         for (EncryptionKeyMetadata metadata : expiringKeys) {
             try {
                 createNewKeyVersion(metadata.getWalletId());
@@ -108,10 +108,10 @@ public class WalletKeyManager {
 
     private void deactivateOldKeys(UUID walletId) {
         keyMetadataRepository.findByWalletIdAndActive(walletId, true)
-            .ifPresent(metadata -> {
-                metadata.setActive(false);
-                keyMetadataRepository.save(metadata);
-            });
+                .ifPresent(metadata -> {
+                    metadata.setActive(false);
+                    keyMetadataRepository.save(metadata);
+                });
     }
 
     private String getKeyFileName(UUID walletId, int version) {
@@ -127,8 +127,8 @@ public class WalletKeyManager {
         // Create parent directories if they don't exist
         Files.createDirectories(keyPath.getParent());
         Files.write(keyPath, EncryptionUtils.serializeKey(key).getBytes());
-        Files.setPosixFilePermissions(keyPath, 
-            PosixFilePermissions.fromString("rw-------"));
+        Files.setPosixFilePermissions(keyPath,
+                PosixFilePermissions.fromString("rw-------"));
     }
 
     private void saveEncryptedPrivateKey(UUID walletId, int version, String encryptedKey) throws Exception {
@@ -136,8 +136,8 @@ public class WalletKeyManager {
         // Create parent directories if they don't exist
         Files.createDirectories(walletPath.getParent());
         Files.write(walletPath, encryptedKey.getBytes());
-        Files.setPosixFilePermissions(walletPath, 
-            PosixFilePermissions.fromString("rw-------"));
+        Files.setPosixFilePermissions(walletPath,
+                PosixFilePermissions.fromString("rw-------"));
     }
 
     /**
@@ -145,10 +145,10 @@ public class WalletKeyManager {
      */
     public String getPrivateKey(UUID walletId) throws Exception {
         log.info("Retrieving private key for wallet: {}", walletId);
-        
+
         EncryptionKeyMetadata metadata = keyMetadataRepository.findByWalletIdAndActive(walletId, true)
-            .orElseThrow(() -> new Exception("No active encryption key found for wallet: " + walletId));
-        
+                .orElseThrow(() -> new Exception("No active encryption key found for wallet: " + walletId));
+
         log.info("Active encryption key version: {}", metadata.getVersion());
 
         // Try versioned files first
@@ -156,7 +156,7 @@ public class WalletKeyManager {
         String keyFileName = getKeyFileName(walletId, metadata.getVersion());
         Path walletPath = Paths.get(walletsPath, walletFileName);
         Path keyPath = Paths.get(encryptionKeysPath, keyFileName);
-        
+
         // If version 1 and versioned files don't exist, try legacy unversioned files
         if (metadata.getVersion() == 1 && (!Files.exists(walletPath) || !Files.exists(keyPath))) {
             log.info("Trying legacy unversioned files for wallet: {}", walletId);
@@ -175,7 +175,7 @@ public class WalletKeyManager {
 
         String encryptedPrivateKey = new String(Files.readAllBytes(walletPath));
         SecretKey encryptionKey = EncryptionUtils.deserializeKey(new String(Files.readAllBytes(keyPath)));
-        
+
         log.info("Using key file: {} for wallet file: {}", keyPath, walletPath);
         return EncryptionUtils.decrypt(encryptedPrivateKey, encryptionKey);
     }
@@ -199,18 +199,17 @@ public class WalletKeyManager {
      */
     @Transactional
     public void deleteWalletKeys(UUID walletId) throws Exception {
-        List<EncryptionKeyMetadata> allVersions = 
-            keyMetadataRepository.findByWalletIdOrderByVersionDesc(walletId);
-        
+        List<EncryptionKeyMetadata> allVersions = keyMetadataRepository.findByWalletIdOrderByVersionDesc(walletId);
+
         for (EncryptionKeyMetadata metadata : allVersions) {
-            Path encryptionKeyPath = Paths.get(encryptionKeysPath, 
-                getKeyFileName(walletId, metadata.getVersion()));
-            Path walletPath = Paths.get(walletsPath, 
-                getWalletFileName(walletId, metadata.getVersion()));
-            
+            Path encryptionKeyPath = Paths.get(encryptionKeysPath,
+                    getKeyFileName(walletId, metadata.getVersion()));
+            Path walletPath = Paths.get(walletsPath,
+                    getWalletFileName(walletId, metadata.getVersion()));
+
             Files.deleteIfExists(encryptionKeyPath);
             Files.deleteIfExists(walletPath);
-            
+
             keyMetadataRepository.delete(metadata);
         }
     }
@@ -221,43 +220,43 @@ public class WalletKeyManager {
     @Transactional(propagation = Propagation.MANDATORY)
     public void storePrivateKey(UUID walletId, String privateKey) throws Exception {
         log.info("Storing private key for wallet: {}", walletId);
-        
+
         // Generate new encryption key
         SecretKey encryptionKey = EncryptionUtils.generateEncryptionKey();
         log.info("Generated new encryption key for wallet: {}", walletId);
-        
+
         // Use version 1 for the initial storage
         int version = 1;
         log.debug("Using version {} for storing private key", version);
-        
+
         // Store encryption key with versioned file name
         String keyFileName = getKeyFileName(walletId, version);
         Path keyPath = Paths.get(encryptionKeysPath, keyFileName);
         log.debug("Key file path: {}", keyPath);
-        
+
         Files.createDirectories(keyPath.getParent());
         Files.write(keyPath, EncryptionUtils.serializeKey(encryptionKey).getBytes());
         Files.setPosixFilePermissions(keyPath, PosixFilePermissions.fromString("rw-------"));
         log.info("Stored encryption key at: {}", keyPath);
-        
+
         // Encrypt and store private key using the versioned file name
         String encryptedPrivateKey = EncryptionUtils.encrypt(privateKey, encryptionKey);
         String walletFileName = getWalletFileName(walletId, version);
         Path walletPath = Paths.get(walletsPath, walletFileName);
         log.debug("Wallet file path: {}", walletPath);
-        
+
         Files.createDirectories(walletPath.getParent());
         Files.write(walletPath, encryptedPrivateKey.getBytes());
         Files.setPosixFilePermissions(walletPath, PosixFilePermissions.fromString("rw-------"));
         log.info("Stored encrypted private key at: {}", walletPath);
-        
+
         log.info("Successfully stored private key and encryption key for wallet ID: {}", walletId);
 
         // Check if an active encryption key metadata record exists
         if (!keyMetadataRepository.findByWalletIdAndActive(walletId, true).isPresent()) {
             // No active record found—check if there is an existing (inactive) record
-            Optional<EncryptionKeyMetadata> latestMetaOpt =
-                keyMetadataRepository.findFirstByWalletIdOrderByVersionDesc(walletId);
+            Optional<EncryptionKeyMetadata> latestMetaOpt = keyMetadataRepository
+                    .findFirstByWalletIdOrderByVersionDesc(walletId);
             if (latestMetaOpt.isPresent()) {
                 EncryptionKeyMetadata latestMeta = latestMetaOpt.get();
                 // Reactivate the existing record

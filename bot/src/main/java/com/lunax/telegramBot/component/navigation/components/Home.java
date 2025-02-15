@@ -18,7 +18,6 @@ import com.lunax.telegramBot.component.handler.HomePageButtons.MemeCoinCreations
 import com.lunax.telegramBot.event.NavigationEvent;
 import com.lunax.telegramBot.model.db.User;
 import com.lunax.telegramBot.model.db.Wallet;
-import com.lunax.telegramBot.model.repository.WalletRepository;
 import com.lunax.telegramBot.model.session.ChatState;
 import com.lunax.telegramBot.service.StateService;
 import com.lunax.telegramBot.service.UserService;
@@ -26,7 +25,6 @@ import com.lunax.telegramBot.service.WalletService;
 import com.lunax.telegramBot.utils.SolanaUtils;
 import com.lunax.telegramBot.utils.components.ButtonHandler;
 import com.lunax.telegramBot.utils.components.MessageUtils;
-import org.springframework.cache.annotation.Cacheable;
 
 import jakarta.annotation.PostConstruct;
 
@@ -69,10 +67,10 @@ public class Home implements StateHandler {
 
     @PostConstruct
     private void init() {
-        this.buttonHandlers2 = new ButtonHandler[][]{
-            {myMemeCoins}, 
-            {createMemeCoin, tradeMemeCoin}, 
-            {settings, refreshHome}
+        this.buttonHandlers2 = new ButtonHandler[][] {
+                { myMemeCoins },
+                { createMemeCoin, tradeMemeCoin },
+                { settings, refreshHome }
         };
     }
 
@@ -121,14 +119,14 @@ public class Home implements StateHandler {
             stateService.setState(telegramId, null);
         }
 
-        ButtonHandler[][] buttonHandlers = {{
-            acceptTosHandler
-        }};
-        
+        ButtonHandler[][] buttonHandlers = { {
+                acceptTosHandler
+        } };
+
         if (!userService.hasAcceptedTos(telegramId)) {
             System.out.println("User has not yet accepted the TOS");
             userService.updateTosAcceptance(telegramId, false);
-            MessageUtils.sendInlineKeyboard(update, tos, buttonHandlers); 
+            MessageUtils.sendInlineKeyboard(update, tos, buttonHandlers);
             return;
         }
         String text = this.generateHomeText(telegramId);
@@ -149,11 +147,11 @@ public class Home implements StateHandler {
         String text = "*Welcome to LunaxBot home page*\n\n";
 
         User user = userService.findByTelegramId(telegramId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
-        
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
         text += "*Your Wallets:*\n";
         List<Wallet> wallets = walletService.findByUser(user);
-        
+
         if (wallets.isEmpty()) {
             text += "No wallets found. Create or import a wallet to get started.\n";
         } else {
@@ -168,9 +166,9 @@ public class Home implements StateHandler {
                 i++;
             }
         }
-        
+
         text += "\n\nSelect an option below:";
-        
+
         return text;
     }
 
