@@ -19,18 +19,23 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
    
-    @Cacheable(value = "tosAcceptance", key = "#telegramId")
-    public boolean hasAcceptedTos(Long telegramId) {
-        Optional<User>  user = userRepository.findByTelegramId(telegramId); 
-        return user.isPresent() && userRepository.isAcceptedTos(telegramId);
-    }
-    
+    @Cacheable(value = "userInfo", key = "#telegramId")
     public Optional<User> findByTelegramId(Long telegramId) {
         return userRepository.findByTelegramId(telegramId);
     }
     
-    @CachePut(value = "tosAcceptance", key = "#telegramId")
-    public boolean updateTosAcceptance(Long telegramId, boolean accepted) {
+    @Cacheable(value = "userValidation", key = "#telegramId")
+    public boolean isValidUser(Long telegramId) {
+        return userRepository.existsByTelegramId(telegramId);
+    }
+    
+    @Cacheable(value = "tosAcceptance", key = "#telegramId")
+    public boolean hasAcceptedTos(Long telegramId) {
+        return userRepository.existsByTelegramIdAndAcceptedTosTrue(telegramId);
+    }
+    
+    @CacheEvict(value = {"userInfo", "userValidation", "tosAcceptance"}, key = "#telegramId")
+    public void updateTosAcceptance(Long telegramId, boolean accepted) {
         User user = userRepository.findByTelegramId(telegramId)
             .orElseGet(() -> {
                 User newUser = new User();
@@ -40,22 +45,15 @@ public class UserService {
         
         user.setAcceptedTos(accepted);
         userRepository.save(user);
-        return accepted;
     }
 
-    @Cacheable(value = "userValidation", key = "#telegramId")
-    public boolean isValidUser(Long telegramId) {
-        return userRepository.findByTelegramId(telegramId).isPresent();
-    }
-
-    @Transactional
-    @CacheEvict(value = "userValidation", key = "#telegramId")
-    public User createUser(Long telegramId, String username) {
+    @CacheEvict(value = {"userInfo", "userValidation", "tosAcceptance"}, key = "#telegramId")
+    public void createUser(Long telegramId, String username) {
         User user = new User();
         user.setTelegramId(telegramId);
         user.setUsername(username);
         user.setCreatedAt(LocalDateTime.now());
         user.setAcceptedTos(false);
-        return userRepository.save(user);
+        userRepository.save(user);
     }
 }

@@ -405,7 +405,13 @@ public class MessageUtils {
             messageId = update.getCallbackQuery().getMessage().getMessageId();
         }
         if (chatId != null && messageId != null) {
-            MessageUtils.editMessage(update, text, null);
+            // Check if the new text is different from the current message text
+            Message message = getMessage(update);
+            if (!message.getText().equals(text)) {
+                MessageUtils.editMessage(update, text, null);
+            } else {
+                log.warn("Edit skipped: new text is the same as the current message text.");
+            }
         }
     }
 
@@ -419,6 +425,8 @@ public class MessageUtils {
         Message message = getMessage(update);
         if (message == null)
             return;
+
+        // TODO: check if the text is the same as the current message text
 
         EditMessageText editMessage = EditMessageText.builder()
                 .chatId(message.getChatId().toString())

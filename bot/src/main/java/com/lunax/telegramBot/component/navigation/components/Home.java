@@ -2,30 +2,33 @@ package com.lunax.telegramBot.component.navigation.components;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import com.lunax.telegramBot.component.handler.AcceptTosHandler;
 import com.lunax.telegramBot.component.handler.HomePageButtons.MyMemeCoins;
+import com.lunax.telegramBot.component.handler.HomePageButtons.RefreshHome;
 import com.lunax.telegramBot.component.handler.HomePageButtons.Settings;
 import com.lunax.telegramBot.component.handler.HomePageButtons.TradeMemeCoin;
 import com.lunax.telegramBot.component.handler.HomePageButtons.MemeCoinCreations.AskMemeCoinData;
+import com.lunax.telegramBot.event.NavigationEvent;
 import com.lunax.telegramBot.model.db.User;
 import com.lunax.telegramBot.model.db.Wallet;
 import com.lunax.telegramBot.model.repository.WalletRepository;
 import com.lunax.telegramBot.model.session.ChatState;
 import com.lunax.telegramBot.service.StateService;
 import com.lunax.telegramBot.service.UserService;
+import com.lunax.telegramBot.service.WalletService;
 import com.lunax.telegramBot.utils.SolanaUtils;
 import com.lunax.telegramBot.utils.components.ButtonHandler;
 import com.lunax.telegramBot.utils.components.MessageUtils;
+import org.springframework.cache.annotation.Cacheable;
 
 import jakarta.annotation.PostConstruct;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.context.event.EventListener;
-import com.lunax.telegramBot.event.NavigationEvent;
 
 @Component
 public class Home implements StateHandler {
@@ -39,7 +42,7 @@ public class Home implements StateHandler {
     private AcceptTosHandler acceptTosHandler;
 
     @Autowired
-    private WalletRepository walletRepository;
+    private WalletService walletService;
 
     @Autowired
     private AskMemeCoinData createMemeCoin;
@@ -59,14 +62,17 @@ public class Home implements StateHandler {
     @Autowired
     private SolanaUtils solanaUtils;
 
+    @Autowired
+    private RefreshHome refreshHome;
+
     private ButtonHandler[][] buttonHandlers2;
 
     @PostConstruct
     private void init() {
         this.buttonHandlers2 = new ButtonHandler[][]{
-            {createMemeCoin, tradeMemeCoin}, 
             {myMemeCoins}, 
-            {settings}
+            {createMemeCoin, tradeMemeCoin}, 
+            {settings, refreshHome}
         };
     }
 
@@ -139,14 +145,13 @@ public class Home implements StateHandler {
     }
 
     public String generateHomeText(Long telegramId) {
-
         String text = "*Welcome to LunaxBot home page*\n\n";
 
         User user = userService.findByTelegramId(telegramId)
             .orElseThrow(() -> new RuntimeException("User not found"));
         
         text += "*Your Wallets:*\n";
-        List<Wallet> wallets = walletRepository.findByUser(user);
+        List<Wallet> wallets = walletService.findByUser(user);
         
         if (wallets.isEmpty()) {
             text += "No wallets found. Create or import a wallet to get started.\n";
@@ -159,6 +164,7 @@ public class Home implements StateHandler {
                 }
                 text += "\nBalance: `" + solanaUtils.getBalance(wallet.getWalletAddress()) + " SOL`\n";
                 text += "Address: `" + wallet.getWalletAddress() + "`\n";
+                i++;
             }
         }
         
