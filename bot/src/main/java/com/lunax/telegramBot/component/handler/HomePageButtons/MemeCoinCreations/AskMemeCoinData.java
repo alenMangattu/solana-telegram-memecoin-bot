@@ -12,12 +12,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.lunax.telegramBot.utils.components.ButtonHandler;
 import com.lunax.telegramBot.utils.components.MessageUtils;
 import com.lunax.telegramBot.model.session.ChatState;
-import com.lunax.telegramBot.component.handler.HomePageButtons.MemeCoinCreations.YesOrNoButtons.RevokeFreezeAuthority;
+import com.lunax.telegramBot.component.handler.HomePageButtons.MemeCoinCreations.InitialLiquidity.AddLiquidity;
 import com.lunax.telegramBot.component.handler.HomePageButtons.MemeCoinCreations.YesOrNoButtons.RevokeMintAuthority;
 import com.lunax.telegramBot.model.db.User;
 import com.lunax.telegramBot.service.UserService;
 import com.lunax.telegramBot.service.StateService;
-import com.lunax.telegramBot.utils.SolanaUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -39,8 +38,8 @@ public class AskMemeCoinData implements ButtonHandler {
     @Autowired
     private StateService stateService;
 
-    @Autowired
-    private SolanaUtils solanaUtils;
+    // @Autowired
+    // private SolanaUtils solanaUtils;
 
     @Autowired
     private CreateMemeCoin createMemeCoin;
@@ -53,7 +52,6 @@ public class AskMemeCoinData implements ButtonHandler {
 
     @Autowired
     private RevokeMintAuthority revokeMintAuthority;
-
 
     public AskMemeCoinData(@Value("🪙 Create Meme Coin") String buttonText,
             @Value("create_meme_coin") String callbackData) {
@@ -76,7 +74,7 @@ public class AskMemeCoinData implements ButtonHandler {
     public void handleCallback(Update update) {
         String callbackData = update.getCallbackQuery().getData();
         log.debug("Received callback data: {}", callbackData);
-        
+
         handleMemecoinName(update);
     }
 
@@ -113,7 +111,7 @@ public class AskMemeCoinData implements ButtonHandler {
         stateService.setState(telegramId, ChatState.AWAITING_MEMECOIN_NAME);
 
     }
-    
+
     public void handleMessage(Update update) {
         Message message = update.getMessage();
         Long telegramId = null;
@@ -124,7 +122,7 @@ public class AskMemeCoinData implements ButtonHandler {
         }
 
         ChatState currentState = stateService.getState(telegramId);
-        
+
         // If there's no current state, initialize the memecoin creation process
         if (currentState == null || currentState == ChatState.IDLE) {
             handleMemecoinName(update);
@@ -132,7 +130,7 @@ public class AskMemeCoinData implements ButtonHandler {
         }
 
         ObjectNode stateData = stateService.getStateData(telegramId);
-        
+
         // Initialize stateData if null
         if (stateData == null) {
             stateData = objectMapper.createObjectNode();
@@ -236,6 +234,7 @@ public class AskMemeCoinData implements ButtonHandler {
                     Requirements:
                     - Must be a positive number
                     - Maximum 1 quadrillion (1,000,000,000,000,000)
+                    - Minimum 10
                     """;
 
             MessageUtils.sendMessage(update, message);
@@ -254,7 +253,7 @@ public class AskMemeCoinData implements ButtonHandler {
 
         try {
             double supply = Double.parseDouble(supplyStr);
-            if (supply <= 0 || supply > 1_000_000_000_000_000.0) {
+            if (supply <= 10 || supply > 1_000_000_000_000_000.0) {
                 throw new NumberFormatException();
             }
 
@@ -271,7 +270,7 @@ public class AskMemeCoinData implements ButtonHandler {
             stateService.setState(telegramId, ChatState.AWAITING_MEMECOIN_DESCRIPTION);
 
         } catch (NumberFormatException e) {
-            MessageUtils.sendMessage(update, "❌ Please enter a valid number between 0 and 1 quadrillion:");
+            MessageUtils.sendMessage(update, "❌ Please enter a valid number between 10 and 1 quadrillion:");
         }
     }
 
@@ -295,29 +294,41 @@ public class AskMemeCoinData implements ButtonHandler {
                 """;
 
         ButtonHandler[][] buttons = {
-            {
-                new ButtonHandler() {
-                    public String getButtonText() { return "Yes"; }
-                    public String getCallbackData() { return "revoke_mint_authority_confirm"; }
-                    public void handleCallback(Update update) {
-                        revokeMintAuthority.handleCallback(update);
-                    }
-                },
-                new ButtonHandler() {
-                    public String getButtonText() { return "No"; }
-                    public String getCallbackData() { return "revoke_mint_authority_cancel"; }
-                    public void handleCallback(Update update) {
-                        revokeMintAuthority.handleCancel(update);
-                    }
+                {
+                        new ButtonHandler() {
+                            public String getButtonText() {
+                                return "Yes";
+                            }
+
+                            public String getCallbackData() {
+                                return "revoke_mint_authority_confirm";
+                            }
+
+                            public void handleCallback(Update update) {
+                                revokeMintAuthority.handleCallback(update);
+                            }
+                        },
+                        new ButtonHandler() {
+                            public String getButtonText() {
+                                return "No";
+                            }
+
+                            public String getCallbackData() {
+                                return "revoke_mint_authority_cancel";
+                            }
+
+                            public void handleCallback(Update update) {
+                                revokeMintAuthority.handleCancel(update);
+                            }
+                        }
                 }
-            }
         };
 
         MessageUtils.sendInlineKeyboard(update, message, buttons);
         stateService.setState(telegramId, ChatState.AWAITING_REVOKE_MINT_AUTHORITY_CONFIRMATION);
     }
 
-    private void handleMemecoinImage(Update update, Long telegramId, Message message, ObjectNode stateData)  {
+    private void handleMemecoinImage(Update update, Long telegramId, Message message, ObjectNode stateData) {
         if (message == null || !message.hasPhoto()) {
             MessageUtils.sendMessage(update,
                     "❌ Provide a valid image.");
@@ -363,7 +374,7 @@ public class AskMemeCoinData implements ButtonHandler {
                 Revoke Freeze Authority: %s
 
                 Are you sure you want to create this memecoin?
-                
+
                 Note: This action cannot be undone.
                 """,
                 stateData.get("name").asText(),
@@ -371,14 +382,16 @@ public class AskMemeCoinData implements ButtonHandler {
                 stateData.get("decimals").asInt(),
                 String.format("%,.0f", stateData.get("supply").asDouble()),
                 stateData.get("description").asText(),
-                stateData.has("revokeMintAuthority") ? (stateData.get("revokeMintAuthority").asBoolean() ? "Yes" : "No") : "No",
-                stateData.has("revokeFreezeAuthority") ? (stateData.get("revokeFreezeAuthority").asBoolean() ? "Yes" : "No") : "No"
-        );
+                stateData.has("revokeMintAuthority") ? (stateData.get("revokeMintAuthority").asBoolean() ? "Yes" : "No")
+                        : "No",
+                stateData.has("revokeFreezeAuthority")
+                        ? (stateData.get("revokeFreezeAuthority").asBoolean() ? "Yes" : "No")
+                        : "No");
 
         ButtonHandler[][] buttons = {
-            {createMemeCoin},
-            {addLiquidity},
-            {notConfirmed}
+                { createMemeCoin },
+                { addLiquidity },
+                { notConfirmed }
         };
 
         // Store the confirmation message in the state data
@@ -403,7 +416,7 @@ public class AskMemeCoinData implements ButtonHandler {
             log.warn("File does not exist: {}", filePath);
             return false;
         }
-        
+
         long fileSize = 0;
         try {
             fileSize = Files.size(file.toPath());
@@ -411,7 +424,7 @@ public class AskMemeCoinData implements ButtonHandler {
             log.error("Error getting file size for {}: {}", filePath, e.getMessage());
             return false;
         }
-        
+
         log.info("Checking if file size is valid: {}", fileSize);
         log.info("Max size: {}", maxSize);
         return fileSize <= maxSize;

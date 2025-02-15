@@ -22,7 +22,7 @@ public class TelegramController {
         log.info("=== Starting /send endpoint processing ===");
         log.info("Request URI: {}", request.getRequestURI());
         log.info("Request method: {}", request.getMethod());
-        
+
         log.info("Request headers:");
         Enumeration<String> headerNames = request.getHeaderNames();
         while (headerNames.hasMoreElements()) {
@@ -51,4 +51,4 @@ public class TelegramController {
         private Long chatId;
         private String text;
     }
-} 
+}

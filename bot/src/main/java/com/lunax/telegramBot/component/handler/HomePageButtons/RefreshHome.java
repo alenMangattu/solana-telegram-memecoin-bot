@@ -12,16 +12,14 @@ import com.lunax.telegramBot.utils.components.ButtonHandler;
 @Component
 public class RefreshHome implements ButtonHandler {
 
-
     @Autowired
     private ApplicationEventPublisher eventPublisher;
-
 
     private final String buttonText;
     private final String callbackData;
 
     public RefreshHome(@Value("⟳ Refresh") String buttonText,
-                        @Value("refresh") String callbackData) {
+            @Value("refresh") String callbackData) {
         this.buttonText = buttonText;
         this.callbackData = callbackData;
     }
