@@ -33,3 +33,24 @@ solana.home.dir=${user.home}/.config/solana
 spring.devtools.restart.enabled=false
 
 server.port=8888
+# birdeye.api.key=26a751a2f05d47f1a81e74fc08da9c03
+
+# Logging configuration
+logging.level.root=INFO
+logging.level.com.lunax.telegramBot=INFO
+logging.pattern.console=%d{yyyy-MM-dd HH:mm:ss} - %msg%n
+
+# spring.security.enabled=false
+spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+rm bot/src/main/java/com/lunax/telegramBot/config/SecurityConfig.java
+# Enhanced logging configuration
+logging.level.org.springframework.security=TRACE
+logging.level.org.springframework.web=TRACE
+logging.level.org.springframework.security.web.FilterChainProxy=DEBUG
+logging.level.org.springframework.security.web.access.intercept.AuthorizationFilter=DEBUG
+
+# Detailed request logging
+logging.level.org.springframework.web.servlet.DispatcherServlet=DEBUG
+loggin.level.org.springframework.web.filter.CommonsRequestLoggingFilter.enableLoggingRequestDetails='false'
+
+spring.jpa.open-in-view=false

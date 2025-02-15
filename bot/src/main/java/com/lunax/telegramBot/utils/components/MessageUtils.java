@@ -38,6 +38,7 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+import org.telegram.telegrambots.meta.api.methods.ParseMode;
 
 public class MessageUtils {
 
@@ -98,14 +99,16 @@ public class MessageUtils {
     }
 
     public static void sendMessage(Long chatId, String text) {
-        SendMessage sendMessage = new SendMessage();
-        sendMessage.setChatId(chatId.toString());
-        sendMessage.setText(text);
-        sendMessage.enableMarkdown(true);
         try {
-            botInstance.execute(sendMessage);
-        } catch (TelegramApiException e) {
-            log.error("Error sending message, {}", e.getMessage());
+            SendMessage message = SendMessage.builder()
+                .chatId(chatId)
+                .text(text)
+                .parseMode(ParseMode.MARKDOWN)
+                .build();
+            
+            botInstance.execute(message);
+        } catch (Exception e) {
+            log.error("Error sending message: ", e);
         }
     }
 
@@ -411,4 +414,44 @@ public class MessageUtils {
         log.error("Error downloading image: {}", e.getMessage());
         throw new RuntimeException("Failed to download image", e);
     }
+
+    public static void editMessageInlineKeyboard(Update update, String text, ButtonHandler[][] buttonHandlers) {
+        Message message = getMessage(update);
+        if (message == null)
+            return;
+
+        EditMessageText editMessage = EditMessageText.builder()
+                .chatId(message.getChatId().toString())
+                .messageId(message.getMessageId())
+                .text(text)
+                .parseMode("Markdown")
+                .build();
+
+        // Only set reply markup if we have buttons
+        if (buttonHandlers != null && buttonHandlers.length > 0) {
+            InlineKeyboardMarkup markup = InlineKeyboardMarkup.builder().build();
+            List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
+
+            for (ButtonHandler[] buttonRow : buttonHandlers) {
+                List<InlineKeyboardButton> row = new ArrayList<>();
+                for (ButtonHandler handler : buttonRow) {
+                    InlineKeyboardButton button = InlineKeyboardButton.builder()
+                            .text(handler.getButtonText())
+                            .callbackData(handler.getCallbackData())
+                            .build();
+                    row.add(button);
+                }
+                buttons.add(row);
+            }
+            markup.setKeyboard(buttons);
+            editMessage.setReplyMarkup(markup);
+        }
+
+        try {
+            botInstance.execute(editMessage);
+        } catch (TelegramApiException e) {
+            log.error("Error editing message: {}", e.getMessage());
+        }
+    }
+
 }

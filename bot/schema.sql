@@ -187,7 +187,7 @@ CREATE INDEX idx_encryption_key_metadata_expires ON encryption_key_metadata(expi
 -- ================================================
 CREATE TABLE memecoins (
     id SERIAL PRIMARY KEY,
-    creator_wallet_id UUID NOT NULL,
+    creator_wallet_id VARCHAR(44) NOT NULL,
     name VARCHAR(100) NOT NULL,
     symbol VARCHAR(20) NOT NULL UNIQUE,
     total_supply NUMERIC(20, 9) NOT NULL,

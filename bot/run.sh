@@ -1,1 +1,1 @@
-cd /home/computer/dev/java/lunax/bot ; /usr/bin/env /usr/lib/jvm/java-23-openjdk/bin/java @/tmp/cp_daw0vz3yqbiu8gr3bw78rhutc.argfile com.lunax.telegramBot.TelegramBotApplication 
+cd /home/computer/dev/java/lunax/bot ;  mvn clean package -DskipTests; java -jar target/telegramBot-0.0.1-SNAPSHOT.jar

@@ -24,7 +24,7 @@ public class Memecoin {
     private Long id;
 
     @Column(name = "creator_wallet_id", nullable = false)
-    private UUID creatorWalletId;
+    private String creatorWalletId;
 
     @Column(name = "name", nullable = false)
     private String name;
@@ -51,11 +51,11 @@ public class Memecoin {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt = LocalDateTime.now();
 
-    public void setCreatorWalletId(UUID walletId) {
-        this.creatorWalletId = walletId;
+    public String getCreatorWalletId() {
+        return creatorWalletId;
     }
 
-    public UUID getCreatorWalletId() {
-        return this.creatorWalletId;
+    public void setCreatorWalletId(String creatorWalletId) {
+        this.creatorWalletId = creatorWalletId;
     }
 }

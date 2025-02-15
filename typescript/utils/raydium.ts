@@ -52,10 +52,6 @@ const getPoolKeys = async (ammId: string, connection: Connection) => {
             } as unknown as LiquidityPoolKeys;
         }
     }
-<<<<<<< HEAD
 };
 
 export { getPoolKeys };
-=======
-};
->>>>>>> 78e8847 (Modified the token progam from token 2022 -> standard token program (metadata still doesnt work))

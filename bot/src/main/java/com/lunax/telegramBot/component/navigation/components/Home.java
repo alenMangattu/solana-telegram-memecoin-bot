@@ -24,6 +24,8 @@ import com.lunax.telegramBot.utils.components.MessageUtils;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.event.EventListener;
+import com.lunax.telegramBot.event.NavigationEvent;
 
 @Component
 public class Home implements StateHandler {
@@ -80,10 +82,24 @@ public class Home implements StateHandler {
             Do you accept these terms?
             """;
 
-    @Override
-    public void executeVoid(Update update) {
-        Long telegramId = update.getMessage().getFrom().getId();
-        String username = update.getMessage().getFrom().getUserName();
+    public void executeVoid(Update update, boolean edit) {
+        Long telegramId;
+        String username = null;
+
+        // Check if the update is a message or a callback query
+        if (update.hasMessage()) {
+            telegramId = update.getMessage().getFrom().getId();
+            username = update.getMessage().getFrom().getUserName();
+        } else if (update.hasCallbackQuery()) {
+            telegramId = update.getCallbackQuery().getFrom().getId();
+            // You can also retrieve the username if needed
+            // username = update.getCallbackQuery().getFrom().getUserName();
+        } else {
+            // Handle unexpected update types
+            log.warn("Received an update that is neither a message nor a callback query.");
+            return; // Exit if the update type is not supported
+        }
+
         System.out.println("From ID: " + telegramId);
 
         // Check if user exists, create if not
@@ -111,7 +127,15 @@ public class Home implements StateHandler {
         }
         String text = this.generateHomeText(telegramId);
         ButtonHandler[][] button = this.getButtonHandlers();
-        MessageUtils.sendInlineKeyboard(update, text, button);
+        if (edit)
+            MessageUtils.editMessageInlineKeyboard(update, text, button);
+        else
+            MessageUtils.sendInlineKeyboard(update, text, button);
+    }
+
+    @Override
+    public void executeVoid(Update update) {
+        this.executeVoid(update, false);
     }
 
     public String generateHomeText(Long telegramId) {
@@ -145,5 +169,12 @@ public class Home implements StateHandler {
 
     public ButtonHandler[][] getButtonHandlers() {
         return this.buttonHandlers2;
+    }
+
+    @EventListener
+    public void handleNavigationEvent(NavigationEvent event) {
+        if ("HOME".equals(event.getDestination())) {
+            executeVoid(event.getUpdate(), true);
+        }
     }
 }

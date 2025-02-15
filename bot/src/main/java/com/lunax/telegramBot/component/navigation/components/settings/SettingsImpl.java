@@ -15,6 +15,8 @@ import com.lunax.telegramBot.utils.components.ButtonHandler;
 import com.lunax.telegramBot.utils.components.MessageUtils;
 
 import jakarta.annotation.PostConstruct;
+import org.springframework.context.event.EventListener;
+import com.lunax.telegramBot.event.NavigationEvent;
 
 
 @Component
@@ -100,5 +102,12 @@ Note: Automatic protection system
 
    public ButtonHandler[][] getButtonHandlers() {
       return buttonHandlers;
+   }
+
+   @EventListener
+   public void handleNavigationEvent(NavigationEvent event) {
+      if ("SETTINGS".equals(event.getDestination())) {
+         MessageUtils.editMessage(event.getUpdate(), getText(), getButtonHandlers());
+      }
    }
 }
