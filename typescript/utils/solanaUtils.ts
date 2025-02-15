@@ -112,7 +112,7 @@ export class SolanaUtils {
             
             while (retries > 0 && !tokenAddress) {
                 try {
-                    await updateCallback(`Starting creation of memecoin: ${name} (${symbol}).`);
+                    await updateCallback(`🚀 Creating memecoin: ${name} ($${symbol})...`);
                     
                     tokenAddress = await this.createTokenWithCli(
                         keypairPath,
@@ -129,6 +129,7 @@ export class SolanaUtils {
                 } catch (error) {
                     retries--;
                     if (retries === 0) throw error;
+                    await updateCallback(`🔄 Token creation failed, retrying... (${retries} attempts left), error: ${error}`);
                     logger.warn(`Token creation failed, retrying... (${retries} attempts left)`);
                     await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds before retry
                 }
@@ -140,7 +141,7 @@ export class SolanaUtils {
                 throw new Error('Failed to create token after multiple attempts');
             }
 
-            await updateCallback(`Memecoin ${name} (${symbol}) created successfully with address: ${tokenAddress}.`);
+            await updateCallback(`🎉 Memecoin ${name} ($${symbol}) created! Address: \`${tokenAddress}\``);
             return tokenAddress;
         } catch (error: unknown) {
             logger.error('Error creating memecoin:', error);
