@@ -34,8 +34,10 @@ public enum ChatState {
     ADD_LIQUIDITY_START,           // Starting liquidity addition process
     AWAITING_FROM_TOKEN,           // Waiting for source token (ticker/address)
     AWAITING_FROM_AMOUNT,          // Waiting for source token amount
+    AWAITING_FEE_TIER,
     AWAITING_TO_TOKEN,            // Waiting for destination token (ticker/address)
     AWAITING_TO_AMOUNT,           // Waiting for destination token amount
+    AWAITING_LP_BURN_AMOUNT,      // Waiting for amount of LP tokens to burn
     AWAITING_LIQUIDITY_CONFIRMATION, // Waiting for final confirmation
     PROCESSING_LIQUIDITY,         // Processing liquidity addition
     
@@ -100,8 +102,10 @@ public enum ChatState {
         return this != null && (this == ADD_LIQUIDITY_START ||
                this == AWAITING_FROM_TOKEN ||
                this == AWAITING_FROM_AMOUNT ||
+               this == AWAITING_FEE_TIER ||
                this == AWAITING_TO_TOKEN ||
                this == AWAITING_TO_AMOUNT ||
+               this == AWAITING_LP_BURN_AMOUNT ||
                this == AWAITING_LIQUIDITY_CONFIRMATION ||
                this == PROCESSING_LIQUIDITY);
     }

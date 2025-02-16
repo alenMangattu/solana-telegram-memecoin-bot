@@ -331,3 +331,437 @@
 {"level":"info","message":"Cleaned up keypair file: /home/computer/.config/solana/temp/96cd5d08-9a6b-4267-9e87-3fe25ecc70b3.json","timestamp":"2025-02-15T15:26:34.814Z"}
 {"level":"info","message":"Server running on port 3000","timestamp":"2025-02-15T15:27:09.943Z"}
 {"level":"info","message":"Server running on port 3000","timestamp":"2025-02-15T15:27:10.907Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T13:53:08.787Z"}
+{"level":"info","message":"Creating memecoin Idbruh (93939292) with supply 4773818187377","timestamp":"2025-02-16T14:13:40.750Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/f505259d-5ec8-4dab-9e68-fd5c3e626939.json","timestamp":"2025-02-16T14:13:40.757Z"}
+{"level":"info","message":"Token created with address: CyuwuZavxkhMmUnDfiv9nF23y7bAQaaoD8wfozPzZM9Y","timestamp":"2025-02-16T14:13:43.919Z"}
+{"level":"info","message":"Metadata created successfully","timestamp":"2025-02-16T14:13:45.224Z"}
+{"level":"info","message":"Minted 4773818187377 tokens to 4Z2JSARwTKfVXJcNpGm5zuTgzhPnGvSJEHsgtCuNjqxr","timestamp":"2025-02-16T14:13:48.978Z"}
+{"level":"info","message":"Mint authority revoked","timestamp":"2025-02-16T14:13:50.845Z"}
+{"level":"info","message":"Cleaned up keypair file: /home/computer/.config/solana/temp/f505259d-5ec8-4dab-9e68-fd5c3e626939.json","timestamp":"2025-02-16T14:13:50.847Z"}
+{"level":"info","message":"Creating memecoin Tets (84KDNDJ) with supply 484838838","timestamp":"2025-02-16T14:34:49.038Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/d65fb21a-9415-41eb-82eb-b1ea8f02d117.json","timestamp":"2025-02-16T14:34:49.050Z"}
+{"level":"info","message":"Token created with address: 4kv7rooWpD5MY4pMyNP3NJrjuUbPX16x7rjFT3B9aPtS","timestamp":"2025-02-16T14:34:51.347Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T14:38:00.225Z"}
+{"level":"info","message":"Creating memecoin Please work (94949FCJD) with supply 37373773","timestamp":"2025-02-16T14:39:45.425Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/4e521849-3fe2-42ec-9ec5-f849d8abe28e.json","timestamp":"2025-02-16T14:39:45.429Z"}
+{"level":"info","message":"Token created with address: GM2ShRSVNErhjFbd93AsnaLH99DjQdsx63fQ4E2dU7EB","timestamp":"2025-02-16T14:39:47.706Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T14:41:16.033Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T14:41:16.051Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T14:41:16.129Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T14:41:22.354Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T14:41:22.359Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T14:41:22.418Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T14:41:27.259Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T14:41:27.266Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T14:41:27.347Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T14:41:35.382Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T14:41:35.386Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T14:41:35.423Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T14:41:37.570Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T14:41:37.574Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T14:41:37.636Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T14:41:38.621Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T14:41:38.625Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T14:41:38.651Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T14:41:58.729Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T14:41:58.733Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T14:41:58.789Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T14:42:13.506Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T14:42:13.509Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T14:42:13.542Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T14:42:26.125Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T14:42:26.128Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T14:42:26.154Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T14:42:27.024Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T14:42:27.029Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T14:42:27.055Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T14:42:45.451Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T14:42:45.455Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T14:42:45.484Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T14:43:07.540Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T14:43:07.544Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T14:43:07.568Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T14:43:15.687Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T14:43:15.690Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T14:43:15.717Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T14:43:17.441Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T14:43:17.444Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T14:43:17.499Z"}
+{"level":"info","message":"Creating memecoin: IDK (RNAODM) with supply 123","timestamp":"2025-02-16T14:44:48.901Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/44e34a11-0cb2-4c6e-abd7-4fbabe5d8022.json","timestamp":"2025-02-16T14:44:48.909Z"}
+{"level":"info","message":"Keypair saved at: /home/computer/.config/solana/temp/44e34a11-0cb2-4c6e-abd7-4fbabe5d8022.json","timestamp":"2025-02-16T14:44:48.910Z"}
+{"level":"info","message":"Attempting to create token...","timestamp":"2025-02-16T14:44:48.910Z"}
+{"level":"info","message":"Update: 🏗️ Creating token...","timestamp":"2025-02-16T14:44:48.915Z"}
+{"level":"info","message":"Token created with address: DZAysZZ1QVPYVNttMTiDM4GHFwVVBxmpff5YTeemiQf8","timestamp":"2025-02-16T14:44:58.764Z"}
+{"level":"info","message":"Update: 🎨 Creating metadata...","timestamp":"2025-02-16T14:44:58.765Z"}
+{"level":"info","message":"Attempt 1/3 to create metadata","timestamp":"2025-02-16T14:44:59.129Z"}
+{"level":"info","message":"Checking RPC connection...","timestamp":"2025-02-16T14:44:59.131Z"}
+{"feature-set":1725507508,"level":"info","message":"Connected to Solana node version:","solana-core":"2.1.13","timestamp":"2025-02-16T14:44:59.443Z"}
+{"level":"info","message":"Starting metadata creation for token DZAysZZ1QVPYVNttMTiDM4GHFwVVBxmpff5YTeemiQf8","timestamp":"2025-02-16T14:44:59.445Z"}
+{"level":"info","message":"Generated metadata account address: 6W2TrXsvD7K7ZzupYEUS7e7TKfZ8zpjY1HUJa6VhKq87","timestamp":"2025-02-16T14:44:59.448Z"}
+{"collection":null,"creators":null,"level":"info","message":"Created metadata data structure:","name":"IDK","sellerFeeBasisPoints":0,"symbol":"RNAODM","timestamp":"2025-02-16T14:44:59.449Z","uri":"https://ipfs.io/ipfs/QmVVcTbPWkhBJ2kNp8H3tkjbsgNXGkRDqadBiwpiody1gN","uses":null}
+{"level":"info","message":"Creating metadata instruction...","timestamp":"2025-02-16T14:44:59.449Z"}
+{"level":"info","message":"Metadata instruction created","timestamp":"2025-02-16T14:44:59.451Z"}
+{"level":"info","message":"Building transaction...","timestamp":"2025-02-16T14:44:59.452Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-16T14:44:59.452Z"}
+{"level":"info","message":"Sending transaction...","timestamp":"2025-02-16T14:44:59.551Z"}
+{"level":"info","message":"Transaction sent with signature: 5ztsArW57Y5qVFqvDVLd8gbfs2xJEMBZgNb3ZTVhmBD3ihMPRB7oN71u4iwPGhs1d2w8Kgg9xBMs7CsLcjD1emaL","timestamp":"2025-02-16T14:44:59.776Z"}
+{"level":"info","message":"Waiting for transaction confirmation...","timestamp":"2025-02-16T14:44:59.776Z"}
+{"level":"info","message":"Starting to poll for signature 5ztsArW57Y5qVFqvDVLd8gbfs2xJEMBZgNb3ZTVhmBD3ihMPRB7oN71u4iwPGhs1d2w8Kgg9xBMs7CsLcjD1emaL","timestamp":"2025-02-16T14:44:59.776Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T14:46:01.266Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T14:46:01.270Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T14:46:01.306Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T14:46:10.244Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T14:46:10.247Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T14:46:10.274Z"}
+{"level":"info","message":"Creating memecoin: EJBRG (823989324) with supply 3278723","timestamp":"2025-02-16T14:46:49.182Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/a7a3c01f-2a2e-4c01-b746-c4397d5783be.json","timestamp":"2025-02-16T14:46:49.187Z"}
+{"level":"info","message":"Keypair saved at: /home/computer/.config/solana/temp/a7a3c01f-2a2e-4c01-b746-c4397d5783be.json","timestamp":"2025-02-16T14:46:49.187Z"}
+{"level":"info","message":"Attempting to create token...","timestamp":"2025-02-16T14:46:49.188Z"}
+{"level":"info","message":"Update: 🏗️ Creating token...","timestamp":"2025-02-16T14:46:49.189Z"}
+{"level":"info","message":"Token created with address: 724gHHsDkabMYeKFtdjmJAEp6PKW84gnzrEmTAAJdX9j","timestamp":"2025-02-16T14:46:51.117Z"}
+{"level":"info","message":"Update: 🎨 Creating metadata...","timestamp":"2025-02-16T14:46:51.118Z"}
+{"level":"info","message":"Metadata creation attempt 1/5","timestamp":"2025-02-16T14:46:51.339Z"}
+{"level":"info","message":"Checking RPC connection...","timestamp":"2025-02-16T14:46:51.343Z"}
+{"feature-set":1725507508,"level":"info","message":"Connected to Solana node version:","solana-core":"2.1.13","timestamp":"2025-02-16T14:46:51.683Z"}
+{"level":"info","message":"Starting metadata creation for token 724gHHsDkabMYeKFtdjmJAEp6PKW84gnzrEmTAAJdX9j","timestamp":"2025-02-16T14:46:51.685Z"}
+{"level":"info","message":"Generated metadata account address: HUdcCbv8D4oQvrhAZG6j3tTGP8FNpesCZVz4e78qUSew","timestamp":"2025-02-16T14:46:51.691Z"}
+{"collection":null,"creators":null,"level":"info","message":"Created metadata data structure:","name":"EJBRG","sellerFeeBasisPoints":0,"symbol":"823989324","timestamp":"2025-02-16T14:46:51.691Z","uri":"https://ipfs.io/ipfs/QmUijsULq52nJuZBq1BCHbKhiihdeFjrnRMSXf4Puhv29i","uses":null}
+{"level":"info","message":"Creating metadata instruction...","timestamp":"2025-02-16T14:46:51.692Z"}
+{"level":"info","message":"Metadata instruction created","timestamp":"2025-02-16T14:46:51.695Z"}
+{"level":"info","message":"Building transaction...","timestamp":"2025-02-16T14:46:51.696Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-16T14:46:51.696Z"}
+{"level":"info","message":"Sending transaction...","timestamp":"2025-02-16T14:46:51.806Z"}
+{"level":"info","message":"Transaction sent with signature: 4LzCDaESqf66BKfv66W9sTmzz5jnuyN2d2o8gaZiT5DEb3b6XkiffYaoiJBnN9Jf1uP7r5gJwSPAAgUi93jJTT7Z","timestamp":"2025-02-16T14:46:52.051Z"}
+{"level":"info","message":"Waiting for transaction confirmation...","timestamp":"2025-02-16T14:46:52.051Z"}
+{"level":"info","message":"Starting to poll for signature 4LzCDaESqf66BKfv66W9sTmzz5jnuyN2d2o8gaZiT5DEb3b6XkiffYaoiJBnN9Jf1uP7r5gJwSPAAgUi93jJTT7Z","timestamp":"2025-02-16T14:46:52.052Z"}
+{"level":"info","message":"Polling attempt 1 for signature 4LzCDaESqf66BKfv66W9sTmzz5jnuyN2d2o8gaZiT5DEb3b6XkiffYaoiJBnN9Jf1uP7r5gJwSPAAgUi93jJTT7Z","timestamp":"2025-02-16T14:46:52.053Z"}
+{"level":"info","message":"Full signature status:","timestamp":"2025-02-16T14:46:52.164Z"}
+{"level":"info","message":"No status returned yet, waiting 2000ms before retry...","timestamp":"2025-02-16T14:46:52.164Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T14:47:43.993Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T14:47:43.997Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T14:47:44.051Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T14:47:53.884Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T14:47:53.891Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T14:47:53.946Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T14:47:54.759Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T14:47:54.763Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T14:47:54.791Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T14:48:25.636Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T14:48:25.640Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T14:48:25.669Z"}
+{"level":"info","message":"Creating memecoin: EIRGNIENGER (NIGA) with supply 8721381221","timestamp":"2025-02-16T14:48:58.661Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/5c2a0478-2b15-47e6-b7b3-170f478cb878.json","timestamp":"2025-02-16T14:48:58.665Z"}
+{"level":"info","message":"Keypair saved at: /home/computer/.config/solana/temp/5c2a0478-2b15-47e6-b7b3-170f478cb878.json","timestamp":"2025-02-16T14:48:58.666Z"}
+{"level":"info","message":"Attempting to create token...","timestamp":"2025-02-16T14:48:58.666Z"}
+{"level":"info","message":"Update: 🏗️ Creating token...","timestamp":"2025-02-16T14:48:58.667Z"}
+{"level":"info","message":"Token created with address: 8KEuGvv7JoRTtMjzoWVHDrA22cbjYBeTGk34dJvPECfT","timestamp":"2025-02-16T14:49:06.786Z"}
+{"level":"info","message":"Update: 🎨 Creating metadata...","timestamp":"2025-02-16T14:49:06.786Z"}
+{"level":"info","message":"Metadata creation attempt 1/5","timestamp":"2025-02-16T14:49:07.023Z"}
+{"level":"info","message":"Checking RPC connection...","timestamp":"2025-02-16T14:49:07.025Z"}
+{"feature-set":1725507508,"level":"info","message":"Connected to Solana node version:","solana-core":"2.1.13","timestamp":"2025-02-16T14:49:07.330Z"}
+{"level":"info","message":"Starting metadata creation for token 8KEuGvv7JoRTtMjzoWVHDrA22cbjYBeTGk34dJvPECfT","timestamp":"2025-02-16T14:49:07.331Z"}
+{"level":"info","message":"Generated metadata account address: 9oizWaJojoU359WVdcH5oXLg8nPAajPGWm8xqvVr71vD","timestamp":"2025-02-16T14:49:07.335Z"}
+{"collection":null,"creators":null,"level":"info","message":"Created metadata data structure:","name":"EIRGNIENGER","sellerFeeBasisPoints":0,"symbol":"NIGA","timestamp":"2025-02-16T14:49:07.335Z","uri":"https://ipfs.io/ipfs/QmVWTPCkED1hwngqtS67U3L5ExLcBMgiwPHtGDecRnFL7Y","uses":null}
+{"level":"info","message":"Creating metadata instruction...","timestamp":"2025-02-16T14:49:07.335Z"}
+{"level":"info","message":"Metadata instruction created","timestamp":"2025-02-16T14:49:07.337Z"}
+{"level":"info","message":"Building transaction...","timestamp":"2025-02-16T14:49:07.337Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-16T14:49:07.338Z"}
+{"level":"info","message":"Sending transaction...","timestamp":"2025-02-16T14:49:07.438Z"}
+{"level":"info","message":"Transaction sent with signature: p5DzDLw8g69SjLULsPaUhSwdS7incAQTDyJZgV5qzxZiRKEErybKFon8qmKRqEEkZunxsr6vgGrn3gfBAgqKtZd","timestamp":"2025-02-16T14:49:07.663Z"}
+{"level":"info","message":"Waiting for transaction confirmation...","timestamp":"2025-02-16T14:49:07.664Z"}
+{"level":"info","message":"Starting to poll for signature p5DzDLw8g69SjLULsPaUhSwdS7incAQTDyJZgV5qzxZiRKEErybKFon8qmKRqEEkZunxsr6vgGrn3gfBAgqKtZd","timestamp":"2025-02-16T14:49:07.665Z"}
+{"level":"info","message":"Polling attempt 1 for signature p5DzDLw8g69SjLULsPaUhSwdS7incAQTDyJZgV5qzxZiRKEErybKFon8qmKRqEEkZunxsr6vgGrn3gfBAgqKtZd","timestamp":"2025-02-16T14:49:07.665Z"}
+{"level":"info","message":"Full signature status:","timestamp":"2025-02-16T14:49:07.765Z"}
+{"level":"info","message":"No status returned yet, waiting 2000ms before retry...","timestamp":"2025-02-16T14:49:07.765Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T14:50:12.470Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T14:50:12.475Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T14:50:12.524Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T14:50:14.280Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T14:50:14.293Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T14:50:14.403Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T14:50:15.471Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T14:50:15.477Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T14:50:15.512Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T14:50:23.334Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T14:50:24.054Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T14:50:24.058Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T14:50:24.094Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T14:50:41.919Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T14:50:41.929Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T14:50:42.058Z"}
+{"level":"info","message":"Creating memecoin: LMAO (OINGER) with supply 923942142","timestamp":"2025-02-16T14:51:16.244Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/12a82cac-87f5-4fed-9c98-31a8da5927c7.json","timestamp":"2025-02-16T14:51:16.248Z"}
+{"level":"info","message":"Keypair saved at: /home/computer/.config/solana/temp/12a82cac-87f5-4fed-9c98-31a8da5927c7.json","timestamp":"2025-02-16T14:51:16.248Z"}
+{"level":"info","message":"Attempting to create token...","timestamp":"2025-02-16T14:51:16.248Z"}
+{"level":"info","message":"Update: 🏗️ Creating token...","timestamp":"2025-02-16T14:51:16.249Z"}
+{"level":"info","message":"Token created with address: otCG3eF7sQofu5htieH8ABLpBZAoSjVv11G93X7kV8A","timestamp":"2025-02-16T14:51:18.296Z"}
+{"level":"info","message":"Update: 🎨 Creating metadata...","timestamp":"2025-02-16T14:51:18.296Z"}
+{"level":"info","message":"Metadata creation attempt 1/5","timestamp":"2025-02-16T14:51:18.499Z"}
+{"level":"info","message":"Checking RPC connection...","timestamp":"2025-02-16T14:51:18.500Z"}
+{"feature-set":1725507508,"level":"info","message":"Connected to Solana node version:","solana-core":"2.1.13","timestamp":"2025-02-16T14:51:18.799Z"}
+{"level":"info","message":"Starting metadata creation for token otCG3eF7sQofu5htieH8ABLpBZAoSjVv11G93X7kV8A","timestamp":"2025-02-16T14:51:18.801Z"}
+{"level":"info","message":"Generated metadata account address: F6f7DdfuduyyoZuZ8yPCHTpQFpeJ1Khkp1ENAuPeyrvt","timestamp":"2025-02-16T14:51:18.806Z"}
+{"collection":null,"creators":null,"level":"info","message":"Created metadata data structure:","name":"LMAO","sellerFeeBasisPoints":0,"symbol":"OINGER","timestamp":"2025-02-16T14:51:18.806Z","uri":"https://ipfs.io/ipfs/QmY88HzbjcDLjiwMMwzNmQkUVL3Qsqr3QDGWyhKee1354h","uses":null}
+{"level":"info","message":"Creating metadata instruction...","timestamp":"2025-02-16T14:51:18.806Z"}
+{"level":"info","message":"Metadata instruction created","timestamp":"2025-02-16T14:51:18.808Z"}
+{"level":"info","message":"Building transaction...","timestamp":"2025-02-16T14:51:18.809Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-16T14:51:18.809Z"}
+{"level":"info","message":"Transaction sent with signature: 4M6KEYXxmqnk2s7iab4zo7XV89CycJdWiZZwqQcaLQ2jJ7cHj2zjjcfYkprRhGix5fJAFmZrss2hhvV3G9qafxkA","timestamp":"2025-02-16T14:51:19.117Z"}
+{"level":"info","message":"Waiting for transaction confirmation...","timestamp":"2025-02-16T14:51:19.117Z"}
+{"level":"info","message":"Starting to poll for signature 4M6KEYXxmqnk2s7iab4zo7XV89CycJdWiZZwqQcaLQ2jJ7cHj2zjjcfYkprRhGix5fJAFmZrss2hhvV3G9qafxkA","timestamp":"2025-02-16T14:51:19.118Z"}
+{"level":"info","message":"Polling attempt 1 for signature 4M6KEYXxmqnk2s7iab4zo7XV89CycJdWiZZwqQcaLQ2jJ7cHj2zjjcfYkprRhGix5fJAFmZrss2hhvV3G9qafxkA","timestamp":"2025-02-16T14:51:19.118Z"}
+{"level":"info","message":"No status yet, transaction still valid. Waiting 2000ms...","timestamp":"2025-02-16T14:51:19.894Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T14:53:14.515Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T14:53:14.523Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T14:53:14.559Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T14:54:26.375Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T14:54:26.379Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T14:54:26.411Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T14:54:31.466Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T14:54:31.470Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T14:54:31.494Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T14:54:39.553Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T14:54:39.556Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T14:54:39.581Z"}
+{"level":"info","message":"Creating memecoin: uerg (RPCERROR) with supply 9329219932213","timestamp":"2025-02-16T14:55:22.923Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/5682da46-3d7b-47ab-bc73-9ba8308c71c9.json","timestamp":"2025-02-16T14:55:22.929Z"}
+{"level":"info","message":"Keypair saved at: /home/computer/.config/solana/temp/5682da46-3d7b-47ab-bc73-9ba8308c71c9.json","timestamp":"2025-02-16T14:55:22.929Z"}
+{"level":"info","message":"Attempting to create token...","timestamp":"2025-02-16T14:55:22.929Z"}
+{"level":"info","message":"Update: 🏗️ Creating token...","timestamp":"2025-02-16T14:55:22.931Z"}
+{"level":"info","message":"Token created with address: BDKDVLB1XhdLz1c1xKKS568XXU9bauKmKCLDRq3o1g45","timestamp":"2025-02-16T14:55:25.672Z"}
+{"level":"info","message":"Update: 🎨 Creating metadata...","timestamp":"2025-02-16T14:55:25.672Z"}
+{"level":"info","message":"Metadata creation attempt 1/5","timestamp":"2025-02-16T14:55:25.933Z"}
+{"level":"info","message":"Checking RPC connection...","timestamp":"2025-02-16T14:55:25.934Z"}
+{"feature-set":1725507508,"level":"info","message":"Connected to Solana node version:","solana-core":"2.1.13","timestamp":"2025-02-16T14:55:26.231Z"}
+{"level":"info","message":"Starting metadata creation for token BDKDVLB1XhdLz1c1xKKS568XXU9bauKmKCLDRq3o1g45","timestamp":"2025-02-16T14:55:26.232Z"}
+{"level":"info","message":"Generated metadata account address: 38FyhEv6ffPSdWzKEVQJZZvDWcNuAsmnKU83uGnCsvpR","timestamp":"2025-02-16T14:55:26.235Z"}
+{"collection":null,"creators":null,"level":"info","message":"Created metadata data structure:","name":"uerg","sellerFeeBasisPoints":0,"symbol":"RPCERROR","timestamp":"2025-02-16T14:55:26.236Z","uri":"https://ipfs.io/ipfs/QmXgoeGTJZvzad3y91nEFYcSJGFKRUfUZVQ3ytM1uPGbm3","uses":null}
+{"level":"info","message":"Creating metadata instruction...","timestamp":"2025-02-16T14:55:26.236Z"}
+{"level":"info","message":"Metadata instruction created","timestamp":"2025-02-16T14:55:26.239Z"}
+{"level":"info","message":"Building transaction...","timestamp":"2025-02-16T14:55:26.239Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-16T14:55:26.239Z"}
+{"level":"info","message":"Transaction sent with signature: 2PPEuAMJK8tENKzUeZpxEjUNdrSjdvoGAC4Wgm8pw7hq7ax5n9TbZW1FCngwhSfmmpzutx6E4DV6RridDazgi4g8","timestamp":"2025-02-16T14:55:26.544Z"}
+{"level":"info","message":"Waiting for transaction confirmation...","timestamp":"2025-02-16T14:55:26.544Z"}
+{"level":"info","message":"Starting to poll for signature 2PPEuAMJK8tENKzUeZpxEjUNdrSjdvoGAC4Wgm8pw7hq7ax5n9TbZW1FCngwhSfmmpzutx6E4DV6RridDazgi4g8","timestamp":"2025-02-16T14:55:26.545Z"}
+{"level":"info","message":"Polling attempt 1 for signature 2PPEuAMJK8tENKzUeZpxEjUNdrSjdvoGAC4Wgm8pw7hq7ax5n9TbZW1FCngwhSfmmpzutx6E4DV6RridDazgi4g8","timestamp":"2025-02-16T14:55:26.545Z"}
+{"level":"info","message":"No status yet, transaction still valid. Waiting 2000ms...","timestamp":"2025-02-16T14:55:27.337Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T14:56:50.166Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T14:56:50.170Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T14:56:50.197Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T14:56:56.566Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T14:56:56.570Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T14:56:56.600Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T14:56:57.383Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T14:56:57.391Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T14:56:57.437Z"}
+{"level":"info","message":"Creating memecoin: WORK I EIFNE (2183123) with supply 7327821","timestamp":"2025-02-16T14:57:35.113Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/fe57a795-a3fc-4100-a3e0-2359a51cf125.json","timestamp":"2025-02-16T14:57:35.117Z"}
+{"level":"info","message":"Keypair saved at: /home/computer/.config/solana/temp/fe57a795-a3fc-4100-a3e0-2359a51cf125.json","timestamp":"2025-02-16T14:57:35.117Z"}
+{"level":"info","message":"Attempting to create token...","timestamp":"2025-02-16T14:57:35.117Z"}
+{"level":"info","message":"Update: 🏗️ Creating token...","timestamp":"2025-02-16T14:57:35.119Z"}
+{"level":"info","message":"Token created with address: GaypNDs8mneJFiN3fqoBnjgkWSQyAzMuPptgXg5PycDz","timestamp":"2025-02-16T14:57:37.009Z"}
+{"level":"info","message":"Update: 🎨 Creating metadata...","timestamp":"2025-02-16T14:57:37.011Z"}
+{"level":"info","message":"Metadata creation attempt 1/5 for token GaypNDs8mneJFiN3fqoBnjgkWSQyAzMuPptgXg5PycDz","timestamp":"2025-02-16T14:57:37.435Z"}
+{"level":"info","message":"Checking RPC connection status...","timestamp":"2025-02-16T14:57:37.435Z"}
+{"feature-set":1725507508,"level":"info","message":"RPC connection verified. Node version:","solana-core":"2.1.13","timestamp":"2025-02-16T14:57:37.761Z"}
+{"level":"info","message":"Generated metadata account address: 8VN4HvqLftXJdRUVf2mJrnVo8qF7zA3pminQVGa3GPqV","timestamp":"2025-02-16T14:57:37.772Z"}
+{"level":"info","message":"Creating metadata with parameters:","name":"WORK I EIFNE","symbol":"2183123","timestamp":"2025-02-16T14:57:37.772Z","uri":"https://ipfs.io/ipfs/QmfWQ7GizWmj2oy6PgLFrpmhWFvNip6ZCMKNokAh7DfbpK"}
+{"collection":null,"creators":null,"level":"info","message":"Created metadata data structure:","name":"WORK I EIFNE","sellerFeeBasisPoints":0,"symbol":"2183123","timestamp":"2025-02-16T14:57:37.772Z","uri":"https://ipfs.io/ipfs/QmfWQ7GizWmj2oy6PgLFrpmhWFvNip6ZCMKNokAh7DfbpK","uses":null}
+{"level":"info","message":"Creating metadata instruction...","timestamp":"2025-02-16T14:57:37.773Z"}
+{"level":"info","message":"Metadata instruction created","timestamp":"2025-02-16T14:57:37.776Z"}
+{"level":"info","message":"Building transaction...","timestamp":"2025-02-16T14:57:37.776Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-16T14:57:37.780Z"}
+{"level":"info","message":"Transaction sent with signature: LRjfTvMZN5wuGHodakdst3tWe84DR2XLmPDnYcvVsoxNCsUUivtFbmP3k79JqL1dJvEkvS8LMPBMygHrDZQ3mt3","timestamp":"2025-02-16T14:57:38.089Z"}
+{"level":"info","message":"Waiting for transaction confirmation...","timestamp":"2025-02-16T14:57:38.090Z"}
+{"level":"info","message":"Starting to poll for signature LRjfTvMZN5wuGHodakdst3tWe84DR2XLmPDnYcvVsoxNCsUUivtFbmP3k79JqL1dJvEkvS8LMPBMygHrDZQ3mt3","timestamp":"2025-02-16T14:57:38.091Z"}
+{"level":"info","message":"Polling attempt 1 for signature LRjfTvMZN5wuGHodakdst3tWe84DR2XLmPDnYcvVsoxNCsUUivtFbmP3k79JqL1dJvEkvS8LMPBMygHrDZQ3mt3","timestamp":"2025-02-16T14:57:38.092Z"}
+{"level":"info","message":"No status yet, transaction still valid. Waiting 2000ms...","timestamp":"2025-02-16T14:57:38.857Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T14:58:27.508Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T14:58:27.512Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T14:58:27.579Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T14:58:31.906Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T14:58:31.911Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T14:58:31.950Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T14:58:32.740Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T14:58:32.744Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T14:58:32.776Z"}
+{"level":"info","message":"Creating memecoin: LOL (NICEOIN) with supply 9191991919191","timestamp":"2025-02-16T14:59:08.028Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/504962c0-d7b8-44d1-b99c-553f1d804fbb.json","timestamp":"2025-02-16T14:59:08.034Z"}
+{"level":"info","message":"Keypair saved at: /home/computer/.config/solana/temp/504962c0-d7b8-44d1-b99c-553f1d804fbb.json","timestamp":"2025-02-16T14:59:08.035Z"}
+{"level":"info","message":"Attempting to create token...","timestamp":"2025-02-16T14:59:08.035Z"}
+{"level":"info","message":"Update: 🏗️ Creating token...","timestamp":"2025-02-16T14:59:08.038Z"}
+{"level":"info","message":"Token created with address: DSEcJpE1MhwAUmrf3Xcu4JTwGBszJ3HFQsbGaRntu6Vb","timestamp":"2025-02-16T14:59:11.298Z"}
+{"level":"info","message":"Token created without freeze authority","timestamp":"2025-02-16T14:59:11.299Z"}
+{"level":"info","message":"Update: 🎨 Creating metadata...","timestamp":"2025-02-16T14:59:11.300Z"}
+{"level":"info","message":"Metadata creation attempt 1/5 for token DSEcJpE1MhwAUmrf3Xcu4JTwGBszJ3HFQsbGaRntu6Vb","timestamp":"2025-02-16T14:59:11.642Z"}
+{"level":"info","message":"Checking RPC connection status...","timestamp":"2025-02-16T14:59:11.644Z"}
+{"feature-set":1725507508,"level":"info","message":"RPC connection verified. Node version:","solana-core":"2.1.13","timestamp":"2025-02-16T14:59:12.321Z"}
+{"level":"info","message":"Generated metadata account address: FtC37ezWbfEnyqYC6A1HM51HoQTigrKHjXGS3vteL1aB","timestamp":"2025-02-16T14:59:12.337Z"}
+{"level":"info","message":"Creating metadata with parameters:","name":"LOL","symbol":"NICEOIN","timestamp":"2025-02-16T14:59:12.340Z","uri":"https://ipfs.io/ipfs/QmZ98SxZY23Murq7441MkANyS3427wtSiybBtfLQmzXo3Z"}
+{"collection":null,"creators":null,"level":"info","message":"Created metadata data structure:","name":"LOL","sellerFeeBasisPoints":0,"symbol":"NICEOIN","timestamp":"2025-02-16T14:59:12.341Z","uri":"https://ipfs.io/ipfs/QmZ98SxZY23Murq7441MkANyS3427wtSiybBtfLQmzXo3Z","uses":null}
+{"level":"info","message":"Creating metadata instruction...","timestamp":"2025-02-16T14:59:12.341Z"}
+{"level":"info","message":"Metadata instruction created","timestamp":"2025-02-16T14:59:12.343Z"}
+{"level":"info","message":"Building transaction...","timestamp":"2025-02-16T14:59:12.345Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-16T14:59:12.345Z"}
+{"level":"info","message":"Transaction sent with signature: 4wj4Bf3B5rckX91H7ufH4EK3NKfm5jgkH19bx6hK6zncw6h1snff9oTWVNJNoRjXnbd5MtTJPArhr3YddSg7nNv6","timestamp":"2025-02-16T14:59:13.455Z"}
+{"level":"info","message":"Waiting for transaction confirmation...","timestamp":"2025-02-16T14:59:13.455Z"}
+{"level":"info","message":"Starting to poll for signature 4wj4Bf3B5rckX91H7ufH4EK3NKfm5jgkH19bx6hK6zncw6h1snff9oTWVNJNoRjXnbd5MtTJPArhr3YddSg7nNv6","timestamp":"2025-02-16T14:59:13.457Z"}
+{"level":"info","message":"Polling attempt 1 for signature 4wj4Bf3B5rckX91H7ufH4EK3NKfm5jgkH19bx6hK6zncw6h1snff9oTWVNJNoRjXnbd5MtTJPArhr3YddSg7nNv6","timestamp":"2025-02-16T14:59:13.457Z"}
+{"level":"info","message":"No status yet, transaction still valid. Waiting 2000ms... (Attempt 1)","timestamp":"2025-02-16T14:59:15.103Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T15:01:12.043Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T15:01:12.047Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T15:01:12.125Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T15:01:16.204Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T15:01:16.211Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T15:01:16.242Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T15:01:39.353Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T15:01:39.356Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T15:01:39.393Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T15:01:40.655Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T15:01:40.660Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T15:01:40.713Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T15:01:45.730Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T15:01:45.734Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T15:01:45.765Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T15:01:49.552Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T15:01:49.556Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T15:01:49.584Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T15:01:54.512Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T15:01:54.516Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T15:01:54.548Z"}
+{"level":"info","message":"Creating memecoin: DUMABSS (DBEUNFE) with supply 1000000","timestamp":"2025-02-16T15:02:59.382Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/d8fa2b3b-9559-4035-979b-2403f3f3a4e2.json","timestamp":"2025-02-16T15:02:59.386Z"}
+{"level":"info","message":"Keypair saved at: /home/computer/.config/solana/temp/d8fa2b3b-9559-4035-979b-2403f3f3a4e2.json","timestamp":"2025-02-16T15:02:59.386Z"}
+{"level":"info","message":"Attempting to create token...","timestamp":"2025-02-16T15:02:59.387Z"}
+{"level":"info","message":"Update: 🏗️ Creating token...","timestamp":"2025-02-16T15:02:59.389Z"}
+{"level":"info","message":"Token created with address: AfdLYKJMWHMwCv2YTESVUJvTXq45NtACWAzkd4hEZVoU","timestamp":"2025-02-16T15:03:02.655Z"}
+{"level":"info","message":"Update: 🎨 Creating metadata...","timestamp":"2025-02-16T15:03:02.656Z"}
+{"level":"info","message":"Metadata creation attempt 1/5 for token AfdLYKJMWHMwCv2YTESVUJvTXq45NtACWAzkd4hEZVoU","timestamp":"2025-02-16T15:03:02.923Z"}
+{"level":"info","message":"Checking RPC connection status...","timestamp":"2025-02-16T15:03:02.929Z"}
+{"feature-set":1725507508,"level":"info","message":"RPC connection verified. Node version:","solana-core":"2.1.13","timestamp":"2025-02-16T15:03:03.520Z"}
+{"level":"info","message":"Generated metadata account address: DsdTnzz9KsnQQKJkvGAuP44Gk7BjwmnXSXcaPAVMURLM","timestamp":"2025-02-16T15:03:03.525Z"}
+{"level":"info","message":"Creating metadata with parameters:","name":"DUMABSS","symbol":"DBEUNFE","timestamp":"2025-02-16T15:03:03.525Z","uri":"https://ipfs.io/ipfs/QmfLgKBGg1zyDyocfrizgHJFcPmfKq51iSABQovYpF6VMC"}
+{"collection":null,"creators":null,"level":"info","message":"Created metadata data structure:","name":"DUMABSS","sellerFeeBasisPoints":0,"symbol":"DBEUNFE","timestamp":"2025-02-16T15:03:03.525Z","uri":"https://ipfs.io/ipfs/QmfLgKBGg1zyDyocfrizgHJFcPmfKq51iSABQovYpF6VMC","uses":null}
+{"level":"info","message":"Creating metadata instruction...","timestamp":"2025-02-16T15:03:03.526Z"}
+{"level":"info","message":"Metadata instruction created","timestamp":"2025-02-16T15:03:03.528Z"}
+{"level":"info","message":"Building transaction...","timestamp":"2025-02-16T15:03:03.528Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-16T15:03:03.528Z"}
+{"level":"info","message":"Transaction sent with signature: 2bp6D8LZWXYLqXkvBNeUR8KfiauSJWyEWucjDoZXJSdMS131duy66inPJyuqTyeLYXTW3PRXypaYqrg2L6WPD1by","timestamp":"2025-02-16T15:03:04.207Z"}
+{"level":"info","message":"Waiting for transaction confirmation...","timestamp":"2025-02-16T15:03:04.208Z"}
+{"level":"info","message":"Starting to poll for signature 2bp6D8LZWXYLqXkvBNeUR8KfiauSJWyEWucjDoZXJSdMS131duy66inPJyuqTyeLYXTW3PRXypaYqrg2L6WPD1by","timestamp":"2025-02-16T15:03:04.208Z"}
+{"level":"info","message":"Polling attempt 1 for signature 2bp6D8LZWXYLqXkvBNeUR8KfiauSJWyEWucjDoZXJSdMS131duy66inPJyuqTyeLYXTW3PRXypaYqrg2L6WPD1by","timestamp":"2025-02-16T15:03:04.209Z"}
+{"level":"info","message":"No status for signature 2bp6D8LZWXYLqXkvBNeUR8KfiauSJWyEWucjDoZXJSdMS131duy66inPJyuqTyeLYXTW3PRXypaYqrg2L6WPD1by yet.","timestamp":"2025-02-16T15:03:04.624Z"}
+{"level":"info","message":"Waiting 2000ms before next attempt...","timestamp":"2025-02-16T15:03:04.625Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T15:03:20.902Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T15:03:20.907Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T15:03:20.943Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T15:03:52.619Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T15:03:52.624Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T15:03:52.651Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T15:04:18.159Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T15:04:18.166Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T15:04:18.203Z"}
+{"level":"info","message":"Creating memecoin: WORK (NUENFERF) with supply 82388234","timestamp":"2025-02-16T15:06:37.369Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/7a04d608-e438-4080-bee9-9e05fdd367b4.json","timestamp":"2025-02-16T15:06:37.372Z"}
+{"level":"info","message":"Keypair saved at: /home/computer/.config/solana/temp/7a04d608-e438-4080-bee9-9e05fdd367b4.json","timestamp":"2025-02-16T15:06:37.372Z"}
+{"level":"info","message":"Attempting to create token...","timestamp":"2025-02-16T15:06:37.372Z"}
+{"level":"info","message":"Update: 🏗️ Creating token...","timestamp":"2025-02-16T15:06:37.373Z"}
+{"level":"info","message":"Token created with address: BjcSVsjXM9AZ25jZrN8ZSGU5Gg8rt4Z9HMnZb91Q1hwt","timestamp":"2025-02-16T15:06:41.478Z"}
+{"level":"info","message":"Token created without freeze authority","timestamp":"2025-02-16T15:06:41.479Z"}
+{"level":"info","message":"Update: 🎨 Creating metadata...","timestamp":"2025-02-16T15:06:41.479Z"}
+{"level":"info","message":"Metadata creation attempt 1/5 for token BjcSVsjXM9AZ25jZrN8ZSGU5Gg8rt4Z9HMnZb91Q1hwt","timestamp":"2025-02-16T15:06:41.690Z"}
+{"level":"info","message":"Checking RPC connection status...","timestamp":"2025-02-16T15:06:41.691Z"}
+{"feature-set":1725507508,"level":"info","message":"RPC connection verified. Node version:","solana-core":"2.1.13","timestamp":"2025-02-16T15:06:42.023Z"}
+{"level":"info","message":"Generated metadata account address: G2nCK55XgBXSzH6dWWi3SoCegwpZ2cNnMPLiUS2RE9Mi","timestamp":"2025-02-16T15:06:42.026Z"}
+{"level":"info","message":"Creating metadata with parameters:","name":"WORK","symbol":"NUENFERF","timestamp":"2025-02-16T15:06:42.027Z","uri":"https://ipfs.io/ipfs/QmQ5wnMcxLzD3ibW8uajcQwWkaE1QkBmA2ZzbQHnaNWsv5"}
+{"collection":null,"creators":null,"level":"info","message":"Created metadata data structure:","name":"WORK","sellerFeeBasisPoints":0,"symbol":"NUENFERF","timestamp":"2025-02-16T15:06:42.027Z","uri":"https://ipfs.io/ipfs/QmQ5wnMcxLzD3ibW8uajcQwWkaE1QkBmA2ZzbQHnaNWsv5","uses":null}
+{"level":"info","message":"Creating metadata instruction...","timestamp":"2025-02-16T15:06:42.027Z"}
+{"level":"info","message":"Metadata instruction created","timestamp":"2025-02-16T15:06:42.029Z"}
+{"level":"info","message":"Building transaction...","timestamp":"2025-02-16T15:06:42.029Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-16T15:06:42.030Z"}
+{"level":"info","message":"Transaction sent with signature: 3Kz7RgMSeEeMDs7uvm9YMJzW5AUEHqAsavStq1BqzTsorGbdtfVw4ZDESXWvB2sibPxza4cc2U4ZvXr8o3SqSBMC","timestamp":"2025-02-16T15:06:42.374Z"}
+{"level":"info","message":"Waiting for transaction confirmation...","timestamp":"2025-02-16T15:06:42.374Z"}
+{"level":"info","message":"Starting to poll for signature 3Kz7RgMSeEeMDs7uvm9YMJzW5AUEHqAsavStq1BqzTsorGbdtfVw4ZDESXWvB2sibPxza4cc2U4ZvXr8o3SqSBMC","timestamp":"2025-02-16T15:06:42.376Z"}
+{"level":"info","message":"Polling attempt 1 for signature 3Kz7RgMSeEeMDs7uvm9YMJzW5AUEHqAsavStq1BqzTsorGbdtfVw4ZDESXWvB2sibPxza4cc2U4ZvXr8o3SqSBMC","timestamp":"2025-02-16T15:06:42.376Z"}
+{"level":"info","message":"No status for signature 3Kz7RgMSeEeMDs7uvm9YMJzW5AUEHqAsavStq1BqzTsorGbdtfVw4ZDESXWvB2sibPxza4cc2U4ZvXr8o3SqSBMC yet.","timestamp":"2025-02-16T15:06:42.597Z"}
+{"level":"info","message":"Waiting 2000ms before next attempt...","timestamp":"2025-02-16T15:06:42.598Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T15:11:16.751Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T15:11:16.755Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T15:11:16.784Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T15:11:28.414Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T15:11:28.420Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T15:11:28.539Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T15:11:29.582Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T15:11:29.585Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T15:11:29.609Z"}
+{"level":"info","message":"Creating memecoin: FIX (CLUADDE) with supply 9128128812213","timestamp":"2025-02-16T15:12:06.217Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/3782b632-77dd-43a4-b662-d54f180223ec.json","timestamp":"2025-02-16T15:12:06.222Z"}
+{"level":"info","message":"Keypair saved at: /home/computer/.config/solana/temp/3782b632-77dd-43a4-b662-d54f180223ec.json","timestamp":"2025-02-16T15:12:06.222Z"}
+{"level":"info","message":"Attempting to create token...","timestamp":"2025-02-16T15:12:06.222Z"}
+{"level":"info","message":"Update: 🏗️ Creating token...","timestamp":"2025-02-16T15:12:06.223Z"}
+{"level":"info","message":"Token created with address: 5jTHEtGZd9uqyKJP9KpFMcwjkp5v3bHVWxZYGRxDR7vw","timestamp":"2025-02-16T15:12:08.070Z"}
+{"level":"info","message":"Update: 🎨 Creating metadata...","timestamp":"2025-02-16T15:12:08.071Z"}
+{"level":"info","message":"Metadata creation attempt 1/5 for token 5jTHEtGZd9uqyKJP9KpFMcwjkp5v3bHVWxZYGRxDR7vw","timestamp":"2025-02-16T15:12:08.328Z"}
+{"level":"info","message":"Checking RPC connection status...","timestamp":"2025-02-16T15:12:08.329Z"}
+{"feature-set":1725507508,"level":"info","message":"RPC connection verified. Node version:","solana-core":"2.1.13","timestamp":"2025-02-16T15:12:08.707Z"}
+{"level":"info","message":"Generated metadata account address: EzSNc8FyDVSZsYJWrHrLYvBtn21DuKdUcGsM5ggqrV4C","timestamp":"2025-02-16T15:12:08.710Z"}
+{"level":"info","message":"Creating metadata with parameters:","name":"FIX","symbol":"CLUADDE","timestamp":"2025-02-16T15:12:08.710Z","uri":"https://ipfs.io/ipfs/QmNzq13ceGwRq3wb2m5dZQmnj2wFNJ97hVJeih66PK1Y6Z"}
+{"collection":null,"creators":null,"level":"info","message":"Created metadata data structure:","name":"FIX","sellerFeeBasisPoints":0,"symbol":"CLUADDE","timestamp":"2025-02-16T15:12:08.711Z","uri":"https://ipfs.io/ipfs/QmNzq13ceGwRq3wb2m5dZQmnj2wFNJ97hVJeih66PK1Y6Z","uses":null}
+{"level":"info","message":"Creating metadata instruction...","timestamp":"2025-02-16T15:12:08.711Z"}
+{"level":"info","message":"Metadata instruction created","timestamp":"2025-02-16T15:12:08.713Z"}
+{"level":"info","message":"Building transaction...","timestamp":"2025-02-16T15:12:08.713Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-16T15:12:08.713Z"}
+{"level":"info","message":"Transaction sent with signature: 54nzrGUqtem8zi1cNnMmyc3Y9KfLiMJjUnHrvXoofqF3hqU9RmddvwoCqxjTn8PFcaKk3bnTgEKaWxT5hVJE2a8r","timestamp":"2025-02-16T15:12:09.074Z"}
+{"level":"info","message":"Waiting for transaction confirmation...","timestamp":"2025-02-16T15:12:09.075Z"}
+{"level":"info","message":"Starting to poll for signature 54nzrGUqtem8zi1cNnMmyc3Y9KfLiMJjUnHrvXoofqF3hqU9RmddvwoCqxjTn8PFcaKk3bnTgEKaWxT5hVJE2a8r","timestamp":"2025-02-16T15:12:09.076Z"}
+{"level":"info","message":"Got blockhash HLsLAHRY5z1LGfMSaGF2Q8bCzstxnBV7YgAwrhJ7NSKS with last valid block height 349484120","timestamp":"2025-02-16T15:12:09.189Z"}
+{"level":"info","message":"No status for signature 54nzrGUqtem8zi1cNnMmyc3Y9KfLiMJjUnHrvXoofqF3hqU9RmddvwoCqxjTn8PFcaKk3bnTgEKaWxT5hVJE2a8r yet. Current block height: 349483971","timestamp":"2025-02-16T15:12:09.530Z"}
+{"level":"info","message":"Waiting 2000ms before next attempt...","timestamp":"2025-02-16T15:12:09.530Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T15:14:21.306Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T15:14:21.310Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T15:14:21.343Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T15:14:29.896Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T15:14:29.899Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T15:14:29.926Z"}
+{"level":"info","message":"Creating memecoin: LOC (SOURCEOCDE) with supply 832838248324","timestamp":"2025-02-16T15:15:01.269Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/bab599ce-f765-48fc-ac1c-a8d5d5a7d31f.json","timestamp":"2025-02-16T15:15:01.272Z"}
+{"level":"info","message":"Keypair saved at: /home/computer/.config/solana/temp/bab599ce-f765-48fc-ac1c-a8d5d5a7d31f.json","timestamp":"2025-02-16T15:15:01.273Z"}
+{"level":"info","message":"Attempting to create token...","timestamp":"2025-02-16T15:15:01.273Z"}
+{"level":"info","message":"Update: 🏗️ Creating token...","timestamp":"2025-02-16T15:15:01.274Z"}
+{"level":"info","message":"Token created with address: G43A9HHwKyiNwC4yRf1q5zFV2cwDBDJaHHnEfytSBPVB","timestamp":"2025-02-16T15:15:04.457Z"}
+{"level":"info","message":"Update: 🎨 Creating metadata...","timestamp":"2025-02-16T15:15:04.457Z"}
+{"level":"info","message":"Metadata creation attempt 1/5 for token G43A9HHwKyiNwC4yRf1q5zFV2cwDBDJaHHnEfytSBPVB","timestamp":"2025-02-16T15:15:04.644Z"}
+{"level":"info","message":"Checking RPC connection status...","timestamp":"2025-02-16T15:15:04.645Z"}
+{"feature-set":1725507508,"level":"info","message":"RPC connection verified. Node version:","solana-core":"2.1.13","timestamp":"2025-02-16T15:15:05.004Z"}
+{"level":"info","message":"Generated metadata account address: 6Q9eoM4iL8WQLp4X1Z1v8kaTRFpawjf2NJGQ9icuHstn","timestamp":"2025-02-16T15:15:05.008Z"}
+{"level":"info","message":"Creating metadata with parameters:","name":"LOC","symbol":"SOURCEOCDE","timestamp":"2025-02-16T15:15:05.008Z","uri":"https://ipfs.io/ipfs/QmdwyKufbNjMLv3KoPtGw13ebmmZo82gB1K2GvWGVaWwwg"}
+{"collection":null,"creators":null,"level":"info","message":"Created metadata data structure:","name":"LOC","sellerFeeBasisPoints":0,"symbol":"SOURCEOCDE","timestamp":"2025-02-16T15:15:05.008Z","uri":"https://ipfs.io/ipfs/QmdwyKufbNjMLv3KoPtGw13ebmmZo82gB1K2GvWGVaWwwg","uses":null}
+{"level":"info","message":"Creating metadata instruction...","timestamp":"2025-02-16T15:15:05.008Z"}
+{"level":"info","message":"Metadata instruction created","timestamp":"2025-02-16T15:15:05.010Z"}
+{"level":"info","message":"Building transaction...","timestamp":"2025-02-16T15:15:05.010Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-16T15:15:05.011Z"}
+{"level":"info","message":"Transaction sent with signature: 4FbqXgDyDdBqvDgdkSofzsxAeKGbNFb7c9j68s9akq3xyQj3yNaseia4viWeyUdS1vs2oiG4Uo9hudNntijW25RC","timestamp":"2025-02-16T15:15:05.353Z"}
+{"level":"info","message":"Waiting for transaction confirmation...","timestamp":"2025-02-16T15:15:05.353Z"}
+{"level":"info","message":"Starting to poll for signature 4FbqXgDyDdBqvDgdkSofzsxAeKGbNFb7c9j68s9akq3xyQj3yNaseia4viWeyUdS1vs2oiG4Uo9hudNntijW25RC","timestamp":"2025-02-16T15:15:05.355Z"}
+{"level":"info","message":"Got blockhash F7k8Rph1Zb7cevTH17VYPb5RR284ue35o6KgohE6ncNM with last valid block height 349484580","timestamp":"2025-02-16T15:15:05.462Z"}
+{"level":"info","message":"No status yet. Current block height: 349484430","timestamp":"2025-02-16T15:15:05.797Z"}
+{"level":"info","message":"Transaction confirmed successfully","timestamp":"2025-02-16T15:15:06.132Z"}
+{"level":"info","message":"Metadata created successfully","timestamp":"2025-02-16T15:15:06.133Z"}
+{"level":"info","message":"Update: 💰 Minting initial supply...","timestamp":"2025-02-16T15:15:06.133Z"}
+{"level":"info","message":"Minted 832838248324 tokens to 5P7LgRwbGVbpSqp8MCEYNRY4VCGxdeHFVQNitaQ1NV1Y","timestamp":"2025-02-16T15:15:14.647Z"}
+{"level":"info","message":"Update: 🔒 Revoking mint authority...","timestamp":"2025-02-16T15:15:14.648Z"}
+{"level":"info","message":"Mint authority revoked","timestamp":"2025-02-16T15:15:20.324Z"}
+{"level":"info","message":"Token created successfully with address: G43A9HHwKyiNwC4yRf1q5zFV2cwDBDJaHHnEfytSBPVB","timestamp":"2025-02-16T15:15:20.324Z"}
+{"level":"info","message":"Cleaned up keypair file: /home/computer/.config/solana/temp/bab599ce-f765-48fc-ac1c-a8d5d5a7d31f.json","timestamp":"2025-02-16T15:15:20.325Z"}
+{"level":"info","message":"Keypair file cleaned up: /home/computer/.config/solana/temp/bab599ce-f765-48fc-ac1c-a8d5d5a7d31f.json","timestamp":"2025-02-16T15:15:20.325Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T15:15:31.754Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T15:15:31.762Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T15:15:31.789Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T15:16:29.907Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T15:16:29.911Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T15:16:29.952Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-16T15:22:07.350Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-16T15:22:07.353Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-16T15:22:07.385Z"}

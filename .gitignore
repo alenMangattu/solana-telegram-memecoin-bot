@@ -9,8 +9,8 @@ build/
 application.properties
 
 # Local changes
-src/main/resources/application.properties
-src/main/resources/images/*
+bot/src/main/resources/application.properties
+bot/src/main/resources/images/*
 logs/*
 
 # Incoming changes from main

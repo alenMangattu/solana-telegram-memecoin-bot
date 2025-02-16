@@ -14,10 +14,10 @@ import java.io.IOException;
 public class IpFilter extends OncePerRequestFilter {
 
     private boolean isLocalhost(String remoteAddr) {
-        return remoteAddr.equals("127.0.0.1") || 
-               remoteAddr.equals("0:0:0:0:0:0:0:1") || // IPv6 localhost
-               remoteAddr.equals("localhost") ||
-               remoteAddr.equals("::1");
+        return remoteAddr.equals("127.0.0.1") ||
+                remoteAddr.equals("0:0:0:0:0:0:0:1") || // IPv6 localhost
+                remoteAddr.equals("localhost") ||
+                remoteAddr.equals("::1");
     }
 
     @Override

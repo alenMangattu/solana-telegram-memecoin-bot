@@ -1,13 +1,13 @@
 package com.lunax.telegramBot.service;
 
-import com.lunax.telegramBot.model.db.Memecoin;
-import com.lunax.telegramBot.model.repository.MemecoinRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-@Service
-public class MemecoinService {
+import com.lunax.telegramBot.model.db.Memecoin;
+import com.lunax.telegramBot.model.repository.MemecoinRepo;
 
+@Service
+public class MemecoinDbService {
     @Autowired
     private MemecoinRepo memecoinRepo;
 

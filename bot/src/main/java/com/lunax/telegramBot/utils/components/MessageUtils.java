@@ -15,15 +15,11 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.api.methods.GetFile;
 import org.telegram.telegrambots.meta.api.objects.PhotoSize;
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Comparator;
@@ -39,6 +35,9 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 
 public class MessageUtils {
 
@@ -101,11 +100,11 @@ public class MessageUtils {
     public static void sendMessage(Long chatId, String text) {
         try {
             SendMessage message = SendMessage.builder()
-                .chatId(chatId)
-                .text(text)
-                .parseMode(ParseMode.MARKDOWN)
-                .build();
-            
+                    .chatId(chatId)
+                    .text(text)
+                    .parseMode(ParseMode.MARKDOWN)
+                    .build();
+
             botInstance.execute(message);
         } catch (Exception e) {
             log.error("Error sending message: ", e);
@@ -197,7 +196,7 @@ public class MessageUtils {
         return null;
     }
 
-    private static String getFilePath(String fileId)   {
+    private static String getFilePath(String fileId) {
         GetFile getFile = new GetFile();
         getFile.setFileId(fileId);
         org.telegram.telegrambots.meta.api.objects.File file;
@@ -227,16 +226,20 @@ public class MessageUtils {
 
             // Set up a trust manager that accepts all certificates for ipfs.io
             if (url.getHost().equals("ipfs.io")) {
-                TrustManager[] trustAllCerts = new TrustManager[]{
-                    new X509TrustManager() {
-                        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-                            return null;
+                TrustManager[] trustAllCerts = new TrustManager[] {
+                        new X509TrustManager() {
+                            public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                                return null;
+                            }
+
+                            public void checkClientTrusted(java.security.cert.X509Certificate[] certs,
+                                    String authType) {
+                            }
+
+                            public void checkServerTrusted(java.security.cert.X509Certificate[] certs,
+                                    String authType) {
+                            }
                         }
-                        public void checkClientTrusted(java.security.cert.X509Certificate[] certs, String authType) {
-                        }
-                        public void checkServerTrusted(java.security.cert.X509Certificate[] certs, String authType) {
-                        }
-                    }
                 };
 
                 try {
@@ -283,7 +286,8 @@ public class MessageUtils {
         }
     }
 
-    public static void sendFileMessageInlineKeyboard(Update update, String filePath, String text, ButtonHandler[][] buttonHandlers) {
+    public static void sendFileMessageInlineKeyboard(Update update, String filePath, String text,
+            ButtonHandler[][] buttonHandlers) {
         Message message = getMessage(update);
         if (message == null)
             return;
@@ -323,7 +327,8 @@ public class MessageUtils {
         }
     }
 
-    public static void sendImageMessageInlineKeyboard(Update update, String imagePath, String text, ButtonHandler[][] buttonHandlers) {
+    public static void sendImageMessageInlineKeyboard(Update update, String imagePath, String text,
+            ButtonHandler[][] buttonHandlers) {
         Message message = getMessage(update);
         if (message == null)
             return;
@@ -365,7 +370,7 @@ public class MessageUtils {
                     sendPhoto.setReplyMarkup(markup);
                 }
                 botInstance.execute(sendPhoto);
-                
+
                 // Delete the downloaded image after sending
                 new File(downloadedImagePath).delete();
             } else {
@@ -409,10 +414,10 @@ public class MessageUtils {
             Message message = getMessage(update);
             String currentText = message.getText();
             String currentCaption = message.getCaption();
-            
+
             // Compare with either text or caption
-            if ((currentText == null || !currentText.equals(text)) && 
-                (currentCaption == null || !currentCaption.equals(text))) {
+            if ((currentText == null || !currentText.equals(text)) &&
+                    (currentCaption == null || !currentCaption.equals(text))) {
                 MessageUtils.editMessage(update, text, null);
             } else {
                 log.warn("Edit skipped: new text is the same as the current message text/caption.");
@@ -467,4 +472,48 @@ public class MessageUtils {
         }
     }
 
+    public static void sendCustomKeyboard(Update update, String text, String[][] keyboardButtons,
+            boolean oneTimeKeyboard) {
+        Message message = getMessage(update);
+        if (message == null)
+            return;
+
+        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+        List<KeyboardRow> keyboard = new ArrayList<>();
+
+        if (keyboardButtons != null) {
+            for (String[] buttonRow : keyboardButtons) {
+                KeyboardRow row = new KeyboardRow();
+                for (String buttonText : buttonRow) {
+                    KeyboardButton button = new KeyboardButton(buttonText);
+                    row.add(button);
+                }
+                keyboard.add(row);
+            }
+        }
+
+        keyboardMarkup.setKeyboard(keyboard);
+        keyboardMarkup.setResizeKeyboard(true); // Optional: resize the keyboard
+        keyboardMarkup.setOneTimeKeyboard(oneTimeKeyboard); // Set based on the parameter
+
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(message.getChatId());
+
+        // Set text only if it's not null
+        if (text != null) {
+            sendMessage.setText(text);
+        } else {
+            sendMessage.setText(""); // Set to empty string if text is null
+        }
+
+        sendMessage.setParseMode("Markdown");
+        sendMessage.enableMarkdown(true);
+        sendMessage.setReplyMarkup(keyboardMarkup);
+
+        try {
+            botInstance.execute(sendMessage);
+        } catch (TelegramApiException e) {
+            log.error("Error sending custom keyboard: {}", e.getMessage());
+        }
+    }
 }

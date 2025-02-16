@@ -1,13 +1,5 @@
 package com.lunax.telegramBot.component.handler.wallet;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.attribute.PosixFilePermissions;
-import java.util.Map;
-
-import javax.crypto.SecretKey;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -19,7 +11,6 @@ import com.lunax.telegramBot.model.repository.UserRepository;
 import com.lunax.telegramBot.model.repository.WalletRepository;
 import com.lunax.telegramBot.service.UserService;
 import com.lunax.telegramBot.service.SolanaService;
-import com.lunax.telegramBot.utils.EncryptionUtils;
 import com.lunax.telegramBot.utils.SolanaUtils;
 import com.lunax.telegramBot.utils.WalletKeyManager;
 import com.lunax.telegramBot.utils.components.ButtonHandler;

@@ -5,19 +5,16 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import com.lunax.telegramBot.component.handler.HomePageButtons.MemeCoinCreations.AskMemeCoinData;
-import com.lunax.telegramBot.component.handler.HomePageButtons.MemeCoinCreations.AddLiquidity;
+import com.lunax.telegramBot.component.handler.HomePageButtons.MemeCoinCreations.InitialLiquidity.AddLiquidity;
 import com.lunax.telegramBot.component.handler.HomePageButtons.MemeCoinCreations.YesOrNoButtons.RevokeMintAuthority;
 import com.lunax.telegramBot.component.handler.HomePageButtons.MemeCoinCreations.YesOrNoButtons.RevokeFreezeAuthority;
 import com.lunax.telegramBot.utils.components.ButtonHandler;
-import com.lunax.telegramBot.model.session.ChatState;
-import com.lunax.telegramBot.service.StateService;
 
 import jakarta.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.telegram.telegrambots.meta.api.objects.Update;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @Component
 public class HandlerRegistry {
@@ -25,15 +22,6 @@ public class HandlerRegistry {
     
     @Autowired
     private ApplicationContext applicationContext;
-
-    @Autowired
-    private StateService stateService;
-
-    @Autowired
-    private RevokeMintAuthority revokeMintAuthority;
-
-    @Autowired
-    private RevokeFreezeAuthority revokeFreezeAuthority;
 
     @Autowired
     public HandlerRegistry(

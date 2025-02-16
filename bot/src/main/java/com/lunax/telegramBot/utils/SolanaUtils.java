@@ -20,9 +20,9 @@ import com.lunax.telegramBot.model.db.Memecoin;
 import com.lunax.telegramBot.model.db.User;
 import com.lunax.telegramBot.model.db.Wallet;
 import com.lunax.telegramBot.model.repository.WalletRepository;
-import com.lunax.telegramBot.service.MemecoinService;
 import com.lunax.telegramBot.service.UserService;
 import com.lunax.telegramBot.utils.components.MessageUtils;
+import com.lunax.telegramBot.service.MemecoinDbService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -55,10 +55,10 @@ public class SolanaUtils {
     private SolanaCliUtils solanaCliUtils;
     
     @Autowired
-    private MemecoinService memecoinService;
+    private UserService userService;
     
     @Autowired
-    private UserService userService;
+    private MemecoinDbService memecoinDbService;
     
     @Autowired
     public SolanaUtils(
@@ -175,90 +175,6 @@ public class SolanaUtils {
         } catch (Exception e) {
             log.error("General Error: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to get balance for address: " + address, e);
-        }
-    }
-
-    /**
-     * Creates a new memecoin token on Solana.
-     * 
-     * @param walletId The wallet ID to use for token creation
-     * @param name The name of the token
-     * @param symbol The token symbol
-     * @param decimals Number of decimal places for the token
-     * @param supply The total token supply
-     * @param metadataUri The token metadata URI
-     * @param revokeMintAuthority Flag to revoke the mint authority upon creation
-     * @param revokeFreezeAuthority Flag to revoke the freeze authority upon creation
-     * @param update The Telegram update object
-     * @return The token mint address
-     */
-    public String createMemecoin(
-        String walletPrivateKey,
-        String name,
-        String symbol,
-        int decimals,
-        double supply,
-        String metadataUri,
-        boolean revokeMintAuthority,
-        boolean revokeFreezeAuthority,
-        Update update
-    ) {
-        try {
-            log.info("Creating memecoin: {} ({}) with supply {}", name, symbol, supply);
-
-            // Get chatId safely from either message or callback query
-            Long chatId = null;
-            if (update.getMessage() != null) {
-                chatId = update.getMessage().getChatId();
-            } else if (update.getCallbackQuery() != null) {
-                chatId = update.getCallbackQuery().getMessage().getChatId();
-            }
-
-            if (chatId == null) {
-                throw new RuntimeException("Could not determine chat ID from update");
-            }
-
-            // Create request object
-            CreateMemecoinRequest request = new CreateMemecoinRequest();
-            request.setName(name);
-            request.setSymbol(symbol);
-            request.setDecimals(decimals);
-            request.setSupply(supply);
-            request.setMetadataUri(metadataUri);
-            request.setRevokeMintAuthority(revokeMintAuthority);
-            request.setRevokeFreezeAuthority(revokeFreezeAuthority);
-            request.setWalletPrivateKey(walletPrivateKey);
-            request.setChatId(chatId);
-
-            // Make API request
-            ResponseEntity<CreateMemecoinResponse> response = makeRequest(
-                "/api/memecoin/create",
-                HttpMethod.POST,
-                request,
-                CreateMemecoinResponse.class
-            );
-
-            String tokenAddress = response.getBody().getTokenAddress();
-
-            // Create Memecoin entity - use the public key directly as a string
-            Account account = new Account(Base58.decode(walletPrivateKey));
-            String publicKey = account.getPublicKey().toString();
-            
-            Memecoin newMemecoin = new Memecoin();
-            // Store the wallet public key as a string instead of trying to parse it as UUID
-            newMemecoin.setCreatorWalletId(publicKey);  // Assuming you've updated the Memecoin entity to use String
-            newMemecoin.setName(name);
-            newMemecoin.setSymbol(symbol);
-            newMemecoin.setTotalSupply(supply);
-            newMemecoin.setTokenAddress(tokenAddress);
-            
-            // Save to database
-            memecoinService.addMemecoin(newMemecoin);
-
-            return tokenAddress;
-        } catch (Exception e) {
-            log.error("Failed to create memecoin {}: {}", name, e.getMessage());
-            throw new RuntimeException("Failed to create memecoin: " + e.getMessage());
         }
     }
 

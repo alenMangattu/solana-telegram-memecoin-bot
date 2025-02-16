@@ -4,7 +4,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermissions;
-import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
 
@@ -15,10 +14,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.lunax.telegramBot.model.db.EncryptionKeyMetadata;
 import com.lunax.telegramBot.model.db.User;
 import com.lunax.telegramBot.model.db.Wallet;
-import com.lunax.telegramBot.model.repository.EncryptionKeyMetadataRepository;
 import com.lunax.telegramBot.model.repository.WalletRepository;
 import com.lunax.telegramBot.utils.EncryptionUtils;
 import com.lunax.telegramBot.utils.SolanaUtils;
@@ -38,9 +35,6 @@ public class SolanaService {
     
     @Autowired
     private WalletKeyManager walletKeyManager;
-
-    @Autowired
-    private EncryptionKeyMetadataRepository encryptionKeyMetadataRepository;
 
     @Autowired
     private UserService userService;

@@ -4,13 +4,11 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
-import com.lunax.telegramBot.component.handler.HomePageButtons.MemeCoinCreations.AddLiquidity;
 import com.lunax.telegramBot.component.handler.HomePageButtons.MemeCoinCreations.AskMemeCoinData;
+import com.lunax.telegramBot.component.handler.HomePageButtons.MemeCoinCreations.InitialLiquidity.AddLiquidity;
 import com.lunax.telegramBot.component.navigation.HandlerRegistry;
 import com.lunax.telegramBot.component.navigation.components.Home;
 import com.lunax.telegramBot.component.navigation.components.settings.SettingsImpl;
-import com.lunax.telegramBot.model.db.User;
-import com.lunax.telegramBot.model.repository.UserRepository;
 import com.lunax.telegramBot.model.session.ChatState;
 import com.lunax.telegramBot.service.StateService;
 import com.lunax.telegramBot.service.UserService;
@@ -21,17 +19,15 @@ import com.lunax.telegramBot.utils.IpfsUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.cache.annotation.Cacheable;
 
 import java.util.Map;
-
 
 @Slf4j
 @Component
 public class BotController extends TelegramLongPollingBot {
 
     private final String botUsername;
-    
+
     @Autowired
     private Home home;
 
@@ -50,7 +46,6 @@ public class BotController extends TelegramLongPollingBot {
     @Autowired
     private UserService userService;
 
-
     @Autowired
     private AskMemeCoinData askMemeCoinData;
 
@@ -68,7 +63,7 @@ public class BotController extends TelegramLongPollingBot {
         if (update.hasCallbackQuery()) {
             String callbackData = update.getCallbackQuery().getData();
             ButtonHandler handler = handlerRegistry.getHandler(callbackData);
-            
+
             if (handler != null) {
                 handler.handleCallback(update);
             } else {
@@ -76,38 +71,40 @@ public class BotController extends TelegramLongPollingBot {
             }
         } else if (update.hasMessage()) {
             Message message = update.getMessage();
-            
+
             if (message.hasText()) {
                 String messageText = message.getText();
                 if (messageText == null || messageText.isEmpty()) {
                     log.warn("Received empty message text.");
                     return; // Ignore empty messages
                 }
-                
+
                 Long telegramId = message.getFrom().getId();
                 // Check if the user exists in the UserRepository
                 if (!userService.isValidUser(telegramId)) {
-                    MessageUtils.sendMessage(update, "Welcome! It seems you are not registered or have no wallets. You are being redirected to the /start command. LOL");
+                    MessageUtils.sendMessage(update,
+                            "Welcome! It seems you are not registered or have no wallets. You are being redirected to the /start command. LOL");
                     home.executeVoid(update);
                     return;
                 }
-                
+
                 // Check if it's a command (starts with '/')
                 if (messageText.startsWith("/")) {
                     ChatState currentState = stateService.getState(telegramId);
-                    
+
                     // If we were in memecoin creation, clear the state and notify
                     if (currentState != null && currentState.isMemecoinCreation()) {
                         stateService.clearStateData(telegramId);
                         stateService.setState(telegramId, null);
                         MessageUtils.sendMessage(update, "⚠️ Memecoin creation process terminated.");
                     }
-                    
+
                     // Handle the start command
                     if (messageText.startsWith("/start") || messageText.startsWith("/home")) {
                         home.executeVoid(update);
                     } else if (messageText.startsWith("/settings")) {
                         settings.executeVoid(update);
+                        return;
                     } else if (messageText.equals("/getfiles")) {
                         handleGetFilesCommand(update);
                     } else if (messageText.equals("/creatememecoin")) {
@@ -119,20 +116,19 @@ public class BotController extends TelegramLongPollingBot {
                     }
                     return;
                 }
-                
+
                 // Only check state for non-command messages that might need state handling
                 ChatState currentState = stateService.getState(telegramId);
-                
+
                 if (currentState == null || currentState == ChatState.IDLE) {
                     // home.executeVoid(update);
                     MessageUtils.sendMessage(update, "Unknown command. Please use /start to get started.");
                     return;
                 }
-                
+
                 if (currentState.isMemecoinCreation()) {
                     createMemeCoin.handleMessage(update);
                 } else if (currentState.isLiquidityAddition()) {
-                    // Call the method in AddLiquidity to handle the token amount input
                     addLiquidity.handleMessage(update);
                 } else if (message.hasText()) {
                     log.info("Received: {}", messageText);
@@ -154,9 +150,8 @@ public class BotController extends TelegramLongPollingBot {
             MessageUtils.sendMessage(update, "�� No files have been loaded to IPFS.");
         } else {
             StringBuilder response = new StringBuilder("📁 Loaded files in IPFS:\n");
-            loadedFiles.forEach((filePath, ipfsHash) -> 
-                response.append(String.format("File: %s, Hash: %s\n", filePath, ipfsHash))
-            );
+            loadedFiles.forEach(
+                    (filePath, ipfsHash) -> response.append(String.format("File: %s, Hash: %s\n", filePath, ipfsHash)));
             MessageUtils.sendMessage(update, response.toString());
         }
     }

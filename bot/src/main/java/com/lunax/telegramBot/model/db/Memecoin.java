@@ -1,7 +1,6 @@
 package com.lunax.telegramBot.model.db;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
