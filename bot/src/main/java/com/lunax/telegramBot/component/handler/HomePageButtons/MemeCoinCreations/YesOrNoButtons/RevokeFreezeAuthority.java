@@ -49,17 +49,6 @@ public class RevokeFreezeAuthority implements ButtonHandler {
         askForImage(update);
     }
 
-    public void handleCancel(Update update) {
-        Long telegramId = update.getCallbackQuery().getFrom().getId();
-        ObjectNode stateData = stateService.getStateData(telegramId);
-        stateData.put("revokeFreezeAuthority", false);
-        stateService.setStateData(telegramId, stateData);
-   
-        MessageUtils.editMessage(update, "Revoking freeze authority set to: " +(stateData.get("revokeFreezeAuthority").asBoolean() ? "true" : "false") + " (7/8)", null);
-
-        askForImage(update);
-    }
-
     private void askForImage(Update update) {
         Long telegramId = update.getCallbackQuery().getFrom().getId();
         String message = """

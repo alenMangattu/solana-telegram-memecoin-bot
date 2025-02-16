@@ -73,6 +73,7 @@ public class RevokeMintAuthority implements ButtonHandler {
 
                 Would you like to revoke the freeze authority?
                 This means accounts cannot be frozen after creation.
+                This one is required to be set to true to add liquidity later.
 
                 Note: This action cannot be undone.
                 """;
@@ -80,13 +81,6 @@ public class RevokeMintAuthority implements ButtonHandler {
         ButtonHandler[][] buttons = {
             {
                 revokeFreezeAuthority,
-                new ButtonHandler() {
-                    public String getButtonText() { return "No"; }
-                    public String getCallbackData() { return "revoke_freeze_authority_cancel"; }
-                    public void handleCallback(Update update) {
-                        revokeFreezeAuthority.handleCallback(update);
-                    }
-                }
             }
         };
 
