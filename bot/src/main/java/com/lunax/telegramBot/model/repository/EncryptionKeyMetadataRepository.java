@@ -20,4 +20,6 @@ public interface EncryptionKeyMetadataRepository extends JpaRepository<Encryptio
     List<EncryptionKeyMetadata> findExpiredActiveKeys(LocalDateTime date);
     
     Optional<EncryptionKeyMetadata> findFirstByWalletIdOrderByVersionDesc(UUID walletId);
+    
+    List<EncryptionKeyMetadata> findAllByWalletIdAndActive(UUID walletId, boolean active);
 }

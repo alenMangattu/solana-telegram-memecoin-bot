@@ -51,30 +51,64 @@ public class WalletKeyManager {
      */
     @Transactional(propagation = Propagation.MANDATORY)
     public void createNewKeyVersion(UUID walletId) throws Exception {
+        log.info("Creating new key version for wallet: {}", walletId);
+        
         // Get the current version number
         int nextVersion = keyMetadataRepository.findFirstByWalletIdOrderByVersionDesc(walletId)
                 .map(meta -> meta.getVersion() + 1)
                 .orElse(1);
+        
+        log.info("Next version will be: {}", nextVersion);
 
         // Generate new encryption key
         SecretKey newKey = EncryptionUtils.generateEncryptionKey();
 
         // If there's an existing key, we need to re-encrypt the private key
         if (hasPrivateKey(walletId)) {
-            String privateKey = getPrivateKey(walletId); // Get using old key
-
-            // Save new key
+            log.info("Existing private key found, re-encrypting with new key");
+            
+            // Get the private key using the current active key
+            Optional<EncryptionKeyMetadata> currentActiveKey = keyMetadataRepository.findByWalletIdAndActive(walletId, true);
+            if (!currentActiveKey.isPresent()) {
+                throw new RuntimeException("No active key found for wallet: " + walletId);
+            }
+            
+            // Read the current encrypted private key directly from file
+            Path currentWalletPath = Paths.get(walletsPath, 
+                getWalletFileName(walletId, currentActiveKey.get().getVersion()));
+            Path currentKeyPath = Paths.get(encryptionKeysPath, 
+                getKeyFileName(walletId, currentActiveKey.get().getVersion()));
+                
+            String encryptedPrivateKey = new String(Files.readAllBytes(currentWalletPath));
+            SecretKey currentKey = EncryptionUtils.deserializeKey(
+                new String(Files.readAllBytes(currentKeyPath)));
+                
+            // Decrypt with current key
+            String privateKey = EncryptionUtils.decrypt(encryptedPrivateKey, currentKey);
+            
+            // Save new encryption key first
             saveEncryptionKey(walletId, nextVersion, newKey);
-
-            // Re-encrypt private key with new key
+            
+            // Encrypt and save private key with new key
             String newEncryptedPrivateKey = EncryptionUtils.encrypt(privateKey, newKey);
             saveEncryptedPrivateKey(walletId, nextVersion, newEncryptedPrivateKey);
-
-            // Update metadata: deactivate previous active key
-            deactivateOldKeys(walletId);
+            
+            log.info("Successfully re-encrypted private key with new key version {}", nextVersion);
+            
+            // Deactivate old keys BEFORE creating new metadata
+            List<EncryptionKeyMetadata> activeKeys = keyMetadataRepository.findAllByWalletIdAndActive(walletId, true);
+            for (EncryptionKeyMetadata metadata : activeKeys) {
+                metadata.setActive(false);
+                keyMetadataRepository.saveAndFlush(metadata); // Use saveAndFlush to ensure changes are committed
+            }
+            
+            // Force a flush to ensure deactivation is complete
+            keyMetadataRepository.flush();
+            
         } else {
             // Just save the new key if this is the first time
             saveEncryptionKey(walletId, nextVersion, newKey);
+            log.info("No existing private key, saved only new encryption key");
         }
 
         // Create new key metadata
@@ -84,13 +118,15 @@ public class WalletKeyManager {
         metadata.setCreatedAt(LocalDateTime.now());
         metadata.setExpiresAt(LocalDateTime.now().plusDays(keyRotationDays));
         metadata.setActive(true);
-        keyMetadataRepository.save(metadata);
+        keyMetadataRepository.saveAndFlush(metadata); // Use saveAndFlush here too
+        
+        log.info("Successfully created new key version {} for wallet {}", nextVersion, walletId);
     }
 
     /**
      * Scheduled task to rotate keys that are about to expire
      */
-    @Scheduled(cron = "0 0 0 * * *") // Run daily at midnight
+    @Scheduled(cron = "0 0 * * *") // Runs every midnight
     @Transactional
     public void rotateExpiredKeys() {
         LocalDateTime now = LocalDateTime.now();
@@ -107,11 +143,12 @@ public class WalletKeyManager {
     }
 
     private void deactivateOldKeys(UUID walletId) {
-        keyMetadataRepository.findByWalletIdAndActive(walletId, true)
-                .ifPresent(metadata -> {
-                    metadata.setActive(false);
-                    keyMetadataRepository.save(metadata);
-                });
+        // Find and deactivate all active keys for this wallet
+        List<EncryptionKeyMetadata> activeKeys = keyMetadataRepository.findAllByWalletIdAndActive(walletId, true);
+        for (EncryptionKeyMetadata metadata : activeKeys) {
+            metadata.setActive(false);
+            keyMetadataRepository.save(metadata);
+        }
     }
 
     private String getKeyFileName(UUID walletId, int version) {
