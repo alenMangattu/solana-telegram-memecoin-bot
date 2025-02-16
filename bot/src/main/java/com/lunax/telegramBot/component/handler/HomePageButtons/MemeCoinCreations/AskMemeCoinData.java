@@ -187,7 +187,7 @@ public class AskMemeCoinData implements ButtonHandler {
     }
 
     private void handleMemecoinSymbol(Update update, Long telegramId, String symbol, ObjectNode stateData) {
-        if (symbol == null || !symbol.matches("^[A-Z0-9]{2,10}$")) {
+        if (symbol == null || !symbol.matches("^[A-Za-z0-9]{2,10}$")) {
             MessageUtils.sendMessage(update,
                     "❌ Symbol must be 2-10 characters and contain only uppercase letters and numbers. Please try again:");
             return;
