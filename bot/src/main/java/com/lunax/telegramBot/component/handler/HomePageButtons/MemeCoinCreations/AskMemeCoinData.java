@@ -72,10 +72,17 @@ public class AskMemeCoinData implements ButtonHandler {
 
     @Override
     public void handleCallback(Update update) {
-        String callbackData = update.getCallbackQuery().getData();
-        log.debug("Received callback data: {}", callbackData);
+        if (update.hasCallbackQuery()) {
+            // String callbackData = update.getCallbackQuery().getData();
+            // log.debug("Received callback data: {}", callbackData);
+
+            String messageText = ((Message) update.getCallbackQuery().getMessage()).getText();
+            // log.debug("Received callback message text: {}", messageText);
+            MessageUtils.editMessageInlineKeyboard(update, messageText, null);
+        }
 
         handleMemecoinName(update);
+
     }
 
     public void handleMemecoinName(Update update) {

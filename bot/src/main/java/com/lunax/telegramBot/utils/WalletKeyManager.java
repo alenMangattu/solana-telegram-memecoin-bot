@@ -126,7 +126,7 @@ public class WalletKeyManager {
     /**
      * Scheduled task to rotate keys that are about to expire
      */
-    @Scheduled(cron = "0 0 * * *") // Runs every midnight
+    @Scheduled(cron = "0 0 0 * * *")
     @Transactional
     public void rotateExpiredKeys() {
         LocalDateTime now = LocalDateTime.now();
