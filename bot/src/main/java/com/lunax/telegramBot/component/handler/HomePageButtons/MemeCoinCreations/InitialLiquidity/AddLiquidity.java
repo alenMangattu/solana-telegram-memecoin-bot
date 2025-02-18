@@ -78,7 +78,10 @@ public class AddLiquidity implements ButtonHandler {
             case AWAITING_FROM_AMOUNT:
                 handleFromAmountInput(update, telegramId, update.getMessage().getText(), stateData);
                 break;
-            case AWAITING_FEE_TIER: // Handle fee tier selection
+            case AWAITING_SLIPPAGE_PERCENTAGE:
+                handleSlippageInput(update, telegramId, update.getMessage().getText(), stateData);
+                break;
+            case AWAITING_FEE_TIER:
                 handleFeeTierInput(update, telegramId, update.getMessage().getText(), stateData);
                 break;
             case AWAITING_TO_TOKEN:
@@ -124,11 +127,64 @@ public class AddLiquidity implements ButtonHandler {
             stateData.put("fromAmount", amount);
             stateService.setStateData(telegramId, stateData);
 
-            // Ask for fee tier selection immediately
-            askForFeeTier(update, telegramId);
+            // Ask for slippage instead of going directly to fee tier
+            askForSlippage(update, telegramId);
             
         } catch (NumberFormatException e) {
             MessageUtils.sendMessage(update, "❌ Please enter a valid amount.");
+        }
+    }
+
+    private void askForSlippage(Update update, Long telegramId) {
+        String message = """
+                💱 *Set Slippage Tolerance*
+                
+                Please enter your desired slippage tolerance percentage:
+                
+                • 0.5% (Recommended for stable pairs)
+                • 1% (Recommended for volatile pairs)
+                • 2.5% (High slippage)
+                
+                Or enter a custom percentage (0.1-5.0)
+                """;
+
+        String[][] keyboardButtons = {
+            {"0.5%", "1%"},
+            {"2.5%", "Custom"}
+        };
+
+        MessageUtils.sendCustomKeyboard(update, message, keyboardButtons, true);
+        stateService.setState(telegramId, ChatState.AWAITING_SLIPPAGE_PERCENTAGE);
+    }
+
+    private void handleSlippageInput(Update update, Long telegramId, String slippageStr, ObjectNode stateData) {
+        try {
+            double slippage;
+            if (slippageStr.endsWith("%")) {
+                slippageStr = slippageStr.substring(0, slippageStr.length() - 1);
+            }
+            
+            if (slippageStr.equalsIgnoreCase("Custom")) {
+                MessageUtils.sendMessage(update, "Please enter a custom slippage percentage (0.1-5.0):");
+                return;
+            }
+            
+            slippage = Double.parseDouble(slippageStr);
+            
+            if (slippage < 0.1 || slippage > 5.0) {
+                throw new IllegalArgumentException("Slippage must be between 0.1% and 5.0%");
+            }
+            
+            stateData.put("slippage", slippage);
+            stateService.setStateData(telegramId, stateData);
+
+            // Now proceed to fee tier selection
+            askForFeeTier(update, telegramId);
+            
+        } catch (NumberFormatException e) {
+            MessageUtils.sendMessage(update, "❌ Please enter a valid percentage.");
+        } catch (IllegalArgumentException e) {
+            MessageUtils.sendMessage(update, "❌ " + e.getMessage());
         }
     }
 
@@ -304,6 +360,7 @@ public class AddLiquidity implements ButtonHandler {
                     *Liquidity Details:*
                     From: %,.2f %s
                     To: %,.2f %s
+                    Slippage Tolerance: %.1f%%
                     Fee Tier: %s
                     LP Burn: %s%%
                     
@@ -320,6 +377,7 @@ public class AddLiquidity implements ButtonHandler {
                     stateData.get("fromToken").asText(),
                     stateData.get("toAmount").asDouble(),
                     toToken,
+                    stateData.get("slippage").asDouble(),
                     stateData.get("feeTier").asText(),
                     burnAmountStr.equalsIgnoreCase("MAX") ? "100" : String.format("%.2f", burnAmount)
             );

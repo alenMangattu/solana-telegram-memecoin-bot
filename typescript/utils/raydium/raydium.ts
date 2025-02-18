@@ -1,9 +1,9 @@
 import {
-    LIQUIDITY_STATE_LAYOUT_V4,
     type LiquidityPoolKeys,
-    MAINNET_PROGRAM_ID,
+    liquidityStateV4Layout,
+    DEVNET_PROGRAM_ID,
     MARKET_STATE_LAYOUT_V3
-} from "@raydium-io/raydium-sdk";
+} from "@raydium-io/raydium-sdk-v2";
 import {
     Connection,
     PublicKey
@@ -12,7 +12,7 @@ import {
 const getPoolKeys = async (ammId: string, connection: Connection) => {
     const ammAccount = await connection.getAccountInfo(new PublicKey(ammId));
     if (ammAccount) {
-        const poolState = LIQUIDITY_STATE_LAYOUT_V4.decode(ammAccount.data);
+        const poolState = liquidityStateV4Layout.decode(ammAccount.data);
         const marketAccount = await connection.getAccountInfo(poolState.marketId);
         if (marketAccount) {
             const marketState = MARKET_STATE_LAYOUT_V3.decode(marketAccount.data);
@@ -21,11 +21,11 @@ const getPoolKeys = async (ammId: string, connection: Connection) => {
                     marketState.ownAddress.toBuffer(),
                     marketState.vaultSignerNonce.toArrayLike(Buffer, "le", 8),
                 ],
-                MAINNET_PROGRAM_ID.OPENBOOK_MARKET,
+                DEVNET_PROGRAM_ID.OPENBOOK_MARKET,
             );
             return {
                 id: new PublicKey(ammId),
-                programId: MAINNET_PROGRAM_ID.AmmV4,
+                programId: DEVNET_PROGRAM_ID.AmmV4,
                 status: poolState.status,
                 baseDecimals: poolState.baseDecimal.toNumber(),
                 quoteDecimals: poolState.quoteDecimal.toNumber(),
@@ -39,7 +39,7 @@ const getPoolKeys = async (ammId: string, connection: Connection) => {
                 openOrders: poolState.openOrders,
                 baseVault: poolState.baseVault,
                 quoteVault: poolState.quoteVault,
-                marketProgramId: MAINNET_PROGRAM_ID.OPENBOOK_MARKET,
+                marketProgramId: DEVNET_PROGRAM_ID.OPENBOOK_MARKET,
                 marketId: marketState.ownAddress,
                 marketBids: marketState.bids,
                 marketAsks: marketState.asks,

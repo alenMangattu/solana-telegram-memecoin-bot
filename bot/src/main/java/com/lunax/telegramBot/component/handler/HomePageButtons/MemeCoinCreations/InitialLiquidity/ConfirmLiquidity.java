@@ -87,13 +87,74 @@ public class ConfirmLiquidity implements ButtonHandler {
         }
 
         try {
+            // Step 1: Create memecoin
+            MessageUtils.sendMessage(update, "🏗️ Creating your memecoin...");
             String tokenAddress = memecoinService.createMemecoin(update, user, stateData);
+           
+            String fromToken = stateData.get("fromToken").asText();
+            String toToken = stateData.get("toToken").asText();
+            // Get liquidity amounts
+            double toAmount = stateData.get("toAmount").asDouble();
+            double fromAmount = stateData.get("fromAmount").asDouble();
+            int decimals = stateData.get("decimals").asInt();
             
-            // TODO: Add liquidity logic here
-            MessageUtils.sendMessage(update, "⏳ Now proceeding with liquidity addition...");
+            String walletPrivateKey = walletKeyManager.getPrivateKey(user.getCurrentWallet());
+
+            // Step 2: Create AMM pool using the actual token address
+            MessageUtils.sendMessage(update, "🏊 Creating AMM pool...");
+            String poolId = solanaUtils.createAmmPool(
+                fromToken,  // Use the fromToken from state
+                tokenAddress, // Use the newly created token address
+                fromAmount,
+                toAmount,
+                walletPrivateKey,
+                decimals
+            );
+            MessageUtils.sendMessage(update, "✅ AMM pool created successfully!");
+
+            // Step 3: Add initial liquidity
+            MessageUtils.sendMessage(update, "💧 Adding initial liquidity...");
+            String liquiditySignature = solanaUtils.addLiquidity(
+                tokenAddress,
+                fromAmount,
+                toAmount,
+                walletPrivateKey
+            );
+            MessageUtils.sendMessage(update, "✅ Liquidity added successfully!");
+
+            // Optional: Handle LP token burning if specified
+            if (stateData.has("lpBurnAmount") && stateData.get("lpBurnAmount").asDouble() > 0) {
+                double burnPercentage = stateData.get("lpBurnAmount").asDouble();
+                if (burnPercentage > 0) {
+                    MessageUtils.sendMessage(update, "🔥 Burning LP tokens...");
+                    solanaUtils.burnLiquidity(poolId, burnPercentage, walletPrivateKey);
+                    MessageUtils.sendMessage(update, String.format("✅ Successfully burned %.1f%% of LP tokens!", burnPercentage));
+                }
+            }
+
+            // Final success message without market creation
+            String successMessage = String.format("""
+                    🎉 *Memecoin Launch Complete!*
+                    
+                    ✅ Token Created
+                    ✅ AMM Pool Created
+                    ✅ Liquidity Added
+                    
+                    *Details:*
+                    Token Address: `%s`
+                    Pool ID: `%s`
+                    
+                    Your memecoin is now ready! 🚀
+                    Use /create_market to enable trading on Raydium later.
+                    """, 
+                    tokenAddress,
+                    poolId
+            );
+            
+            MessageUtils.sendMessage(update, successMessage);
 
         } catch (Exception e) {
-            log.error("Error creating memecoin: ", e);
+            log.error("Error in liquidity confirmation process: ", e);
             MessageUtils.sendMessage(update, "❌ Error: " + e.getMessage());
         } finally {
             stateService.setState(telegramId, ChatState.IDLE);
