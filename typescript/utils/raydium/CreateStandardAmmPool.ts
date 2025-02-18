@@ -156,12 +156,14 @@ export const createAmmPool = async (
             programId: CPMM_PROGRAM_ID,
             poolFeeAccount: CPMM_PROGRAM_ID,
             mintA: {
-                mint: toTokenPubkey,
-                decimals: decimals
+                address: toTokenPubkey.toBase58(), 
+                decimals: decimals,
+                programId: CPMM_PROGRAM_ID.toBase58()
             },
             mintB: {
-                mint: fromTokenPubkey,
-                decimals: 9  // SOL decimals
+                address: fromTokenPubkey.toBase58(),
+                decimals: 9,
+                programId: CPMM_PROGRAM_ID.toBase58()
             },
             mintAAmount: baseAmount,
             mintBAmount: quoteAmount,
@@ -206,8 +208,8 @@ export const createAmmPool = async (
             );
         });
 
-        logger.info("Pool created successfully with ID:", extInfo.address.ammId.toBase58());
-        return extInfo.address.ammId.toBase58();
+        logger.info("Pool created successfully with ID:", extInfo.address.poolId.toBase58());
+        return extInfo.address.poolId.toBase58();
     } catch (error) {
         logger.error("Error creating AMM pool:", error)
         throw error

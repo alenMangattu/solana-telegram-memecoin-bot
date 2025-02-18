@@ -2277,3 +2277,32 @@
 {"decimals":9,"fromAmount":2,"fromToken":"SOL","level":"info","message":"Creating AMM pool with params:","timestamp":"2025-02-18T20:26:10.648Z","toAmount":23123,"toToken":"66amcf6wuf41e4NtFA4h5k7NNzJuYuVwHu9DEazBaWEh"}
 {"level":"info","message":"Creating market...","timestamp":"2025-02-18T20:26:10.655Z"}
 {"level":"info","message":"Executing market creation...","timestamp":"2025-02-18T20:26:11.457Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-18T20:52:35.074Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-18T20:52:35.087Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-18T20:52:35.268Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-18T20:52:50.259Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-18T20:52:50.263Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-18T20:52:50.370Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-18T20:53:12.474Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-18T20:53:12.493Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-18T20:53:14.909Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-18T20:53:14.920Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-18T20:53:15.163Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-18T20:53:28.227Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-18T20:53:28.232Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-18T20:53:28.297Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-18T20:53:59.664Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-18T20:53:59.666Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-18T20:53:59.745Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-18T20:54:07.899Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-18T20:54:07.912Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-18T20:54:08.117Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-18T20:54:24.198Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-18T20:54:24.204Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-18T20:54:24.264Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-18T20:54:38.003Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-18T20:54:38.013Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-18T20:54:38.125Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-18T20:54:46.075Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-18T20:54:46.079Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-18T20:54:46.139Z"}
