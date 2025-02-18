@@ -35,9 +35,7 @@ public class HandlerRegistry {
         handlers.put("revoke_mint_authority_confirm", revokeMintAuthority);
         handlers.put("revoke_freeze_authority_confirm", revokeFreezeAuthority);
         
-        // Register cancel handlers
         handlers.put("revoke_mint_authority_cancel", new CancelMintAuthority(revokeMintAuthority));
-        handlers.put("revoke_freeze_authority_cancel", new CancelFreezeAuthority(revokeFreezeAuthority));
     }
     
     private static class CancelMintAuthority implements ButtonHandler {
@@ -56,25 +54,6 @@ public class HandlerRegistry {
         @Override
         public void handleCallback(Update update) {
             revokeMintAuthority.handleCancel(update);
-        }
-    }
-
-    private static class CancelFreezeAuthority implements ButtonHandler {
-        private final RevokeFreezeAuthority revokeFreezeAuthority;
-
-        CancelFreezeAuthority(RevokeFreezeAuthority revokeFreezeAuthority) {
-            this.revokeFreezeAuthority = revokeFreezeAuthority;
-        }
-
-        @Override
-        public String getButtonText() { return "No"; }
-
-        @Override
-        public String getCallbackData() { return "revoke_freeze_authority_cancel"; }
-
-        @Override
-        public void handleCallback(Update update) {
-            revokeFreezeAuthority.handleCancel(update);
         }
     }
     

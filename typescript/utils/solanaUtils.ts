@@ -1,24 +1,13 @@
-import { Connection, Keypair, PublicKey, Transaction, type Commitment } from '@solana/web3.js';
-import {
-    createMint,
-    getOrCreateAssociatedTokenAccount,
-    mintTo,
-    TOKEN_PROGRAM_ID,
-    setAuthority,
-    AuthorityType
-} from '@solana/spl-token';
-import { Metadata } from '@metaplex-foundation/mpl-token-metadata';
+import { Connection, Keypair, PublicKey, Transaction, type Commitment, type ConfirmOptions, type SignatureStatus } from '@solana/web3.js';
 import bs58 from 'bs58';
 import logger from './logger';
-import type { WalletInfo, MemecoinConfig, TokenMetadata } from './types';
+import type { WalletInfo } from './types';
 import { getPoolKeys } from './raydium/raydium';
 import axios from 'axios';
 import path from 'path';
 import os from 'os';
 import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
-// Removed CreateMetadataV2 import as it is not exported from the module
-import { exec } from 'child_process';
 import { 
     createCreateMetadataAccountV3Instruction,
     PROGRAM_ID as METADATA_PROGRAM_ID,
@@ -28,6 +17,20 @@ import {
 interface WalletData {
     publicKey: string;
     privateKey: string; // Removed duplicate privateKey declaration
+}
+
+class TransactionTimeoutError extends Error {
+    constructor(signature: string, timeoutSeconds: number) {
+        super(`Transaction ${signature} timed out after ${timeoutSeconds} seconds`);
+        this.name = 'TransactionTimeoutError';
+    }
+}
+
+class TransactionDroppedError extends Error {
+    constructor(signature: string) {
+        super(`Transaction ${signature} was dropped (block height exceeded)`);
+        this.name = 'TransactionDroppedError';
+    }
 }
 
 export class SolanaUtils {
@@ -40,9 +43,8 @@ export class SolanaUtils {
         logger.info(`Initializing SolanaUtils with cluster URL: ${clusterUrl}`);
         this.connection = new Connection(clusterUrl, {
             commitment: 'confirmed',
+            wsEndpoint: clusterUrl.replace('https', 'wss'),  // Correct WebSocket URL
             disableRetryOnRateLimit: false,
-            confirmTransactionInitialTimeout: 60000,
-            wsEndpoint: undefined, // Explicitly disable WebSocket
         });
         logger.info('Connection initialized');
         this.tokenListCache = new Map();
@@ -87,19 +89,18 @@ export class SolanaUtils {
         try {
             logger.info(`Creating memecoin: ${name} (${symbol}) with supply ${supply}`);
             
-            // Log the wallet private key (for debugging purposes, ensure this is secure)
-            logger.debug(`Using wallet private key: ${walletPrivateKey}`);
-
+            // Check RPC connection before proceeding
+            await this.checkRpcConnection();
+            
             const keypairPath = await this.saveWalletKeypair(walletPrivateKey);
             logger.info(`Keypair saved at: ${keypairPath}`);
 
-            // Add retry logic for token creation
             let retries = 3;
             let tokenAddress: string | null = null;
 
             while (retries > 0 && !tokenAddress) {
                 try {
-                    logger.info(`Attempting to create token...`);
+                    logger.info(`Attempting to create token (${retries} retries left)...`);
                     
                     tokenAddress = await this.createTokenWithCli(
                         keypairPath,
@@ -112,29 +113,30 @@ export class SolanaUtils {
                         revokeFreezeAuthority,
                         async (message: string) => {
                             logger.info(`Update: ${message}`);
-                            // Send update message to chat (if applicable)
-                            await axios.post('http://localhost:8888/api/telegram/send', {
-                                chatId: chatId,
-                                text: message
-                            }).catch(error => {
+                            try {
+                                await axios.post('http://localhost:8888/api/telegram/send', {
+                                    chatId: chatId,
+                                    text: message
+                                });
+                            } catch (error) {
                                 logger.error('Failed to send update message:', error);
-                            });
+                            }
                         }
                     );
 
                     logger.info(`Token created successfully with address: ${tokenAddress}`);
-                    break; // Exit the loop if successful
-                } catch (error: unknown) {
+                    break;
+                } catch (error) {
                     retries--;
                     const errorMessage = error instanceof Error ? error.message : String(error);
-                    logger.error(`Token creation failed, retries left: ${retries}. Error: ${errorMessage}`);
-                    if (retries === 0) throw error; // Rethrow if no retries left
-                    await new Promise(resolve => setTimeout(resolve, 2000)); // Wait before retrying
+                    logger.error(`Token creation attempt failed: ${errorMessage}`);
+                    if (retries === 0) throw error;
+                    await new Promise(resolve => setTimeout(resolve, 2000));
                 }
             }
+
             await this.cleanupKeypairFile(keypairPath);
-            logger.info(`Keypair file cleaned up: ${keypairPath}`);
-            return tokenAddress as string; // Assert that tokenAddress is a string
+            return tokenAddress as string;
         } catch (error) {
             logger.error('Error creating memecoin:', error);
             throw new Error(`Failed to create memecoin: ${error instanceof Error ? error.message : String(error)}`);
@@ -216,6 +218,9 @@ export class SolanaUtils {
             }
             const tokenAddress = outputMatch[1].trim();
 
+            if (updateCallback) {
+                await updateCallback(`Token created with address: ${tokenAddress}`);
+            }
             logger.info(`Token created with address: ${tokenAddress}`);
 
             // Skip freeze authority check since we know if we created it with or without freeze authority
@@ -237,7 +242,9 @@ export class SolanaUtils {
                 wallet,
                 name,
                 symbol,
-                metadataUri
+                metadataUri,
+                updateCallback,
+                5
             );
 
             if (updateCallback) {
@@ -381,33 +388,19 @@ export class SolanaUtils {
         name: string,
         symbol: string,
         uri: string,
+        updateCallback?: (message: string) => Promise<void>,
         maxRetries: number = 5
     ): Promise<void> {
         let lastError: Error | null = null;
         
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
             try {
-                logger.info(`Metadata creation attempt ${attempt}/${maxRetries} for token ${mint.toString()}`);
+                logger.info(`Creating metadata attempt ${attempt}/${maxRetries}`);
                 
-                // Add RPC connection check with more detailed logging
-                logger.info('Checking RPC connection status...');
-                const version = await this.connection.getVersion();
-                logger.info('RPC connection verified. Node version:', version);
-                
-                // Create metadata with more detailed logging
-                const [metadataAccount] = PublicKey.findProgramAddressSync(
-                    [
-                        Buffer.from('metadata'),
-                        METADATA_PROGRAM_ID.toBuffer(),
-                        mint.toBuffer(),
-                    ],
-                    METADATA_PROGRAM_ID
-                );
-                
-                logger.info(`Generated metadata account address: ${metadataAccount.toString()}`);
-                logger.info('Creating metadata with parameters:', { name, symbol, uri });
+                if (updateCallback) {
+                    await updateCallback(`Creating metadata attempt ${attempt}/${maxRetries}`);
+                }
 
-                // Create metadata
                 const metadataData: DataV2 = {
                     name,
                     symbol,
@@ -415,15 +408,21 @@ export class SolanaUtils {
                     sellerFeeBasisPoints: 0,
                     creators: null,
                     collection: null,
-                    uses: null,
+                    uses: null
                 };
-                logger.info('Created metadata data structure:', metadataData);
 
-                // Create metadata instruction
-                logger.info('Creating metadata instruction...');
-                const createMetadataInstruction = createCreateMetadataAccountV3Instruction(
+                const [metadataPDA] = PublicKey.findProgramAddressSync(
+                    [
+                        Buffer.from('metadata'),
+                        METADATA_PROGRAM_ID.toBuffer(),
+                        mint.toBuffer(),
+                    ],
+                    METADATA_PROGRAM_ID
+                );
+
+                const instruction = createCreateMetadataAccountV3Instruction(
                     {
-                        metadata: metadataAccount,
+                        metadata: metadataPDA,
                         mint: mint,
                         mintAuthority: wallet.publicKey,
                         payer: wallet.publicKey,
@@ -433,57 +432,32 @@ export class SolanaUtils {
                         createMetadataAccountArgsV3: {
                             data: metadataData,
                             isMutable: true,
-                            collectionDetails: null,
+                            collectionDetails: null
                         }
                     }
                 );
-                logger.info('Metadata instruction created');
 
-                // Send and confirm transaction
-                logger.info('Building transaction...');
-                const metadataTx = new Transaction().add(createMetadataInstruction);
+                const metadataTx = new Transaction().add(instruction);
                 
                 logger.info('Getting latest blockhash...');
-                const latestBlockhash = await this.connection.getLatestBlockhash();
-                metadataTx.recentBlockhash = latestBlockhash.blockhash;
+                const { blockhash, lastValidBlockHeight } = await this.connection.getLatestBlockhash();
+                metadataTx.recentBlockhash = blockhash;
                 metadataTx.feePayer = wallet.publicKey;
                 
-                // Add retry logic for sending transaction
-                let signature;
-                let sendAttempts = 3;
-                
-                while (sendAttempts > 0) {
-                    try {
-                        signature = await this.connection.sendTransaction(metadataTx, [wallet], {
-                            skipPreflight: false,
-                            preflightCommitment: 'confirmed',
-                            maxRetries: 5
-                        });
-                        break;
-                    } catch (error) {
-                        sendAttempts--;
-                        if (sendAttempts === 0) throw error;
-                        logger.warn(`Failed to send transaction, retrying... (${sendAttempts} attempts left)`);
-                        await new Promise(resolve => setTimeout(resolve, 2000));
-                    }
-                }
+                // Send and confirm transaction
+                const signature = await this.sendAndConfirmTransaction(metadataTx, [wallet], {
+                    commitment: 'confirmed',
+                    maxRetries: 5,
+                    skipPreflight: false
+                }, updateCallback);
 
-                if (!signature) {
-                    throw new Error('Failed to send transaction after all retries');
+                logger.info(`Metadata transaction sent: ${signature}`);
+                if (updateCallback) {
+                    await updateCallback("Metadata transaction sent: " + signature);
                 }
-
-                logger.info(`Transaction sent with signature: ${signature}`);
-                
-                // Use polling-based confirmation
-                logger.info('Waiting for transaction confirmation...');
-                await this.pollForSignatureStatus(signature, 120000, 2000);  // Use longer timeout
-                
                 logger.info('Metadata created successfully');
-
-                if (attempt > 1) {
-                    logger.info(`Metadata creation succeeded after ${attempt} attempts`);
-                }
                 return;
+
             } catch (error) {
                 lastError = error instanceof Error ? error : new Error(String(error));
                 logger.error(`Metadata creation attempt ${attempt} failed:`, {
@@ -502,118 +476,113 @@ export class SolanaUtils {
         throw lastError || new Error('Failed to create metadata after all retries');
     }
 
-    private async pollForSignatureStatus(
-        signature: string,
-        timeout: number = 120000,
-        interval: number = 2000
-    ): Promise<void> {
-        const start = Date.now();
-        logger.info(`Starting to poll for signature ${signature}`);
+    private async pollForSignatureStatus(signature: string, maxRetries: number = 10): Promise<void> {
+        logger.info(`Confirming transaction ${signature}`);
         
-        // Get the latest blockhash and its last valid block height
-        const { blockhash, lastValidBlockHeight } = await this.connection.getLatestBlockhash();
-        logger.info(`Got blockhash ${blockhash} with last valid block height ${lastValidBlockHeight}`);
-
-        // Create a promise that will resolve when we receive a websocket notification
-        const subscriptionPromise = new Promise<void>((resolve, reject) => {
+        for (let attempt = 0; attempt < maxRetries; attempt++) {
             try {
-                const subscriptionId = this.connection.onSignature(
-                    signature,
-                    (result) => {
-                        if (result.err) {
-                            reject(new Error(`Transaction failed: ${JSON.stringify(result.err)}`));
-                        } else {
-                            resolve();
-                        }
-                    },
-                    'confirmed'
-                );
-
-                // Clean up subscription after timeout
-                setTimeout(() => {
-                    this.connection.removeSignatureListener(subscriptionId);
-                }, timeout);
-            } catch (err) {
-                logger.warn('Failed to set up signature subscription:', err);
-                // Continue with polling if subscription fails
-            }
-        });
-
-        // Polling loop
-        const pollingPromise = (async () => {
-            let attempts = 0;
-            while (Date.now() - start < timeout) {
-                attempts++;
-                try {
-                    // Check if blockhash has expired
-                    const currentBlockHeight = await this.connection.getBlockHeight();
-                    if (currentBlockHeight > lastValidBlockHeight) {
-                        throw new Error(`Transaction expired: block height ${currentBlockHeight} > last valid height ${lastValidBlockHeight}`);
-                    }
-
-                    // Get status using getSignatureStatuses
-                    const statuses = await this.connection.getSignatureStatuses([signature], {
-                        searchTransactionHistory: true
-                    });
-
-                    if (!statuses || !statuses.value[0]) {
-                        logger.info(`No status yet. Current block height: ${currentBlockHeight}`);
-                    } else {
-                        const status = statuses.value[0];
-                        if (status.err) {
-                            throw new Error(`Transaction failed: ${JSON.stringify(status.err)}`);
-                        }
-
-                        logger.info('Transaction status:', {
-                            slot: status.slot,
-                            confirmations: status.confirmations,
-                            confirmationStatus: status.confirmationStatus
-                        });
-
-                        if (status.confirmationStatus === 'confirmed' || 
-                            status.confirmationStatus === 'finalized') {
-                            return;
-                        }
-                    }
-
-                    // Add exponential backoff
-                    const backoffInterval = Math.min(interval * Math.pow(1.5, attempts - 1), 5000);
-                    await new Promise(resolve => setTimeout(resolve, backoffInterval));
-                } catch (error) {
-                    const errorMessage = error instanceof Error ? error.message : String(error);
-                    logger.error(`Error polling signature status (attempt ${attempts}):`, errorMessage);
-                    
-                    if (attempts >= 10 || 
-                        errorMessage.includes('Transaction failed') || 
-                        errorMessage.includes('Transaction expired')) {
-                        throw error;
-                    }
-
-                    await new Promise(resolve => setTimeout(resolve, Math.min(interval * 1.5, 5000)));
+                // Get status using getSignatureStatus
+                const status = await this.connection.getSignatureStatus(signature);
+                
+                if (!status || !status.value) {
+                    logger.info(`Attempt ${attempt + 1}: No status yet, waiting...`);
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    continue;
                 }
-            }
-            throw new Error(`Transaction confirmation timeout after ${timeout}ms`);
-        })();
 
-        // Wait for either the polling or the subscription to succeed
+                if (status.value.err) {
+                    const errorDetails = JSON.stringify(status.value.err);
+                    logger.error(`Transaction failed with error: ${errorDetails}`);
+                    throw new Error(`Transaction failed: ${errorDetails}`);
+                }
+
+                if (status.value.confirmationStatus === 'confirmed' || 
+                    status.value.confirmationStatus === 'finalized') {
+                    logger.info(`Transaction ${signature} confirmed with status: ${status.value.confirmationStatus}`);
+                    return;
+                }
+
+                logger.info(`Attempt ${attempt + 1}: Status: ${status.value.confirmationStatus}`);
+                // Increase delay for subsequent attempts
+                const delay = Math.min(2000 * (attempt + 1), 10000); // Max 10 second delay
+                await new Promise(resolve => setTimeout(resolve, delay));
+            } catch (error) {
+                const errorMessage = error instanceof Error ? error.message : String(error);
+                logger.error(`Error confirming transaction (attempt ${attempt + 1}/${maxRetries}):`, errorMessage);
+                
+                if (attempt === maxRetries - 1) {
+                    throw new Error(`Failed to confirm transaction after ${maxRetries} attempts: ${errorMessage}`);
+                }
+                
+                // Exponential backoff for retries
+                const delay = Math.min(2000 * Math.pow(2, attempt), 15000); // Max 15 second delay
+                await new Promise(resolve => setTimeout(resolve, delay));
+            }
+        }
+        
+        throw new TransactionTimeoutError(signature, 10);
+    }
+
+    private async confirmTransaction(signature: string, timeout: number = 60000): Promise<void> {
+        logger.info(`Confirming transaction ${signature}`);
+        
         try {
-            await Promise.race([
-                subscriptionPromise,
-                pollingPromise
-            ]);
-            logger.info('Transaction confirmed successfully');
+            const latestBlockhash = await this.connection.getLatestBlockhash();
+            
+            const response = await this.connection.confirmTransaction({
+                signature,
+                blockhash: latestBlockhash.blockhash,
+                lastValidBlockHeight: latestBlockhash.lastValidBlockHeight
+            }, 'confirmed');
+
+            if (response.value.err) {
+                throw new Error(`Transaction failed: ${JSON.stringify(response.value.err)}`);
+            }
+
+            logger.info(`Transaction ${signature} confirmed successfully`);
         } catch (error) {
-            logger.error('Transaction confirmation failed:', error);
+            logger.error(`Error confirming transaction: ${error}`);
             throw error;
         }
     }
 
-    private async confirmTransaction(signature: string, commitment: Commitment = 'confirmed'): Promise<void> {
+    async sendAndConfirmTransaction(
+        transaction: Transaction,
+        signers: Array<Keypair>,
+        options?: ConfirmOptions,
+        updateCallback?: (message: string) => Promise<void>
+    ): Promise<string> {
+        const commitment = options?.commitment ?? 'confirmed';
+        const { blockhash, lastValidBlockHeight } = await this.connection.getLatestBlockhash(commitment);
+        
+        transaction.recentBlockhash = blockhash;
+        transaction.sign(...signers);
+    
+        const signature = await this.connection.sendRawTransaction(transaction.serialize(), {
+            skipPreflight: options?.skipPreflight,
+            preflightCommitment: options?.preflightCommitment || commitment,
+            maxRetries: options?.maxRetries
+        });
+    
+        logger.info(`Transaction sent with signature: ${signature}`);
+    
+        // if (updateCallback) {
+        //     await updateCallback(`Transaction sent with signature: ${signature}`);
+        // }
+    
         try {
-            await this.pollForSignatureStatus(signature);
+            await this.confirmTransaction(signature);
+            // if (updateCallback) {
+            //     // await updateCallback(`Transaction ${signature} confirmed successfully`);
+            // }
+            return signature;
         } catch (error) {
-            logger.error('Error confirming transaction:', error);
-            throw new Error(`Failed to confirm transaction: ${error instanceof Error ? error.message : String(error)}`);
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            logger.error(`Transaction confirmation failed: ${errorMessage}`);
+            if (updateCallback) {
+                await updateCallback(`Transaction failed: ${errorMessage}`);
+            }
+            throw error;
         }
     }
 } 

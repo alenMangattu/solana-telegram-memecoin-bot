@@ -36,6 +36,9 @@ import lombok.Data;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import java.time.Duration;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.impl.client.HttpClients;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 
 @Slf4j
 @Component
@@ -106,7 +109,17 @@ public class SolanaUtils {
                 log.debug("Request body: {}", objectMapper.writeValueAsString(body));
             }
 
-            ResponseEntity<T> response = restTemplate.exchange(
+            // Set a timeout for the request
+            RequestConfig requestConfig = RequestConfig.custom()
+                .setConnectTimeout(60000)  // 60 seconds connection timeout
+                .setSocketTimeout(60000)    // 60 seconds read timeout
+                .build();
+            RestTemplate restTemplateWithTimeout = new RestTemplateBuilder()
+                .setConnectTimeout(Duration.ofSeconds(60))
+                .setReadTimeout(Duration.ofSeconds(60))
+                .build();
+
+            ResponseEntity<T> response = restTemplateWithTimeout.exchange(
                 apiBaseUrl + endpoint,
                 method,
                 requestEntity,
@@ -309,5 +322,176 @@ public class SolanaUtils {
     private JsonNode getUserTokenHoldings(String tokenAddress, String userWalletAddress) {
         // Implementation
         return null; // Placeholder return, actual implementation needed
+    }
+
+    @Data
+    private static class CreateMarketRequest {
+        private String tokenMint;
+        private String walletPrivateKey;
+        private int lotSize;
+        private double tickSize;
+    }
+
+    @Data
+    private static class CreateMarketResponse {
+        private String marketId;
+    }
+
+    @Data
+    private static class CreateAmmPoolRequest {
+        private String fromToken;    // SOL token address
+        private String toToken;      // Your token address
+        private double fromAmount;   // SOL amount
+        private double toAmount;     // Your token amount
+        private String walletPrivateKey;
+        private int decimals;
+    }
+
+    @Data
+    private static class CreateAmmPoolResponse {
+        private String poolId;
+    }
+
+    public String createMarket(String tokenMint, String walletPrivateKey) {
+        try {
+            log.info("Creating market for token: {}", tokenMint);
+            
+            CreateMarketRequest request = new CreateMarketRequest();
+            request.setTokenMint(tokenMint);
+            request.setWalletPrivateKey(walletPrivateKey);
+            request.setLotSize(1);
+            request.setTickSize(0.01);
+
+            ResponseEntity<CreateMarketResponse> response = makeRequest(
+                "/api/market/create",
+                HttpMethod.POST,
+                request,
+                CreateMarketResponse.class
+            );
+
+            return response.getBody().getMarketId();
+        } catch (Exception e) {
+            log.error("Failed to create market for token {}: {}", tokenMint, e.getMessage());
+            throw new RuntimeException("Failed to create market", e);
+        }
+    }
+
+    public String createAmmPool(
+        String fromToken,
+        String toToken,
+        double fromAmount,
+        double toAmount,
+        String walletPrivateKey,
+        int decimals
+    ) {
+        try {
+            log.info("Creating AMM pool for token: {}", toToken);
+            
+            CreateAmmPoolRequest request = new CreateAmmPoolRequest();
+            request.setFromToken(fromToken);
+            request.setToToken(toToken);
+            request.setFromAmount(fromAmount);
+            request.setToAmount(toAmount);
+            request.setWalletPrivateKey(walletPrivateKey);
+            request.setDecimals(decimals);
+
+            ResponseEntity<CreateAmmPoolResponse> response = makeRequest(
+                "/api/pool/create",
+                HttpMethod.POST,
+                request,
+                CreateAmmPoolResponse.class
+            );
+
+            return response.getBody().getPoolId();
+        } catch (Exception e) {
+            log.error("Failed to create AMM pool for token {}: {}", toToken, e.getMessage());
+            throw new RuntimeException("Failed to create AMM pool", e);
+        }
+    }
+
+    @Data
+    private static class BurnLiquidityRequest {
+        private String poolId;
+        private double burnPercentage;
+        private String walletPrivateKey;
+    }
+
+    @Data
+    private static class BurnLiquidityResponse {
+        private String signature;
+    }
+
+    public String burnLiquidity(
+        String poolId,
+        double burnPercentage,
+        String walletPrivateKey
+    ) {
+        try {
+            log.info("Burning {}% of liquidity from pool: {}", burnPercentage, poolId);
+            
+            if (burnPercentage <= 0 || burnPercentage > 100) {
+                throw new IllegalArgumentException("Burn percentage must be between 0 and 100");
+            }
+            
+            BurnLiquidityRequest request = new BurnLiquidityRequest();
+            request.setPoolId(poolId);
+            request.setBurnPercentage(burnPercentage);
+            request.setWalletPrivateKey(walletPrivateKey);
+
+            ResponseEntity<BurnLiquidityResponse> response = makeRequest(
+                "/api/liquidity/burn",
+                HttpMethod.POST,
+                request,
+                BurnLiquidityResponse.class
+            );
+
+            return response.getBody().getSignature();
+        } catch (Exception e) {
+            log.error("Failed to burn liquidity from pool {}: {}", poolId, e.getMessage());
+            throw new RuntimeException("Failed to burn liquidity", e);
+        }
+    }
+
+    @Data
+    private static class RemoveLiquidityRequest {
+        private String poolId;
+        private double removePercentage;
+        private String walletPrivateKey;
+    }
+
+    @Data
+    private static class RemoveLiquidityResponse {
+        private String signature;
+    }
+
+    public String removeLiquidity(
+        String poolId,
+        double removePercentage,
+        String walletPrivateKey
+    ) {
+        try {
+            log.info("Removing {}% of liquidity from pool: {}", removePercentage, poolId);
+            
+            if (removePercentage <= 0 || removePercentage > 100) {
+                throw new IllegalArgumentException("Remove percentage must be between 0 and 100");
+            }
+            
+            RemoveLiquidityRequest request = new RemoveLiquidityRequest();
+            request.setPoolId(poolId);
+            request.setRemovePercentage(removePercentage);
+            request.setWalletPrivateKey(walletPrivateKey);
+
+            ResponseEntity<RemoveLiquidityResponse> response = makeRequest(
+                "/api/liquidity/remove",
+                HttpMethod.POST,
+                request,
+                RemoveLiquidityResponse.class
+            );
+
+            return response.getBody().getSignature();
+        } catch (Exception e) {
+            log.error("Failed to remove liquidity from pool {}: {}", poolId, e.getMessage());
+            throw new RuntimeException("Failed to remove liquidity", e);
+        }
     }
 }

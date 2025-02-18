@@ -5,6 +5,11 @@ import { SolanaUtils } from './solanaUtils';
 import logger from './logger';
 import dotenv from 'dotenv';
 import axios from 'axios';
+import { createMarket } from './raydium/CreateMarket';
+import { createAmmPool } from './raydium/CreateStandardAmmPool';
+import { addLiquidity } from './raydium/AddLiquidity';
+import { burnLiquidity } from './raydium/BurnLiquidity';
+import { removeLiquidity } from './raydium/RemoveLiquidity';
 
 dotenv.config();
 
@@ -119,6 +124,77 @@ app.post('/api/liquidity/add', async (req, res) => {
   } catch (error) {
     logger.error('Liquidity addition error:', error);
     res.status(500).json({ error: 'Failed to add liquidity' });
+  }
+});
+
+app.post('/api/liquidity/burn', async (req, res) => {
+  try {
+    const { poolId, burnPercentage, walletPrivateKey } = req.body;
+    
+    // Validate burn percentage
+    if (burnPercentage <= 0 || burnPercentage > 100) {
+      throw new Error("Burn percentage must be between 0 and 100");
+    }
+    
+    const txSignature = await burnLiquidity(poolId, burnPercentage, walletPrivateKey);
+    res.json({ signature: txSignature });
+  } catch (error) {
+    logger.error('Liquidity burn error:', error);
+    res.status(500).json({ error: 'Failed to burn liquidity' });
+  }
+});
+
+app.post('/api/liquidity/remove', async (req, res) => {
+  try {
+    const { poolId, removePercentage, walletPrivateKey } = req.body;
+    
+    // Validate remove percentage
+    if (removePercentage <= 0 || removePercentage > 100) {
+      throw new Error("Remove percentage must be between 0 and 100");
+    }
+    
+    const txSignature = await removeLiquidity(poolId, removePercentage, walletPrivateKey);
+    res.json({ signature: txSignature });
+  } catch (error) {
+    logger.error('Liquidity removal error:', error);
+    res.status(500).json({ error: 'Failed to remove liquidity' });
+  }
+});
+
+app.post('/api/market/create', async (req, res) => {
+  try {
+    const { tokenMint, walletPrivateKey, lotSize, tickSize } = req.body;
+    const marketId = await createMarket(tokenMint, walletPrivateKey, lotSize, tickSize);
+    res.json({ marketId });
+  } catch (error) {
+    logger.error('Market creation error:', error);
+    res.status(500).json({ error: 'Failed to create market' });
+  }
+});
+
+app.post('/api/pool/create', async (req, res) => {
+  try {
+    const { 
+      fromToken,        // SOL token info
+      toToken,          // Your token info
+      fromAmount,       // SOL amount
+      toAmount,         // Your token amount
+      walletPrivateKey,
+      decimals
+    } = req.body;
+    
+    const poolId = await createAmmPool(
+      fromToken,
+      toToken,
+      fromAmount, 
+      toAmount,
+      walletPrivateKey,
+      decimals
+    );
+    res.json({ poolId });
+  } catch (error) {
+    logger.error('Pool creation error:', error);
+    res.status(500).json({ error: 'Failed to create pool' });
   }
 });
 
