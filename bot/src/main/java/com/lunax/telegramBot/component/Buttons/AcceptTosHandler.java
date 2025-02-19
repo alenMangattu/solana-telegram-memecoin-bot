@@ -1,4 +1,4 @@
-package com.lunax.telegramBot.component.handler;
+package com.lunax.telegramBot.component.Buttons;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

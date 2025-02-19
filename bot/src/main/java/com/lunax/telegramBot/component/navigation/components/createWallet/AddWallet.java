@@ -3,8 +3,9 @@ package com.lunax.telegramBot.component.navigation.components.createWallet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import com.lunax.telegramBot.component.handler.wallet.CreateNewWallet;
-import com.lunax.telegramBot.component.handler.wallet.ImportExistingWallet;
+
+import com.lunax.telegramBot.component.Buttons.wallet.CreateNewWallet;
+import com.lunax.telegramBot.component.Buttons.wallet.ImportExistingWallet;
 import com.lunax.telegramBot.component.navigation.components.StateHandler;
 import com.lunax.telegramBot.utils.components.ButtonHandler;
 import com.lunax.telegramBot.utils.components.MessageUtils;

@@ -1,4 +1,4 @@
-package com.lunax.telegramBot.component.handler.HomePageButtons.MemeCoinCreations;
+package com.lunax.telegramBot.component.Buttons.HomePageButtons.MemeCoinCreations;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,8 +12,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.lunax.telegramBot.utils.components.ButtonHandler;
 import com.lunax.telegramBot.utils.components.MessageUtils;
 import com.lunax.telegramBot.model.session.ChatState;
-import com.lunax.telegramBot.component.handler.HomePageButtons.MemeCoinCreations.InitialLiquidity.AddLiquidity;
-import com.lunax.telegramBot.component.handler.HomePageButtons.MemeCoinCreations.YesOrNoButtons.RevokeMintAuthority;
+import com.lunax.telegramBot.component.Buttons.HomePageButtons.MemeCoinCreations.InitialLiquidity.AddLiquidity;
+import com.lunax.telegramBot.component.Buttons.HomePageButtons.MemeCoinCreations.YesOrNoButtons.RevokeMintAuthority;
 import com.lunax.telegramBot.model.db.User;
 import com.lunax.telegramBot.service.UserService;
 import com.lunax.telegramBot.service.StateService;
@@ -76,9 +76,9 @@ public class AskMemeCoinData implements ButtonHandler {
             // String callbackData = update.getCallbackQuery().getData();
             // log.debug("Received callback data: {}", callbackData);
 
-            String messageText = ((Message) update.getCallbackQuery().getMessage()).getText();
-            // log.debug("Received callback message text: {}", messageText);
-            MessageUtils.editMessageInlineKeyboard(update, messageText, null);
+            // String messageText = ((Message) update.getCallbackQuery().getMessage()).getText();
+            // // log.debug("Received callback message text: {}", messageText);
+            // MessageUtils.editMessageInlineKeyboard(update, messageText, null);
         }
 
         handleMemecoinName(update);

@@ -1,4 +1,4 @@
-package com.lunax.telegramBot.component.handler.wallet;
+package com.lunax.telegramBot.component.Buttons.HomePageButtons;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -7,19 +7,17 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import com.lunax.telegramBot.utils.components.ButtonHandler;
 
 @Component
-public class ImportExistingWallet implements ButtonHandler{
-
-
+public class TradeMemeCoin implements ButtonHandler {
+    
     private final String buttonText;
-    private final String callbackData; 
+    private final String callbackData;
 
-    public ImportExistingWallet(@Value("📥 Import Existing Wallet") String buttonText, 
-                            @Value("import_existing_wallet") String callbackData) {
+    public TradeMemeCoin(@Value("💱 Trade Meme Coin") String buttonText, 
+                           @Value("trade_meme_coin") String callbackData) {
         this.buttonText = buttonText;
         this.callbackData = callbackData;
-    } 
+    }
 
-    
     @Override
     public String getButtonText() {
         return buttonText;
@@ -35,5 +33,4 @@ public class ImportExistingWallet implements ButtonHandler{
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'handleCallback'");
     }
-    
 }

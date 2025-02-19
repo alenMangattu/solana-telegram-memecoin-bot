@@ -494,4 +494,42 @@ public class SolanaUtils {
             throw new RuntimeException("Failed to remove liquidity", e);
         }
     }
+
+    /**
+     * Fetches details for a specific memecoin using SolanaCliUtils.
+     * @param tokenAddress The token address of the memecoin.
+     * @return A map containing the memecoin details.
+     */
+    public Map<String, Object> getMemecoinDetails(String tokenAddress) {
+        Map<String, Object> details = new HashMap<>();
+
+        try {
+            // Validate token address
+            if (tokenAddress == null || tokenAddress.isEmpty()) {
+                details.put("error", "Invalid token address.");
+                return details;
+            }
+
+            // Get token metadata
+            JsonNode metadata = solanaCliUtils.getTokenMetadata(tokenAddress);
+            
+            // Safely access fields with null checks
+            details.put("currentPrice", metadata.has("price") ? metadata.get("price").asDouble() : 0.0);
+            details.put("marketCap", metadata.has("marketCap") ? metadata.get("marketCap").asDouble() : 0.0);
+            details.put("liquidity", metadata.has("liquidity") ? metadata.get("liquidity").asDouble() : 0.0);
+            details.put("age", metadata.has("age") ? metadata.get("age").asText() : "N/A");
+            details.put("volume", metadata.has("volume") ? metadata.get("volume").asDouble() : 0.0);
+            details.put("makers", metadata.has("makers") ? metadata.get("makers").asText() : "N/A");
+            details.put("30MinPriceDiff", metadata.has("30MinPriceDiff") ? metadata.get("30MinPriceDiff").asDouble() : 0.0);
+            details.put("1HPriceDiff", metadata.has("1HPriceDiff") ? metadata.get("1HPriceDiff").asDouble() : 0.0);
+            details.put("6HPriceDiff", metadata.has("6HPriceDiff") ? metadata.get("6HPriceDiff").asDouble() : 0.0);
+
+        } catch (Exception e) {
+            // Handle exceptions appropriately
+            e.printStackTrace();
+            details.put("error", "Failed to fetch memecoin details: " + e.getMessage());
+        }
+
+        return details;
+    }
 }
