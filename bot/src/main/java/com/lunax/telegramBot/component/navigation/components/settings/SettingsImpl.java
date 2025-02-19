@@ -4,11 +4,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
-import com.lunax.telegramBot.component.handler.BacktoHome;
-import com.lunax.telegramBot.component.handler.SettingsButtons.HouseOfRules;
-import com.lunax.telegramBot.component.handler.SettingsButtons.NotificationHub;
-import com.lunax.telegramBot.component.handler.SettingsButtons.TraidingPerfernces;
-import com.lunax.telegramBot.component.handler.SettingsButtons.Wallets;
+import com.lunax.telegramBot.component.Buttons.BacktoHome;
+import com.lunax.telegramBot.component.Buttons.SettingsButtons.HouseOfRules;
+import com.lunax.telegramBot.component.Buttons.SettingsButtons.NotificationHub;
+import com.lunax.telegramBot.component.Buttons.SettingsButtons.TraidingPerfernces;
+import com.lunax.telegramBot.component.Buttons.SettingsButtons.Wallets;
 import com.lunax.telegramBot.component.navigation.components.StateHandler;
 import com.lunax.telegramBot.utils.components.ButtonHandler;
 import com.lunax.telegramBot.utils.components.MessageUtils;

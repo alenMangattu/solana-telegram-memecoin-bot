@@ -1,19 +1,25 @@
-package com.lunax.telegramBot.component.handler.SettingsButtons;
+package com.lunax.telegramBot.component.Buttons.HomePageButtons;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+import com.lunax.telegramBot.component.navigation.components.mymemecoin.MemecoinList;
 import com.lunax.telegramBot.utils.components.ButtonHandler;
 
 @Component
-public class HouseOfRules implements ButtonHandler{
+public class MyMemeCoins implements ButtonHandler {
 
+    
+    @Autowired
+    private MemecoinList memecoinList;
+    
     private final String buttonText;
     private final String callbackData;
 
-    public HouseOfRules(@Value("📜 House of Rules") String buttonText, 
-                      @Value("house_of_rules") String callbackData) {
+    public MyMemeCoins(@Value("💰 My Meme Coins") String buttonText, 
+                           @Value("my_meme_coins") String callbackData) {
         this.buttonText = buttonText;
         this.callbackData = callbackData;
     }
@@ -30,7 +36,6 @@ public class HouseOfRules implements ButtonHandler{
 
     @Override
     public void handleCallback(Update update) {
-        throw new UnsupportedOperationException("Unimplemented method 'handleCallback'");
+        memecoinList.executeVoid(update);
     }
-    
 }

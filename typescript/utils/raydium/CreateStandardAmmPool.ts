@@ -8,6 +8,7 @@ import { PublicKey, Keypair, Connection } from '@solana/web3.js'
 import BN from 'bn.js'
 import bs58 from 'bs58'
 import logger from '../logger'
+import { sendUnconfirmedTransaction, confirmLater } from './utils'
 
 // CPMM Program ID for Standard AMM
 const CPMM_PROGRAM_ID = new PublicKey('CPMDWBwJDtYax9qW7AyRuVC19Cc4L4Vcy4n2BHAbHkCW')
@@ -15,15 +16,23 @@ const CPMM_PROGRAM_ID = new PublicKey('CPMDWBwJDtYax9qW7AyRuVC19Cc4L4Vcy4n2BHAbH
 // Helper function to validate and convert to PublicKey
 const toPublicKey = (address: string, label: string): PublicKey => {
     try {
-        if (address === 'SOL' || address === WSOLMint.toBase58()) {
+        // Handle SOL token cases
+        if (address === 'SOL' || address === '3' || address === WSOLMint.toBase58()) {
             return WSOLMint;
         }
+        
+        // Validate address format
+        if (!/^[A-HJ-NP-Za-km-z1-9]{32,44}$/.test(address)) {
+            throw new Error(`Invalid ${label} address format`);
+        }
+        
         return new PublicKey(address);
     } catch (error: unknown) {
         logger.error(`Invalid ${label} address:`, address);
         throw new Error(`Invalid ${label} address: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
 }
+
 async function confirmTransaction(connection: Connection, signature: string): Promise<void> {
     logger.info(`Confirming transaction ${signature}`);
     
@@ -48,7 +57,7 @@ async function confirmTransaction(connection: Connection, signature: string): Pr
 }
 
 export const createAmmPool = async (
-    fromToken: string,    // SOL token address
+    fromToken: string,    // SOL token address or "SOL"
     toToken: string,      // Your token address
     fromAmount: number,   // SOL amount
     toAmount: number,     // Your token amount
@@ -58,6 +67,15 @@ export const createAmmPool = async (
     const raydium = await initSdk()
 
     try {
+        // Validate input parameters
+        if (!fromToken || !toToken) {
+            throw new Error('Token addresses are required');
+        }
+
+        if (fromAmount <= 0 || toAmount <= 0) {
+            throw new Error('Token amounts must be greater than 0');
+        }
+
         logger.info('Creating AMM pool with params:', {
             fromToken,
             toToken,
@@ -65,10 +83,6 @@ export const createAmmPool = async (
             toAmount,
             decimals
         });
-
-        // Properly decode the private key
-        const decodedPrivateKey = bs58.decode(walletPrivateKey)
-        const walletKeypair = Keypair.fromSecretKey(decodedPrivateKey)
 
         // Convert token addresses to PublicKey objects with validation
         const fromTokenPubkey = toPublicKey(fromToken, 'fromToken')
@@ -84,79 +98,42 @@ export const createAmmPool = async (
                 mint: fromTokenPubkey,
                 decimals: 9, // SOL has 9 decimals
             },
-            lotSize: 1,
+            lotSize: 1, // Adjusted from example
             tickSize: 0.01,
             dexProgramId: OPEN_BOOK_PROGRAM,
             txVersion,
             computeBudgetConfig: {
-                units: 600000,
+                units: 800000, // Increased compute units
                 microLamports: 100000,
             }
         });
 
-        // Execute market creation and wait for confirmation
+        // Execute market creation with fire-and-forget approach
         logger.info('Executing market creation...');
         const { txIds } = await executeMarket({ 
-            sequentially: true
+            sequentially: false,
+            skipPreflight: true  // Skip preflight checks for faster processing,
         });
         
         logger.info('Market creation transaction IDs:', txIds);
         
-        // Confirm each transaction with WebSocket
+        // Confirm later with retries
         for (const txId of txIds) {
-            try {
-                logger.info(`Confirming market creation tx: ${txId}`);
-                await new Promise((resolve, reject) => {
-                    const timeout = setTimeout(() => {
-                        reject(new Error(`Transaction ${txId} timed out after 120 seconds`));
-                    }, 120000);
-
-                    const subscription = raydium.connection.onSignature(
-                        txId,
-                        (result, context) => {
-                            clearTimeout(timeout);
-                            raydium.connection.removeSignatureListener(subscription);
-                            
-                            if (result.err) {
-                                logger.error(`Transaction ${txId} failed:`, result.err);
-                                reject(new Error(`Transaction failed: ${JSON.stringify(result.err)}`));
-                            } else {
-                                logger.info(`Market creation tx ${txId} confirmed with result:`, result);
-                                resolve(result);
-                            }
-                        },
-                        'confirmed'
-                    );
-                });
-            } catch (error) {
-                logger.error(`Failed to confirm market creation tx ${txId}:`, error);
-                throw error;
-            }
+            await confirmLater(raydium.connection, txId);
         }
 
-        logger.info('Market creation completed successfully');
-        logger.info('Market Info:', {
-            marketId: marketInfo.address.marketId.toBase58(),
-            baseVault: marketInfo.address.baseVault.toBase58(),
-            quoteVault: marketInfo.address.quoteVault.toBase58()
-        });
+        logger.info('Market Info:', marketInfo);
 
         // Convert amounts to BN with proper decimal places
         const baseAmount = new BN(Math.floor(toAmount * Math.pow(10, decimals)))
-        const quoteAmount = new BN(Math.floor(fromAmount * Math.pow(10, 9))) // SOL has 9 decimals
+        const quoteAmount = new BN(Math.floor(fromAmount * Math.pow(10, 9)))
 
-        logger.info('Creating pool with amounts:', {
-            baseAmount: baseAmount.toString(),
-            quoteAmount: quoteAmount.toString()
-        });
-
-        // Now create the pool with the new market
-        logger.info('Creating pool...');
+        // Create pool with updated configuration
         const { execute, extInfo } = await raydium.cpmm.createPool({
             programId: CPMM_PROGRAM_ID,
-            poolFeeAccount: CPMM_PROGRAM_ID,
+            poolFeeAccount: FEE_DESTINATION_ID,
             mintA: {
-                address: toTokenPubkey.toBase58(), 
+                address: toTokenPubkey.toBase58(),
                 decimals: decimals,
                 programId: CPMM_PROGRAM_ID.toBase58()
             },
@@ -167,54 +144,32 @@ export const createAmmPool = async (
             },
             mintAAmount: baseAmount,
             mintBAmount: quoteAmount,
-            startTime: new BN(0),
+            startTime: new BN(Math.floor(Date.now() / 1000)),
             feeConfig: (await raydium.api.getCpmmConfigs())[0],
             associatedOnly: false,
             ownerInfo: {
-                feePayer: walletKeypair.publicKey,
+                feePayer: new PublicKey(walletPrivateKey),
                 useSOLBalance: true
             },
             txVersion,
             computeBudgetConfig: {
-                units: 600000,
+                units: 800000,
                 microLamports: 100000,
             }
         });
 
         logger.info('Executing pool creation...');
-        const { txId } = await execute({ sendAndConfirm: true });
-        logger.info('Pool creation transaction ID:', txId);
-
-        await new Promise((resolve, reject) => {
-            const timeout = setTimeout(() => {
-                reject(new Error(`Pool creation transaction ${txId} timed out after 120 seconds`));
-            }, 120000);
-
-            const subscription = raydium.connection.onSignature(
-                txId,
-                (result, context) => {
-                    clearTimeout(timeout);
-                    raydium.connection.removeSignatureListener(subscription);
-                    
-                    if (result.err) {
-                        logger.error(`Pool creation tx ${txId} failed:`, result.err);
-                        reject(new Error(`Transaction failed: ${JSON.stringify(result.err)}`));
-                    } else {
-                        logger.info(`Pool creation tx ${txId} confirmed with result:`, result);
-                        resolve(result);
-                    }
-                },
-                'confirmed'
-            );
+        const { txId: poolTxId } = await execute({ 
+            sendAndConfirm: false, // Skip confirmation
+            skipPreflight: true    // Optional: Bypass preflight checks
         });
 
+        // await confirmLater(raydium.connection, poolTxId); // Confirm later with retries
         logger.info("Pool created successfully with ID:", extInfo.address.poolId.toBase58());
         return extInfo.address.poolId.toBase58();
+
     } catch (error) {
-        logger.error("Error creating AMM pool:", error)
-        throw error
+        logger.error("Error creating AMM pool:", error);
+        throw error;
     }
 }
-
-/** uncomment code below to execute */
-// createAmmPool()

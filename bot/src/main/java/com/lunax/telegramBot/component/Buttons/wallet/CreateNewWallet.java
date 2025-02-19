@@ -1,4 +1,4 @@
-package com.lunax.telegramBot.component.handler.wallet;
+package com.lunax.telegramBot.component.Buttons.wallet;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

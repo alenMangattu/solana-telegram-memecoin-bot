@@ -516,4 +516,43 @@ public class MessageUtils {
             log.error("Error sending custom keyboard: {}", e.getMessage());
         }
     }
+
+    public static void sendMessage(Update update, String text, InlineKeyboardMarkup replyMarkup) {
+        Message message = getMessage(update);
+        if (message == null) return;
+
+        SendMessage sendMessage = SendMessage.builder()
+                .chatId(message.getChatId().toString())
+                .text(text)
+                .replyMarkup(replyMarkup)
+                .parseMode("Markdown") // Optional: set parse mode if needed
+                .build();
+
+        try {
+            botInstance.execute(sendMessage);
+        } catch (TelegramApiException e) {
+            log.error("Error sending message: {}", e.getMessage());
+        }
+    }
+
+    public static TelegramLongPollingBot getBotInstance() {
+        return botInstance;
+    }
+
+    public static Message sendLoadingMessage(Update update) {
+        Message message = getMessage(update);
+        if (message == null) return null;
+
+        SendMessage sendMessage = SendMessage.builder()
+                .chatId(message.getChatId().toString())
+                .text("Loading...")
+                .build();
+
+        try {
+            return botInstance.execute(sendMessage); // Return the sent message
+        } catch (TelegramApiException e) {
+            log.error("Error sending loading message: {}", e.getMessage());
+            return null;
+        }
+    }
 }

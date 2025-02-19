@@ -585,4 +585,8 @@ export class SolanaUtils {
             throw error;
         }
     }
+
+    public async confirmTransactionWrapper(signature: string, timeout: number = 60000): Promise<void> {
+        return this.confirmTransaction(signature, timeout);
+    }
 } 
