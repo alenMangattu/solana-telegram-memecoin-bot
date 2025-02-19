@@ -1,19 +1,25 @@
-package com.lunax.telegramBot.component.handler.HomePageButtons;
+package com.lunax.telegramBot.component.Buttons.HomePageButtons;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+import com.lunax.telegramBot.event.NavigationEvent;
 import com.lunax.telegramBot.utils.components.ButtonHandler;
 
 @Component
-public class TradeMemeCoin implements ButtonHandler {
-    
+public class RefreshHome implements ButtonHandler {
+
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
+
     private final String buttonText;
     private final String callbackData;
 
-    public TradeMemeCoin(@Value("💱 Trade Meme Coin") String buttonText, 
-                           @Value("trade_meme_coin") String callbackData) {
+    public RefreshHome(@Value("⟳ Refresh") String buttonText,
+            @Value("refresh") String callbackData) {
         this.buttonText = buttonText;
         this.callbackData = callbackData;
     }
@@ -30,7 +36,6 @@ public class TradeMemeCoin implements ButtonHandler {
 
     @Override
     public void handleCallback(Update update) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'handleCallback'");
+        eventPublisher.publishEvent(new NavigationEvent(this, update, "HOME"));
     }
 }

@@ -4,11 +4,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
-import com.lunax.telegramBot.component.handler.HomePageButtons.MemeCoinCreations.AskMemeCoinData;
-import com.lunax.telegramBot.component.handler.HomePageButtons.MemeCoinCreations.InitialLiquidity.AddLiquidity;
-import com.lunax.telegramBot.component.handler.HomePageButtons.MemeCoinCreations.YesOrNoButtons.RevokeMintAuthority;
-import com.lunax.telegramBot.component.handler.HomePageButtons.MemeCoinCreations.YesOrNoButtons.RevokeFreezeAuthority;
+import com.lunax.telegramBot.component.Buttons.HomePageButtons.MemeCoinCreations.AskMemeCoinData;
+import com.lunax.telegramBot.component.Buttons.HomePageButtons.MemeCoinCreations.InitialLiquidity.AddLiquidity;
+import com.lunax.telegramBot.component.Buttons.HomePageButtons.MemeCoinCreations.YesOrNoButtons.RevokeFreezeAuthority;
+import com.lunax.telegramBot.component.Buttons.HomePageButtons.MemeCoinCreations.YesOrNoButtons.RevokeMintAuthority;
 import com.lunax.telegramBot.utils.components.ButtonHandler;
+import com.lunax.telegramBot.component.navigation.components.mymemecoin.PaginationButtonHandler;
 
 import jakarta.annotation.PostConstruct;
 import java.util.HashMap;
@@ -28,13 +29,14 @@ public class HandlerRegistry {
             AskMemeCoinData askMemeCoinData,
             AddLiquidity addLiquidity,
             RevokeMintAuthority revokeMintAuthority,
-            RevokeFreezeAuthority revokeFreezeAuthority) {
+            RevokeFreezeAuthority revokeFreezeAuthority,
+            PaginationButtonHandler paginationButtonHandler) {
         
         handlers.put(askMemeCoinData.getCallbackData(), askMemeCoinData);
         handlers.put(addLiquidity.getCallbackData(), addLiquidity);
         handlers.put("revoke_mint_authority_confirm", revokeMintAuthority);
         handlers.put("revoke_freeze_authority_confirm", revokeFreezeAuthority);
-        
+        handlers.put("page_", paginationButtonHandler);
         handlers.put("revoke_mint_authority_cancel", new CancelMintAuthority(revokeMintAuthority));
     }
     
@@ -69,7 +71,18 @@ public class HandlerRegistry {
     }
     
     public ButtonHandler getHandler(String callbackData) {
-        return handlers.get(callbackData);
+        // First try exact match
+        ButtonHandler handler = handlers.get(callbackData);
+        if (handler != null) {
+            return handler;
+        }
+        
+        // If no exact match, try prefix match
+        return handlers.entrySet().stream()
+            .filter(entry -> !entry.getKey().isEmpty() && callbackData.startsWith(entry.getKey()))
+            .findFirst()
+            .map(Map.Entry::getValue)
+            .orElse(null);
     }
     
     public Map<String, ButtonHandler> getAllHandlers() {

@@ -2306,3 +2306,529 @@
 {"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-18T20:54:46.075Z"}
 {"level":"info","message":"Connection initialized","timestamp":"2025-02-18T20:54:46.079Z"}
 {"level":"info","message":"Server running on port 3000","timestamp":"2025-02-18T20:54:46.139Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-18T20:57:13.423Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-18T20:57:13.432Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-18T20:57:13.526Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-18T21:25:25.878Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-18T21:25:25.881Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-18T21:25:25.916Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-18T21:25:33.011Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-18T21:25:33.018Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-18T21:25:33.075Z"}
+{"level":"info","message":"Creating memecoin: WOEK PLEAS (OEWEING) with supply 2123123","timestamp":"2025-02-18T21:27:18.091Z"}
+{"level":"info","message":"Checking RPC connection...","timestamp":"2025-02-18T21:27:18.092Z"}
+{"feature-set":1725507508,"level":"info","message":"Connected to Solana node version:","solana-core":"2.1.13","timestamp":"2025-02-18T21:27:18.730Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/56b9efb9-464a-4c89-bb8a-22ee8124c135.json","timestamp":"2025-02-18T21:27:18.734Z"}
+{"level":"info","message":"Keypair saved at: /home/computer/.config/solana/temp/56b9efb9-464a-4c89-bb8a-22ee8124c135.json","timestamp":"2025-02-18T21:27:18.735Z"}
+{"level":"info","message":"Attempting to create token (3 retries left)...","timestamp":"2025-02-18T21:27:18.735Z"}
+{"level":"info","message":"Update: 🏗️ Creating token...","timestamp":"2025-02-18T21:27:18.737Z"}
+{"level":"info","message":"Update: Token created with address: 66d6tGzs7oyWJL7VaNSoVju78pGc2iSnEdSJMW7zKzCU","timestamp":"2025-02-18T21:27:20.943Z"}
+{"level":"info","message":"Token created with address: 66d6tGzs7oyWJL7VaNSoVju78pGc2iSnEdSJMW7zKzCU","timestamp":"2025-02-18T21:27:21.024Z"}
+{"level":"info","message":"Update: 🎨 Creating metadata...","timestamp":"2025-02-18T21:27:21.025Z"}
+{"level":"info","message":"Creating metadata attempt 1/5","timestamp":"2025-02-18T21:27:21.255Z"}
+{"level":"info","message":"Update: Creating metadata attempt 1/5","timestamp":"2025-02-18T21:27:21.256Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-18T21:27:21.350Z"}
+{"level":"info","message":"Transaction sent with signature: 4nidSHj5XqojnqhLwEVtAHKgQTxTTGvxAkUk92cLR3SwcRWmpt1M4qVKF3ei3AyAYRupLa2MCudLfiHQFdERHE1S","timestamp":"2025-02-18T21:27:21.671Z"}
+{"level":"info","message":"Confirming transaction 4nidSHj5XqojnqhLwEVtAHKgQTxTTGvxAkUk92cLR3SwcRWmpt1M4qVKF3ei3AyAYRupLa2MCudLfiHQFdERHE1S","timestamp":"2025-02-18T21:27:21.672Z"}
+{"level":"info","message":"Transaction 4nidSHj5XqojnqhLwEVtAHKgQTxTTGvxAkUk92cLR3SwcRWmpt1M4qVKF3ei3AyAYRupLa2MCudLfiHQFdERHE1S confirmed successfully","timestamp":"2025-02-18T21:27:24.862Z"}
+{"level":"info","message":"Metadata transaction sent: 4nidSHj5XqojnqhLwEVtAHKgQTxTTGvxAkUk92cLR3SwcRWmpt1M4qVKF3ei3AyAYRupLa2MCudLfiHQFdERHE1S","timestamp":"2025-02-18T21:27:24.863Z"}
+{"level":"info","message":"Update: Metadata transaction sent: 4nidSHj5XqojnqhLwEVtAHKgQTxTTGvxAkUk92cLR3SwcRWmpt1M4qVKF3ei3AyAYRupLa2MCudLfiHQFdERHE1S","timestamp":"2025-02-18T21:27:24.863Z"}
+{"level":"info","message":"Metadata created successfully","timestamp":"2025-02-18T21:27:24.945Z"}
+{"level":"info","message":"Update: 💰 Minting initial supply...","timestamp":"2025-02-18T21:27:24.945Z"}
+{"level":"info","message":"Minted 2123123 tokens to 7MVBPoSd3DVy6KwMWA3tj2BatFykoectSwgnDjcomE8B","timestamp":"2025-02-18T21:27:28.718Z"}
+{"level":"info","message":"Update: 🔒 Revoking mint authority...","timestamp":"2025-02-18T21:27:28.718Z"}
+{"level":"info","message":"Mint authority revoked","timestamp":"2025-02-18T21:27:30.543Z"}
+{"level":"info","message":"Token created successfully with address: 66d6tGzs7oyWJL7VaNSoVju78pGc2iSnEdSJMW7zKzCU","timestamp":"2025-02-18T21:27:30.544Z"}
+{"level":"info","message":"Cleaned up keypair file: /home/computer/.config/solana/temp/56b9efb9-464a-4c89-bb8a-22ee8124c135.json","timestamp":"2025-02-18T21:27:30.546Z"}
+{"decimals":8,"fromAmount":4,"fromToken":"3","level":"info","message":"Creating AMM pool with params:","timestamp":"2025-02-18T21:27:31.674Z","toAmount":12212,"toToken":"66d6tGzs7oyWJL7VaNSoVju78pGc2iSnEdSJMW7zKzCU"}
+{"level":"error","message":"Invalid fromToken address:","timestamp":"2025-02-18T21:27:31.678Z"}
+{"level":"error","message":"Error creating AMM pool: Invalid fromToken address: Invalid public key input","stack":"Error: Invalid fromToken address: Invalid public key input\n    at toPublicKey (/home/computer/dev/java/lunax/typescript/utils/raydium/CreateStandardAmmPool.ts:24:19)\n    at <anonymous> (/home/computer/dev/java/lunax/typescript/utils/raydium/CreateStandardAmmPool.ts:70:33)\n    at processTicksAndRejections (native:7:39)","timestamp":"2025-02-18T21:27:31.679Z"}
+{"level":"error","message":"Pool creation error: Invalid fromToken address: Invalid public key input","stack":"Error: Invalid fromToken address: Invalid public key input\n    at toPublicKey (/home/computer/dev/java/lunax/typescript/utils/raydium/CreateStandardAmmPool.ts:24:19)\n    at <anonymous> (/home/computer/dev/java/lunax/typescript/utils/raydium/CreateStandardAmmPool.ts:70:33)\n    at processTicksAndRejections (native:7:39)","timestamp":"2025-02-18T21:27:31.679Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-18T21:28:13.765Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-18T21:28:13.767Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-18T21:28:13.806Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-18T21:28:25.148Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-18T21:28:25.151Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-18T21:28:25.206Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-18T21:28:26.230Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-18T21:28:26.232Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-18T21:28:26.266Z"}
+{"level":"info","message":"Creating memecoin: idk (FJIUJNGERG) with supply 98218","timestamp":"2025-02-18T21:29:55.241Z"}
+{"level":"info","message":"Checking RPC connection...","timestamp":"2025-02-18T21:29:55.242Z"}
+{"feature-set":1725507508,"level":"info","message":"Connected to Solana node version:","solana-core":"2.1.13","timestamp":"2025-02-18T21:29:55.601Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/56a0bacd-644b-43d9-90fe-a494bde3347c.json","timestamp":"2025-02-18T21:29:55.607Z"}
+{"level":"info","message":"Keypair saved at: /home/computer/.config/solana/temp/56a0bacd-644b-43d9-90fe-a494bde3347c.json","timestamp":"2025-02-18T21:29:55.607Z"}
+{"level":"info","message":"Attempting to create token (3 retries left)...","timestamp":"2025-02-18T21:29:55.607Z"}
+{"level":"info","message":"Update: 🏗️ Creating token...","timestamp":"2025-02-18T21:29:55.609Z"}
+{"level":"info","message":"Update: Token created with address: 5FGM2mVe8pB2B2a8NjcZcSHBtVC8LUS7Ys77UHEmcrMZ","timestamp":"2025-02-18T21:29:59.704Z"}
+{"level":"info","message":"Token created with address: 5FGM2mVe8pB2B2a8NjcZcSHBtVC8LUS7Ys77UHEmcrMZ","timestamp":"2025-02-18T21:29:59.847Z"}
+{"level":"info","message":"Update: 🎨 Creating metadata...","timestamp":"2025-02-18T21:29:59.847Z"}
+{"level":"info","message":"Creating metadata attempt 1/5","timestamp":"2025-02-18T21:30:00.087Z"}
+{"level":"info","message":"Update: Creating metadata attempt 1/5","timestamp":"2025-02-18T21:30:00.087Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-18T21:30:00.217Z"}
+{"level":"info","message":"Transaction sent with signature: 5Gx3M6mgUBVoXms9mYQNTKnEeckjbucrutasBV8fJ7kZPN5PGBL2Qa5MvsTY8R6wWRWbfbDUM4fakeKotHk17P3p","timestamp":"2025-02-18T21:30:00.528Z"}
+{"level":"info","message":"Confirming transaction 5Gx3M6mgUBVoXms9mYQNTKnEeckjbucrutasBV8fJ7kZPN5PGBL2Qa5MvsTY8R6wWRWbfbDUM4fakeKotHk17P3p","timestamp":"2025-02-18T21:30:00.530Z"}
+{"level":"info","message":"Transaction 5Gx3M6mgUBVoXms9mYQNTKnEeckjbucrutasBV8fJ7kZPN5PGBL2Qa5MvsTY8R6wWRWbfbDUM4fakeKotHk17P3p confirmed successfully","timestamp":"2025-02-18T21:30:01.080Z"}
+{"level":"info","message":"Metadata transaction sent: 5Gx3M6mgUBVoXms9mYQNTKnEeckjbucrutasBV8fJ7kZPN5PGBL2Qa5MvsTY8R6wWRWbfbDUM4fakeKotHk17P3p","timestamp":"2025-02-18T21:30:01.081Z"}
+{"level":"info","message":"Update: Metadata transaction sent: 5Gx3M6mgUBVoXms9mYQNTKnEeckjbucrutasBV8fJ7kZPN5PGBL2Qa5MvsTY8R6wWRWbfbDUM4fakeKotHk17P3p","timestamp":"2025-02-18T21:30:01.082Z"}
+{"level":"info","message":"Metadata created successfully","timestamp":"2025-02-18T21:30:01.206Z"}
+{"level":"info","message":"Update: 💰 Minting initial supply...","timestamp":"2025-02-18T21:30:01.207Z"}
+{"level":"info","message":"Minted 98218 tokens to FuxkZM4zeWzXtEU8D6YHp4hr4shXYDA1TUx6mdfjEco2","timestamp":"2025-02-18T21:30:09.274Z"}
+{"level":"info","message":"Update: 🔒 Revoking mint authority...","timestamp":"2025-02-18T21:30:09.274Z"}
+{"level":"info","message":"Mint authority revoked","timestamp":"2025-02-18T21:30:11.791Z"}
+{"level":"info","message":"Token created successfully with address: 5FGM2mVe8pB2B2a8NjcZcSHBtVC8LUS7Ys77UHEmcrMZ","timestamp":"2025-02-18T21:30:11.791Z"}
+{"level":"info","message":"Cleaned up keypair file: /home/computer/.config/solana/temp/56a0bacd-644b-43d9-90fe-a494bde3347c.json","timestamp":"2025-02-18T21:30:11.794Z"}
+{"decimals":4,"fromAmount":4,"fromToken":"SOL","level":"info","message":"Creating AMM pool with params:","timestamp":"2025-02-18T21:30:12.892Z","toAmount":32823,"toToken":"5FGM2mVe8pB2B2a8NjcZcSHBtVC8LUS7Ys77UHEmcrMZ"}
+{"level":"info","message":"Creating market...","timestamp":"2025-02-18T21:30:12.895Z"}
+{"level":"info","message":"Executing market creation...","timestamp":"2025-02-18T21:30:13.626Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T18:50:20.836Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T18:50:20.840Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T18:50:20.928Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T18:54:13.009Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T18:54:13.012Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T18:54:13.050Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T18:54:20.507Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T18:54:20.517Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T18:54:20.719Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T18:54:51.885Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T18:54:51.887Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T18:54:51.948Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T18:55:00.906Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T18:55:00.911Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T18:55:01.027Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T18:55:02.787Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T18:55:02.789Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T18:55:02.823Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T18:56:13.445Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T18:56:13.453Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T18:56:13.619Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T18:56:52.685Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T18:56:52.692Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T18:56:52.753Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T18:56:56.674Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T18:56:56.676Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T18:56:56.716Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T18:57:00.910Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T18:57:00.913Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T18:57:00.981Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T18:57:02.008Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T18:57:02.011Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T18:57:02.047Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T18:57:09.617Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T18:57:09.619Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T18:57:09.657Z"}
+{"level":"info","message":"Creating memecoin: PLEASE WORK (SHITTYCOI) with supply 19010993","timestamp":"2025-02-19T18:58:12.642Z"}
+{"level":"info","message":"Checking RPC connection...","timestamp":"2025-02-19T18:58:12.645Z"}
+{"feature-set":1725507508,"level":"info","message":"Connected to Solana node version:","solana-core":"2.1.13","timestamp":"2025-02-19T18:58:13.048Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/0b388619-c191-4e71-a68a-7985df4e81a5.json","timestamp":"2025-02-19T18:58:13.059Z"}
+{"level":"info","message":"Keypair saved at: /home/computer/.config/solana/temp/0b388619-c191-4e71-a68a-7985df4e81a5.json","timestamp":"2025-02-19T18:58:13.066Z"}
+{"level":"info","message":"Attempting to create token (3 retries left)...","timestamp":"2025-02-19T18:58:13.071Z"}
+{"level":"info","message":"Update: 🏗️ Creating token...","timestamp":"2025-02-19T18:58:13.073Z"}
+{"level":"info","message":"Update: Token created with address: Egjq1E6D7sfd7VquSbbLRfNJWELrVszwA3rnsFmqR9sU","timestamp":"2025-02-19T18:58:17.031Z"}
+{"level":"info","message":"Token created with address: Egjq1E6D7sfd7VquSbbLRfNJWELrVszwA3rnsFmqR9sU","timestamp":"2025-02-19T18:58:17.181Z"}
+{"level":"info","message":"Update: 🎨 Creating metadata...","timestamp":"2025-02-19T18:58:17.181Z"}
+{"level":"info","message":"Creating metadata attempt 1/5","timestamp":"2025-02-19T18:58:17.700Z"}
+{"level":"info","message":"Update: Creating metadata attempt 1/5","timestamp":"2025-02-19T18:58:17.701Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-19T18:58:17.810Z"}
+{"level":"info","message":"Transaction sent with signature: 5gpZCXvbMH6TNwVEsgpvrEqiYiaEP1yfsAgK6MW5bZeotoZY6dxvRRkBAAv2LpLbCmNwS1ujCHL4odKJt9iqjCpg","timestamp":"2025-02-19T18:58:18.151Z"}
+{"level":"info","message":"Confirming transaction 5gpZCXvbMH6TNwVEsgpvrEqiYiaEP1yfsAgK6MW5bZeotoZY6dxvRRkBAAv2LpLbCmNwS1ujCHL4odKJt9iqjCpg","timestamp":"2025-02-19T18:58:18.152Z"}
+{"level":"info","message":"Transaction 5gpZCXvbMH6TNwVEsgpvrEqiYiaEP1yfsAgK6MW5bZeotoZY6dxvRRkBAAv2LpLbCmNwS1ujCHL4odKJt9iqjCpg confirmed successfully","timestamp":"2025-02-19T18:58:21.071Z"}
+{"level":"info","message":"Metadata transaction sent: 5gpZCXvbMH6TNwVEsgpvrEqiYiaEP1yfsAgK6MW5bZeotoZY6dxvRRkBAAv2LpLbCmNwS1ujCHL4odKJt9iqjCpg","timestamp":"2025-02-19T18:58:21.073Z"}
+{"level":"info","message":"Update: Metadata transaction sent: 5gpZCXvbMH6TNwVEsgpvrEqiYiaEP1yfsAgK6MW5bZeotoZY6dxvRRkBAAv2LpLbCmNwS1ujCHL4odKJt9iqjCpg","timestamp":"2025-02-19T18:58:21.074Z"}
+{"level":"info","message":"Metadata created successfully","timestamp":"2025-02-19T18:58:21.173Z"}
+{"level":"info","message":"Update: 💰 Minting initial supply...","timestamp":"2025-02-19T18:58:21.173Z"}
+{"level":"info","message":"Minted 19010993 tokens to 864y3ykMqPKhS2q75MAuqGe9E2poV3ym9LkGpYvCdPcE","timestamp":"2025-02-19T18:58:26.984Z"}
+{"level":"info","message":"Update: 🔒 Revoking mint authority...","timestamp":"2025-02-19T18:58:26.985Z"}
+{"level":"info","message":"Mint authority revoked","timestamp":"2025-02-19T18:58:29.023Z"}
+{"level":"info","message":"Token created successfully with address: Egjq1E6D7sfd7VquSbbLRfNJWELrVszwA3rnsFmqR9sU","timestamp":"2025-02-19T18:58:29.023Z"}
+{"level":"info","message":"Cleaned up keypair file: /home/computer/.config/solana/temp/0b388619-c191-4e71-a68a-7985df4e81a5.json","timestamp":"2025-02-19T18:58:29.025Z"}
+{"decimals":7,"fromAmount":2,"fromToken":"SOL","level":"info","message":"Creating AMM pool with params:","timestamp":"2025-02-19T18:58:30.509Z","toAmount":21321,"toToken":"Egjq1E6D7sfd7VquSbbLRfNJWELrVszwA3rnsFmqR9sU"}
+{"level":"info","message":"Creating market...","timestamp":"2025-02-19T18:58:30.513Z"}
+{"level":"info","message":"Executing market creation...","timestamp":"2025-02-19T18:58:31.281Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T19:00:20.218Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T19:00:20.221Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T19:00:20.257Z"}
+{"level":"info","message":"Creating memecoin: COOL COIN (HORYRYR) with supply 32234434324324","timestamp":"2025-02-19T19:01:38.770Z"}
+{"level":"info","message":"Checking RPC connection...","timestamp":"2025-02-19T19:01:38.772Z"}
+{"feature-set":1725507508,"level":"info","message":"Connected to Solana node version:","solana-core":"2.1.13","timestamp":"2025-02-19T19:01:39.136Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/d9e894f5-dc5c-4f08-ae90-50b1a0836421.json","timestamp":"2025-02-19T19:01:39.138Z"}
+{"level":"info","message":"Keypair saved at: /home/computer/.config/solana/temp/d9e894f5-dc5c-4f08-ae90-50b1a0836421.json","timestamp":"2025-02-19T19:01:39.139Z"}
+{"level":"info","message":"Attempting to create token (3 retries left)...","timestamp":"2025-02-19T19:01:39.140Z"}
+{"level":"info","message":"Update: 🏗️ Creating token...","timestamp":"2025-02-19T19:01:39.141Z"}
+{"level":"info","message":"Update: Token created with address: 5XzsnVuKQHdZB16x63dSBJpJHQkNCNi5Pg1j5hwNLmEG","timestamp":"2025-02-19T19:01:42.378Z"}
+{"level":"info","message":"Token created with address: 5XzsnVuKQHdZB16x63dSBJpJHQkNCNi5Pg1j5hwNLmEG","timestamp":"2025-02-19T19:01:42.548Z"}
+{"level":"info","message":"Update: 🎨 Creating metadata...","timestamp":"2025-02-19T19:01:42.549Z"}
+{"level":"info","message":"Creating metadata attempt 1/5","timestamp":"2025-02-19T19:01:42.919Z"}
+{"level":"info","message":"Update: Creating metadata attempt 1/5","timestamp":"2025-02-19T19:01:42.920Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-19T19:01:43.107Z"}
+{"level":"info","message":"Transaction sent with signature: cCUR3MmME9pPtpZathWwY9XkT4mg3YXUFjdSuHmPzEbEDtuyt4o7B8FWoTUcuZFX24NkfXA7vna3gPWSU1wPeyK","timestamp":"2025-02-19T19:01:43.444Z"}
+{"level":"info","message":"Confirming transaction cCUR3MmME9pPtpZathWwY9XkT4mg3YXUFjdSuHmPzEbEDtuyt4o7B8FWoTUcuZFX24NkfXA7vna3gPWSU1wPeyK","timestamp":"2025-02-19T19:01:43.445Z"}
+{"level":"info","message":"Transaction cCUR3MmME9pPtpZathWwY9XkT4mg3YXUFjdSuHmPzEbEDtuyt4o7B8FWoTUcuZFX24NkfXA7vna3gPWSU1wPeyK confirmed successfully","timestamp":"2025-02-19T19:01:44.044Z"}
+{"level":"info","message":"Metadata transaction sent: cCUR3MmME9pPtpZathWwY9XkT4mg3YXUFjdSuHmPzEbEDtuyt4o7B8FWoTUcuZFX24NkfXA7vna3gPWSU1wPeyK","timestamp":"2025-02-19T19:01:44.045Z"}
+{"level":"info","message":"Update: Metadata transaction sent: cCUR3MmME9pPtpZathWwY9XkT4mg3YXUFjdSuHmPzEbEDtuyt4o7B8FWoTUcuZFX24NkfXA7vna3gPWSU1wPeyK","timestamp":"2025-02-19T19:01:44.045Z"}
+{"level":"info","message":"Metadata created successfully","timestamp":"2025-02-19T19:01:44.149Z"}
+{"level":"info","message":"Update: 💰 Minting initial supply...","timestamp":"2025-02-19T19:01:44.151Z"}
+{"level":"info","message":"Minted 32234434324324 tokens to 6iYHNubrVrnbdCeqv2pJ2jesE58UCMw4YgtkUqfgB27Z","timestamp":"2025-02-19T19:01:51.385Z"}
+{"level":"info","message":"Update: 🔒 Revoking mint authority...","timestamp":"2025-02-19T19:01:51.386Z"}
+{"level":"info","message":"Mint authority revoked","timestamp":"2025-02-19T19:01:53.277Z"}
+{"level":"info","message":"Token created successfully with address: 5XzsnVuKQHdZB16x63dSBJpJHQkNCNi5Pg1j5hwNLmEG","timestamp":"2025-02-19T19:01:53.278Z"}
+{"level":"info","message":"Cleaned up keypair file: /home/computer/.config/solana/temp/d9e894f5-dc5c-4f08-ae90-50b1a0836421.json","timestamp":"2025-02-19T19:01:53.278Z"}
+{"decimals":7,"fromAmount":1,"fromToken":"SOL","level":"info","message":"Creating AMM pool with params:","timestamp":"2025-02-19T19:01:54.351Z","toAmount":323298,"toToken":"5XzsnVuKQHdZB16x63dSBJpJHQkNCNi5Pg1j5hwNLmEG"}
+{"level":"info","message":"Creating market...","timestamp":"2025-02-19T19:01:54.359Z"}
+{"level":"info","message":"Executing market creation...","timestamp":"2025-02-19T19:01:55.090Z"}
+{"0":"GUc53G6uwFw3y7pgvjbVdd8zGfLf9QsMyJEKh7GBcKf1Z935Z2zcD6Kueg9pu1ep8KupkfpBY5zwBiKQiLRh9RU","1":"kCFXPYEMHMcpH9WSkSXh6fNs5Wkmbgt12xh8Mm9iwM5RDJDy8hW1Z3wRLupgbTrFoiyJ6o4uXF1dvZT9rEk4d7S","level":"info","message":"Market creation transaction IDs:","timestamp":"2025-02-19T19:01:55.408Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T19:03:58.742Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T19:03:58.745Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T19:03:58.797Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T19:04:13.008Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T19:04:13.010Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T19:04:13.061Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T19:04:17.532Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T19:04:17.535Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T19:04:17.572Z"}
+{"level":"info","message":"Creating memecoin: SOMESAY (MISSU) with supply 2393288328324","timestamp":"2025-02-19T19:05:11.067Z"}
+{"level":"info","message":"Checking RPC connection...","timestamp":"2025-02-19T19:05:11.069Z"}
+{"feature-set":1725507508,"level":"info","message":"Connected to Solana node version:","solana-core":"2.1.13","timestamp":"2025-02-19T19:05:11.421Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/734874ba-3bd3-444a-8b9d-eaabc84a3089.json","timestamp":"2025-02-19T19:05:11.424Z"}
+{"level":"info","message":"Keypair saved at: /home/computer/.config/solana/temp/734874ba-3bd3-444a-8b9d-eaabc84a3089.json","timestamp":"2025-02-19T19:05:11.424Z"}
+{"level":"info","message":"Attempting to create token (3 retries left)...","timestamp":"2025-02-19T19:05:11.424Z"}
+{"level":"info","message":"Update: 🏗️ Creating token...","timestamp":"2025-02-19T19:05:11.425Z"}
+{"level":"info","message":"Update: Token created with address: EXiY5S1NViqJ7rEj9qpvjnbRSP3fCWrHziT41zwJrhdt","timestamp":"2025-02-19T19:05:15.267Z"}
+{"level":"info","message":"Token created with address: EXiY5S1NViqJ7rEj9qpvjnbRSP3fCWrHziT41zwJrhdt","timestamp":"2025-02-19T19:05:15.343Z"}
+{"level":"info","message":"Update: 🎨 Creating metadata...","timestamp":"2025-02-19T19:05:15.344Z"}
+{"level":"info","message":"Creating metadata attempt 1/5","timestamp":"2025-02-19T19:05:15.608Z"}
+{"level":"info","message":"Update: Creating metadata attempt 1/5","timestamp":"2025-02-19T19:05:15.610Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-19T19:05:15.751Z"}
+{"level":"info","message":"Transaction sent with signature: 3ADH5ua9yYnNe2vur9tmeRAKjDyws9B74wUaBVfYXtVvTGQfKbDUkUjLv7YntVv3fWHpyY7RmFxCcZrRX8hoEtrS","timestamp":"2025-02-19T19:05:16.082Z"}
+{"level":"info","message":"Confirming transaction 3ADH5ua9yYnNe2vur9tmeRAKjDyws9B74wUaBVfYXtVvTGQfKbDUkUjLv7YntVv3fWHpyY7RmFxCcZrRX8hoEtrS","timestamp":"2025-02-19T19:05:16.083Z"}
+{"level":"info","message":"Transaction 3ADH5ua9yYnNe2vur9tmeRAKjDyws9B74wUaBVfYXtVvTGQfKbDUkUjLv7YntVv3fWHpyY7RmFxCcZrRX8hoEtrS confirmed successfully","timestamp":"2025-02-19T19:05:16.670Z"}
+{"level":"info","message":"Metadata transaction sent: 3ADH5ua9yYnNe2vur9tmeRAKjDyws9B74wUaBVfYXtVvTGQfKbDUkUjLv7YntVv3fWHpyY7RmFxCcZrRX8hoEtrS","timestamp":"2025-02-19T19:05:16.670Z"}
+{"level":"info","message":"Update: Metadata transaction sent: 3ADH5ua9yYnNe2vur9tmeRAKjDyws9B74wUaBVfYXtVvTGQfKbDUkUjLv7YntVv3fWHpyY7RmFxCcZrRX8hoEtrS","timestamp":"2025-02-19T19:05:16.670Z"}
+{"level":"info","message":"Metadata created successfully","timestamp":"2025-02-19T19:05:16.743Z"}
+{"level":"info","message":"Update: 💰 Minting initial supply...","timestamp":"2025-02-19T19:05:16.743Z"}
+{"level":"info","message":"Minted 2393288328324 tokens to 5nddWXkeBzneZFEx6BemKbJCQ62xoEmo1XGnWEAKTBH","timestamp":"2025-02-19T19:05:20.500Z"}
+{"level":"info","message":"Update: 🔒 Revoking mint authority...","timestamp":"2025-02-19T19:05:20.500Z"}
+{"level":"info","message":"Mint authority revoked","timestamp":"2025-02-19T19:05:22.391Z"}
+{"level":"info","message":"Token created successfully with address: EXiY5S1NViqJ7rEj9qpvjnbRSP3fCWrHziT41zwJrhdt","timestamp":"2025-02-19T19:05:22.392Z"}
+{"level":"info","message":"Cleaned up keypair file: /home/computer/.config/solana/temp/734874ba-3bd3-444a-8b9d-eaabc84a3089.json","timestamp":"2025-02-19T19:05:22.393Z"}
+{"decimals":6,"fromAmount":2,"fromToken":"SOL","level":"info","message":"Creating AMM pool with params:","timestamp":"2025-02-19T19:05:23.586Z","toAmount":1281238,"toToken":"EXiY5S1NViqJ7rEj9qpvjnbRSP3fCWrHziT41zwJrhdt"}
+{"level":"info","message":"Creating market...","timestamp":"2025-02-19T19:05:23.590Z"}
+{"level":"info","message":"Executing market creation...","timestamp":"2025-02-19T19:05:24.573Z"}
+{"0":"TWy6TwypoVz4UfYmkqW69MQtsNqC5Pa6U8GDhcC3wV9V7WkpgMHWwkWFTKSobgMEF5fARqscfqAUFGFZ1uXiMVU","1":"4zmPEq6NZ9h8TiXXHJJ3JW2JiGRmTaK1Kce8ivcsPW7XhGVRnssKkbi1cpVu7zdPo5dRd9Nhuj9Lr4dFdvctyPNU","level":"info","message":"Market creation transaction IDs:","timestamp":"2025-02-19T19:05:24.876Z"}
+{"address":{"asks":"6rouTckJkXD53uXFgi52e5CRdxdzUaN5Nb1kPyv6ZLhz","baseMint":"EXiY5S1NViqJ7rEj9qpvjnbRSP3fCWrHziT41zwJrhdt","baseVault":"HwVaTu5keNzfavs3AqyUUH9dDLAVEo5tUMv3mGHuMPTc","bids":"5D6dngLSbAADvqSZnk1K9uPrARXuQ5jY3z7Zkw67a5Xv","eventQueue":"A3Y4BC6pgniNv3uXNN82tsDKduEWn51Zccv3mrM5edMc","marketId":"8jr5Qn6oySCRuARVwJGxcnY5WiRw7ZMABz6Sy12E6VVa","quoteMint":"So11111111111111111111111111111111111111112","quoteVault":"HiFh5PJHj9AgHZcEu8bHBLfVcXCqp8PE9jTjT7dLBSAp","requestQueue":"Ae8b1RVw6DsFS9Rnpt1DqdxsKkuJbswQuCxnF6HUA4Lu"},"level":"info","message":"Market Info:","timestamp":"2025-02-19T19:05:24.877Z"}
+{"level":"error","message":"Error creating AMM pool: Invalid public key input","stack":"Error: Invalid public key input\n    at new PublicKey (/home/computer/dev/java/lunax/typescript/node_modules/@solana/web3.js/lib/index.cjs.js:172:21)\n    at <anonymous> (/home/computer/dev/java/lunax/typescript/utils/raydium/CreateStandardAmmPool.ts:151:31)\n    at processTicksAndRejections (native:7:39)","timestamp":"2025-02-19T19:05:25.130Z"}
+{"level":"error","message":"Pool creation error: Invalid public key input","stack":"Error: Invalid public key input\n    at new PublicKey (/home/computer/dev/java/lunax/typescript/node_modules/@solana/web3.js/lib/index.cjs.js:172:21)\n    at <anonymous> (/home/computer/dev/java/lunax/typescript/utils/raydium/CreateStandardAmmPool.ts:151:31)\n    at processTicksAndRejections (native:7:39)","timestamp":"2025-02-19T19:05:25.130Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T19:06:31.501Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T19:06:31.509Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T19:06:31.572Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T19:06:43.117Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T19:06:43.119Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T19:06:43.165Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T19:06:44.049Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T19:06:44.053Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T19:06:44.097Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T19:06:55.652Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T19:06:55.663Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T19:06:55.711Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T19:07:06.910Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T19:07:06.912Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T19:07:06.967Z"}
+{"level":"info","message":"Creating memecoin: dum (FUCK) with supply 288248244444","timestamp":"2025-02-19T19:08:19.778Z"}
+{"level":"info","message":"Checking RPC connection...","timestamp":"2025-02-19T19:08:19.779Z"}
+{"feature-set":1725507508,"level":"info","message":"Connected to Solana node version:","solana-core":"2.1.13","timestamp":"2025-02-19T19:08:20.121Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/433d1a04-dcb2-412e-8b0d-9d483ae67d9c.json","timestamp":"2025-02-19T19:08:20.125Z"}
+{"level":"info","message":"Keypair saved at: /home/computer/.config/solana/temp/433d1a04-dcb2-412e-8b0d-9d483ae67d9c.json","timestamp":"2025-02-19T19:08:20.125Z"}
+{"level":"info","message":"Attempting to create token (3 retries left)...","timestamp":"2025-02-19T19:08:20.126Z"}
+{"level":"info","message":"Update: 🏗️ Creating token...","timestamp":"2025-02-19T19:08:20.127Z"}
+{"level":"info","message":"Update: Token created with address: EczTz5FcEZFAo7zNLMPBX4FovJAoSBC9cjLh48LVZwKi","timestamp":"2025-02-19T19:08:23.280Z"}
+{"level":"info","message":"Token created with address: EczTz5FcEZFAo7zNLMPBX4FovJAoSBC9cjLh48LVZwKi","timestamp":"2025-02-19T19:08:23.429Z"}
+{"level":"info","message":"Update: 🎨 Creating metadata...","timestamp":"2025-02-19T19:08:23.430Z"}
+{"level":"info","message":"Creating metadata attempt 1/5","timestamp":"2025-02-19T19:08:23.875Z"}
+{"level":"info","message":"Update: Creating metadata attempt 1/5","timestamp":"2025-02-19T19:08:23.880Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-19T19:08:24.184Z"}
+{"level":"info","message":"Transaction sent with signature: 5dvQ9xxrMes7iGBcRXsRwoyd6PFbaXwox87X74S6SQ1yvUPEDxvMYJMeAbEdPGMm4QpCmsSZS2XJErTVZUd4nS1E","timestamp":"2025-02-19T19:08:24.751Z"}
+{"level":"info","message":"Confirming transaction 5dvQ9xxrMes7iGBcRXsRwoyd6PFbaXwox87X74S6SQ1yvUPEDxvMYJMeAbEdPGMm4QpCmsSZS2XJErTVZUd4nS1E","timestamp":"2025-02-19T19:08:24.752Z"}
+{"level":"info","message":"Transaction 5dvQ9xxrMes7iGBcRXsRwoyd6PFbaXwox87X74S6SQ1yvUPEDxvMYJMeAbEdPGMm4QpCmsSZS2XJErTVZUd4nS1E confirmed successfully","timestamp":"2025-02-19T19:08:25.265Z"}
+{"level":"info","message":"Metadata transaction sent: 5dvQ9xxrMes7iGBcRXsRwoyd6PFbaXwox87X74S6SQ1yvUPEDxvMYJMeAbEdPGMm4QpCmsSZS2XJErTVZUd4nS1E","timestamp":"2025-02-19T19:08:25.265Z"}
+{"level":"info","message":"Update: Metadata transaction sent: 5dvQ9xxrMes7iGBcRXsRwoyd6PFbaXwox87X74S6SQ1yvUPEDxvMYJMeAbEdPGMm4QpCmsSZS2XJErTVZUd4nS1E","timestamp":"2025-02-19T19:08:25.266Z"}
+{"level":"info","message":"Metadata created successfully","timestamp":"2025-02-19T19:08:25.354Z"}
+{"level":"info","message":"Update: 💰 Minting initial supply...","timestamp":"2025-02-19T19:08:25.354Z"}
+{"level":"info","message":"Minted 288248244444 tokens to AbX3kwTh5U7RWRtHqsXpDv2jx1DvowDYvYiQZv83GZnA","timestamp":"2025-02-19T19:08:29.326Z"}
+{"level":"info","message":"Update: 🔒 Revoking mint authority...","timestamp":"2025-02-19T19:08:29.327Z"}
+{"level":"info","message":"Mint authority revoked","timestamp":"2025-02-19T19:08:31.250Z"}
+{"level":"info","message":"Token created successfully with address: EczTz5FcEZFAo7zNLMPBX4FovJAoSBC9cjLh48LVZwKi","timestamp":"2025-02-19T19:08:31.251Z"}
+{"level":"info","message":"Cleaned up keypair file: /home/computer/.config/solana/temp/433d1a04-dcb2-412e-8b0d-9d483ae67d9c.json","timestamp":"2025-02-19T19:08:31.252Z"}
+{"decimals":9,"fromAmount":3,"fromToken":"SOL","level":"info","message":"Creating AMM pool with params:","timestamp":"2025-02-19T19:08:32.441Z","toAmount":100203,"toToken":"EczTz5FcEZFAo7zNLMPBX4FovJAoSBC9cjLh48LVZwKi"}
+{"level":"info","message":"Creating market...","timestamp":"2025-02-19T19:08:32.446Z"}
+{"level":"info","message":"Executing market creation...","timestamp":"2025-02-19T19:08:33.166Z"}
+{"0":"BS4hCZtaK3pv1BPEVf5ppMmHHDBVyqjKuPcSaMAzPPQmfXaLnXoc9r2MnzSkfnXNKMAX6VseQPZ6EZqfZVZWWJQ","1":"4V4LZpdExipurCwcDjimbg8QiQg5GcizVcNwzFssKc9isp2Fuj3PrvFkhGeNHTRhwTLMUDSLcjBQ4MeHCkbQ2Dhj","level":"info","message":"Market creation transaction IDs:","timestamp":"2025-02-19T19:08:33.491Z"}
+{"level":"info","message":"Confirming transaction BS4hCZtaK3pv1BPEVf5ppMmHHDBVyqjKuPcSaMAzPPQmfXaLnXoc9r2MnzSkfnXNKMAX6VseQPZ6EZqfZVZWWJQ","timestamp":"2025-02-19T19:08:33.492Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T19:13:03.671Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T19:13:03.674Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T19:13:03.713Z"}
+{"level":"info","message":"Creating memecoin: FUCKING (WOMGJG) with supply 2378328783","timestamp":"2025-02-19T19:14:14.791Z"}
+{"level":"info","message":"Checking RPC connection...","timestamp":"2025-02-19T19:14:14.794Z"}
+{"feature-set":1725507508,"level":"info","message":"Connected to Solana node version:","solana-core":"2.1.13","timestamp":"2025-02-19T19:14:15.150Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/da852811-caa0-4458-bfec-a809efe5fb91.json","timestamp":"2025-02-19T19:14:15.154Z"}
+{"level":"info","message":"Keypair saved at: /home/computer/.config/solana/temp/da852811-caa0-4458-bfec-a809efe5fb91.json","timestamp":"2025-02-19T19:14:15.154Z"}
+{"level":"info","message":"Attempting to create token (3 retries left)...","timestamp":"2025-02-19T19:14:15.155Z"}
+{"level":"info","message":"Update: 🏗️ Creating token...","timestamp":"2025-02-19T19:14:15.156Z"}
+{"level":"info","message":"Update: Token created with address: 9xjzdvuLdhAEcSz5uU1kuwU15XjC39TE9FDDYAYBzeVQ","timestamp":"2025-02-19T19:14:19.037Z"}
+{"level":"info","message":"Token created with address: 9xjzdvuLdhAEcSz5uU1kuwU15XjC39TE9FDDYAYBzeVQ","timestamp":"2025-02-19T19:14:19.161Z"}
+{"level":"info","message":"Update: 🎨 Creating metadata...","timestamp":"2025-02-19T19:14:19.162Z"}
+{"level":"info","message":"Creating metadata attempt 1/5","timestamp":"2025-02-19T19:14:19.466Z"}
+{"level":"info","message":"Update: Creating metadata attempt 1/5","timestamp":"2025-02-19T19:14:19.468Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-19T19:14:19.698Z"}
+{"level":"info","message":"Transaction sent with signature: 3rHAy7djx8RP3Tcb43pvBWqnSGRVNG4P5PmJi6VRyjEfcPXkuu6iYy8xAJ24KvSDymnrvn1Vihdmp1Wh3o9tTyV9","timestamp":"2025-02-19T19:14:20.030Z"}
+{"level":"info","message":"Confirming transaction 3rHAy7djx8RP3Tcb43pvBWqnSGRVNG4P5PmJi6VRyjEfcPXkuu6iYy8xAJ24KvSDymnrvn1Vihdmp1Wh3o9tTyV9","timestamp":"2025-02-19T19:14:20.031Z"}
+{"level":"info","message":"Transaction 3rHAy7djx8RP3Tcb43pvBWqnSGRVNG4P5PmJi6VRyjEfcPXkuu6iYy8xAJ24KvSDymnrvn1Vihdmp1Wh3o9tTyV9 confirmed successfully","timestamp":"2025-02-19T19:14:20.663Z"}
+{"level":"info","message":"Metadata transaction sent: 3rHAy7djx8RP3Tcb43pvBWqnSGRVNG4P5PmJi6VRyjEfcPXkuu6iYy8xAJ24KvSDymnrvn1Vihdmp1Wh3o9tTyV9","timestamp":"2025-02-19T19:14:20.664Z"}
+{"level":"info","message":"Update: Metadata transaction sent: 3rHAy7djx8RP3Tcb43pvBWqnSGRVNG4P5PmJi6VRyjEfcPXkuu6iYy8xAJ24KvSDymnrvn1Vihdmp1Wh3o9tTyV9","timestamp":"2025-02-19T19:14:20.664Z"}
+{"level":"info","message":"Metadata created successfully","timestamp":"2025-02-19T19:14:20.857Z"}
+{"level":"info","message":"Update: 💰 Minting initial supply...","timestamp":"2025-02-19T19:14:20.857Z"}
+{"level":"info","message":"Minted 2378328783 tokens to CxFhX8DDfLLcEcEd5CxjUF84ZhXLp8QFATzPWL1KKyZn","timestamp":"2025-02-19T19:14:25.316Z"}
+{"level":"info","message":"Update: 🔒 Revoking mint authority...","timestamp":"2025-02-19T19:14:25.316Z"}
+{"level":"info","message":"Mint authority revoked","timestamp":"2025-02-19T19:14:28.610Z"}
+{"level":"info","message":"Token created successfully with address: 9xjzdvuLdhAEcSz5uU1kuwU15XjC39TE9FDDYAYBzeVQ","timestamp":"2025-02-19T19:14:28.610Z"}
+{"level":"info","message":"Cleaned up keypair file: /home/computer/.config/solana/temp/da852811-caa0-4458-bfec-a809efe5fb91.json","timestamp":"2025-02-19T19:14:28.612Z"}
+{"decimals":7,"fromAmount":3,"fromToken":"SOL","level":"info","message":"Creating AMM pool with params:","timestamp":"2025-02-19T19:14:29.668Z","toAmount":12782173,"toToken":"9xjzdvuLdhAEcSz5uU1kuwU15XjC39TE9FDDYAYBzeVQ"}
+{"level":"info","message":"Creating market...","timestamp":"2025-02-19T19:14:29.673Z"}
+{"level":"info","message":"Executing market creation...","timestamp":"2025-02-19T19:14:30.414Z"}
+{"0":"4rNLEcoPUpUwqhBpCeavC5yEyUWNng5bC3uiViCZmY9NnLqf7cAC9wmpuBt4GAdDZCphTkEotDyYteHQRXWvc8ah","1":"6DxxtkvjN65PY4Ddt7PPEbFQcJ6GbyGnvPmvjqkW5fJ9YbBH24G3vYuUgEAxcwmAHNzJuJR5UL1Uz7MoYydVj4F","level":"info","message":"Market creation transaction IDs:","timestamp":"2025-02-19T19:14:30.738Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T19:14:30.739Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T19:14:30.742Z"}
+{"level":"info","message":"Confirming transaction 4rNLEcoPUpUwqhBpCeavC5yEyUWNng5bC3uiViCZmY9NnLqf7cAC9wmpuBt4GAdDZCphTkEotDyYteHQRXWvc8ah","timestamp":"2025-02-19T19:14:30.742Z"}
+{"level":"info","message":"Confirming transaction 4rNLEcoPUpUwqhBpCeavC5yEyUWNng5bC3uiViCZmY9NnLqf7cAC9wmpuBt4GAdDZCphTkEotDyYteHQRXWvc8ah","timestamp":"2025-02-19T19:14:30.742Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T19:17:12.697Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T19:17:12.711Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T19:17:12.861Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T19:17:19.124Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T19:17:19.128Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T19:17:19.167Z"}
+{"level":"info","message":"Creating memecoin: IDK COIN (ERIBHBRG) with supply 199939393939","timestamp":"2025-02-19T19:18:39.982Z"}
+{"level":"info","message":"Checking RPC connection...","timestamp":"2025-02-19T19:18:39.983Z"}
+{"feature-set":1725507508,"level":"info","message":"Connected to Solana node version:","solana-core":"2.1.13","timestamp":"2025-02-19T19:18:40.380Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/f2a2c225-c5ce-4a33-b341-6a7f22d137ab.json","timestamp":"2025-02-19T19:18:40.383Z"}
+{"level":"info","message":"Keypair saved at: /home/computer/.config/solana/temp/f2a2c225-c5ce-4a33-b341-6a7f22d137ab.json","timestamp":"2025-02-19T19:18:40.383Z"}
+{"level":"info","message":"Attempting to create token (3 retries left)...","timestamp":"2025-02-19T19:18:40.384Z"}
+{"level":"info","message":"Update: 🏗️ Creating token...","timestamp":"2025-02-19T19:18:40.385Z"}
+{"level":"info","message":"Update: Token created with address: F68BTN8w8D1Vx4APffTx8X7aU1JjQB8kD4dRLJyciCf4","timestamp":"2025-02-19T19:18:44.383Z"}
+{"level":"info","message":"Token created with address: F68BTN8w8D1Vx4APffTx8X7aU1JjQB8kD4dRLJyciCf4","timestamp":"2025-02-19T19:18:44.523Z"}
+{"level":"info","message":"Update: 🎨 Creating metadata...","timestamp":"2025-02-19T19:18:44.524Z"}
+{"level":"info","message":"Creating metadata attempt 1/5","timestamp":"2025-02-19T19:18:44.916Z"}
+{"level":"info","message":"Update: Creating metadata attempt 1/5","timestamp":"2025-02-19T19:18:44.918Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-19T19:18:45.113Z"}
+{"level":"info","message":"Transaction sent with signature: 37X6DhJqBn1P6Pv6k6MRJFt7Nqc4FnjE45vtNWu5nkYQqjombksszzbzNfkeUEkWpmFVtkr38P3m3sKHaVVdrZ86","timestamp":"2025-02-19T19:18:45.438Z"}
+{"level":"info","message":"Confirming transaction 37X6DhJqBn1P6Pv6k6MRJFt7Nqc4FnjE45vtNWu5nkYQqjombksszzbzNfkeUEkWpmFVtkr38P3m3sKHaVVdrZ86","timestamp":"2025-02-19T19:18:45.438Z"}
+{"level":"info","message":"Transaction 37X6DhJqBn1P6Pv6k6MRJFt7Nqc4FnjE45vtNWu5nkYQqjombksszzbzNfkeUEkWpmFVtkr38P3m3sKHaVVdrZ86 confirmed successfully","timestamp":"2025-02-19T19:18:46.115Z"}
+{"level":"info","message":"Metadata transaction sent: 37X6DhJqBn1P6Pv6k6MRJFt7Nqc4FnjE45vtNWu5nkYQqjombksszzbzNfkeUEkWpmFVtkr38P3m3sKHaVVdrZ86","timestamp":"2025-02-19T19:18:46.122Z"}
+{"level":"info","message":"Update: Metadata transaction sent: 37X6DhJqBn1P6Pv6k6MRJFt7Nqc4FnjE45vtNWu5nkYQqjombksszzbzNfkeUEkWpmFVtkr38P3m3sKHaVVdrZ86","timestamp":"2025-02-19T19:18:46.122Z"}
+{"level":"info","message":"Metadata created successfully","timestamp":"2025-02-19T19:18:46.244Z"}
+{"level":"info","message":"Update: 💰 Minting initial supply...","timestamp":"2025-02-19T19:18:46.251Z"}
+{"level":"info","message":"Minted 199939393939 tokens to 4uM8yN5pjKgvZfS6FaDx9cDGZEkd3RbQwniYiHrWTwXU","timestamp":"2025-02-19T19:18:50.813Z"}
+{"level":"info","message":"Update: 🔒 Revoking mint authority...","timestamp":"2025-02-19T19:18:50.814Z"}
+{"level":"info","message":"Mint authority revoked","timestamp":"2025-02-19T19:18:52.712Z"}
+{"level":"info","message":"Token created successfully with address: F68BTN8w8D1Vx4APffTx8X7aU1JjQB8kD4dRLJyciCf4","timestamp":"2025-02-19T19:18:52.713Z"}
+{"level":"info","message":"Cleaned up keypair file: /home/computer/.config/solana/temp/f2a2c225-c5ce-4a33-b341-6a7f22d137ab.json","timestamp":"2025-02-19T19:18:52.714Z"}
+{"decimals":7,"fromAmount":2,"fromToken":"SOL","level":"info","message":"Creating AMM pool with params:","timestamp":"2025-02-19T19:18:53.814Z","toAmount":32882832,"toToken":"F68BTN8w8D1Vx4APffTx8X7aU1JjQB8kD4dRLJyciCf4"}
+{"level":"info","message":"Creating market...","timestamp":"2025-02-19T19:18:53.819Z"}
+{"level":"info","message":"Executing market creation...","timestamp":"2025-02-19T19:18:54.812Z"}
+{"0":"5WW7XeoxwZoxSpikBPBtvRfaTFqzD8QoLXiXeVtFv8G9oUvGfoWdac3xnnMGmYCkZygYjQNNBzfgbGmscQCSvXbi","1":"4bL3NbtCHRqMhk1pUbyD4gmndsaC2dCcWmRqUean5cgTftidE7VFmEAsdKeWdTRGPQmS1Thyqyo896gh45ojWtwr","level":"info","message":"Market creation transaction IDs:","timestamp":"2025-02-19T19:18:55.128Z"}
+{"address":{"asks":"6XKKhEqoBgEpoyfV2yFr6w17NV77919QyW7S9QN4oYky","baseMint":"F68BTN8w8D1Vx4APffTx8X7aU1JjQB8kD4dRLJyciCf4","baseVault":"7bNms5Zrj9pVYPp2yaRvaiyVECFw2FCNU1vBEFvCDn4E","bids":"7cqm1fVciCygmVySXvxjxmWdf3qbtWhNXxTKcjuCmUz4","eventQueue":"Eg7vpci4bpcrBWi9z2UdzYYSb6SJ5V9CVUELKHb6RTPf","marketId":"EfZmKYtqaE5FifuoyaY9NHfH7yhJgfnK1L57Z3AsiyTV","quoteMint":"So11111111111111111111111111111111111111112","quoteVault":"584HzfTFB8zmchPZNhTGBh3gcDEWdpaqq44hyKXHEqiM","requestQueue":"FB7XAPUzZPXvBj1e2xu9xCECCNPqjPACJc6gpeaHeh4z"},"level":"info","message":"Market Info:","timestamp":"2025-02-19T19:18:55.129Z"}
+{"level":"error","message":"Error creating AMM pool: Invalid public key input","stack":"Error: Invalid public key input\n    at new PublicKey (/home/computer/dev/java/lunax/typescript/node_modules/@solana/web3.js/lib/index.cjs.js:172:21)\n    at <anonymous> (/home/computer/dev/java/lunax/typescript/utils/raydium/CreateStandardAmmPool.ts:151:31)\n    at processTicksAndRejections (native:7:39)","timestamp":"2025-02-19T19:18:55.413Z"}
+{"level":"error","message":"Pool creation error: Invalid public key input","stack":"Error: Invalid public key input\n    at new PublicKey (/home/computer/dev/java/lunax/typescript/node_modules/@solana/web3.js/lib/index.cjs.js:172:21)\n    at <anonymous> (/home/computer/dev/java/lunax/typescript/utils/raydium/CreateStandardAmmPool.ts:151:31)\n    at processTicksAndRejections (native:7:39)","timestamp":"2025-02-19T19:18:55.414Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T19:20:16.205Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T19:20:16.207Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T19:20:16.254Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T19:20:19.653Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T19:20:19.657Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T19:20:19.721Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T19:20:20.604Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T19:20:20.612Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T19:20:20.680Z"}
+{"level":"info","message":"Creating memecoin: NICE (HSHIGNRGRG) with supply 1991991919991","timestamp":"2025-02-19T19:21:23.142Z"}
+{"level":"info","message":"Checking RPC connection...","timestamp":"2025-02-19T19:21:23.143Z"}
+{"feature-set":1725507508,"level":"info","message":"Connected to Solana node version:","solana-core":"2.1.13","timestamp":"2025-02-19T19:21:23.468Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/69f59459-5c2d-42f2-b88e-928833a5e004.json","timestamp":"2025-02-19T19:21:23.472Z"}
+{"level":"info","message":"Keypair saved at: /home/computer/.config/solana/temp/69f59459-5c2d-42f2-b88e-928833a5e004.json","timestamp":"2025-02-19T19:21:23.473Z"}
+{"level":"info","message":"Attempting to create token (3 retries left)...","timestamp":"2025-02-19T19:21:23.473Z"}
+{"level":"info","message":"Update: 🏗️ Creating token...","timestamp":"2025-02-19T19:21:23.474Z"}
+{"level":"info","message":"Update: Token created with address: BfMrq5SSAYruYvsDLGgWV3URE9UgiJbNdzNSGbhRamcU","timestamp":"2025-02-19T19:21:30.865Z"}
+{"level":"info","message":"Token created with address: BfMrq5SSAYruYvsDLGgWV3URE9UgiJbNdzNSGbhRamcU","timestamp":"2025-02-19T19:21:31.001Z"}
+{"level":"info","message":"Update: 🎨 Creating metadata...","timestamp":"2025-02-19T19:21:31.002Z"}
+{"level":"info","message":"Creating metadata attempt 1/5","timestamp":"2025-02-19T19:21:31.378Z"}
+{"level":"info","message":"Update: Creating metadata attempt 1/5","timestamp":"2025-02-19T19:21:31.380Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-19T19:21:31.552Z"}
+{"level":"info","message":"Transaction sent with signature: 4Q3ATgAXct5XnXub3LdQCGyyKjpSwereRZc64tzo1JXBg8THLSjwLyE1YSagG4dpKNZJXsDWrFQJfCFCZkntWwbb","timestamp":"2025-02-19T19:21:31.907Z"}
+{"level":"info","message":"Confirming transaction 4Q3ATgAXct5XnXub3LdQCGyyKjpSwereRZc64tzo1JXBg8THLSjwLyE1YSagG4dpKNZJXsDWrFQJfCFCZkntWwbb","timestamp":"2025-02-19T19:21:31.912Z"}
+{"level":"info","message":"Transaction 4Q3ATgAXct5XnXub3LdQCGyyKjpSwereRZc64tzo1JXBg8THLSjwLyE1YSagG4dpKNZJXsDWrFQJfCFCZkntWwbb confirmed successfully","timestamp":"2025-02-19T19:21:36.269Z"}
+{"level":"info","message":"Metadata transaction sent: 4Q3ATgAXct5XnXub3LdQCGyyKjpSwereRZc64tzo1JXBg8THLSjwLyE1YSagG4dpKNZJXsDWrFQJfCFCZkntWwbb","timestamp":"2025-02-19T19:21:36.276Z"}
+{"level":"info","message":"Update: Metadata transaction sent: 4Q3ATgAXct5XnXub3LdQCGyyKjpSwereRZc64tzo1JXBg8THLSjwLyE1YSagG4dpKNZJXsDWrFQJfCFCZkntWwbb","timestamp":"2025-02-19T19:21:36.276Z"}
+{"level":"info","message":"Metadata created successfully","timestamp":"2025-02-19T19:21:36.410Z"}
+{"level":"info","message":"Update: 💰 Minting initial supply...","timestamp":"2025-02-19T19:21:36.410Z"}
+{"level":"info","message":"Minted 1991991919991 tokens to 9zzBXL44avjkaPDMgRUBmfmTMB83o7gt7ofGnXSdRJud","timestamp":"2025-02-19T19:21:46.381Z"}
+{"level":"info","message":"Update: 🔒 Revoking mint authority...","timestamp":"2025-02-19T19:21:46.381Z"}
+{"level":"info","message":"Mint authority revoked","timestamp":"2025-02-19T19:21:48.341Z"}
+{"level":"info","message":"Token created successfully with address: BfMrq5SSAYruYvsDLGgWV3URE9UgiJbNdzNSGbhRamcU","timestamp":"2025-02-19T19:21:48.342Z"}
+{"level":"info","message":"Cleaned up keypair file: /home/computer/.config/solana/temp/69f59459-5c2d-42f2-b88e-928833a5e004.json","timestamp":"2025-02-19T19:21:48.345Z"}
+{"decimals":7,"fromAmount":4,"fromToken":"SOL","level":"info","message":"Creating AMM pool with params:","timestamp":"2025-02-19T19:21:49.690Z","toAmount":23932,"toToken":"BfMrq5SSAYruYvsDLGgWV3URE9UgiJbNdzNSGbhRamcU"}
+{"level":"info","message":"Creating market...","timestamp":"2025-02-19T19:21:49.694Z"}
+{"level":"info","message":"Executing market creation...","timestamp":"2025-02-19T19:21:50.636Z"}
+{"0":"18WvGUz9VMVypZfR8TcZBDohM9YTWSX8Jy1aSZhtRbjqqdSBHX9fruNdEYNGq3zNN1URuCfWCYkeBQAtquWmJuh","1":"623rTgZ8R5gu6gnSXVkbprnGTQXBE6oVsTjiy18ucT6eoBMPnY9PEJzsEjkVXroEBRiJqKe6x7GkBU8AJN5zc7bo","level":"info","message":"Market creation transaction IDs:","timestamp":"2025-02-19T19:21:50.951Z"}
+{"address":{"asks":"9GBULybaFWUr1HPaDAQbq9dZDy4Dvw3BavZFJabAfXgN","baseMint":"BfMrq5SSAYruYvsDLGgWV3URE9UgiJbNdzNSGbhRamcU","baseVault":"3EQtAG8265Pu4aGfxyLuaCDVrGCWkosRrt86w1PpfeEP","bids":"7apWZXgUZXVwfKnyV6sjk5tVhnmJqfDg8g1mRucWJA4t","eventQueue":"4FkKeZxLVk5oWS9qzpypA6Lr4TdoxMrPPegh6xdr1LkF","marketId":"31nSayb9XJtctyZ82auZaJBXREX9DiLeYvmGvXiDA6kT","quoteMint":"So11111111111111111111111111111111111111112","quoteVault":"GQqxhEYQoshZDjTiGkmQb9UTgUNtuiMG4ZUkqFg2kf7m","requestQueue":"4ARJ6dcE6V8iUFLUnDSUBLxranMd2J2ZzxS4N4xeByQN"},"level":"info","message":"Market Info:","timestamp":"2025-02-19T19:21:50.951Z"}
+{"level":"error","message":"Error creating AMM pool: you don't has some token account","stack":"Error: you don't has some token account\n    at <anonymous> (/home/computer/dev/java/lunax/typescript/node_modules/@raydium-io/raydium-sdk-v2/lib/index.js)\n    at processTicksAndRejections (native:7:39)","timestamp":"2025-02-19T19:21:51.339Z"}
+{"level":"error","message":"Pool creation error: you don't has some token account","stack":"Error: you don't has some token account\n    at <anonymous> (/home/computer/dev/java/lunax/typescript/node_modules/@raydium-io/raydium-sdk-v2/lib/index.js)\n    at processTicksAndRejections (native:7:39)","timestamp":"2025-02-19T19:21:51.340Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T19:25:52.736Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T19:25:52.739Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T19:25:52.775Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T19:28:20.569Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T19:28:20.572Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T19:28:20.601Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T19:28:27.085Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T19:28:27.090Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T19:28:27.183Z"}
+{"level":"info","message":"Creating memecoin: CURRY (CURRYCEL) with supply 12939944","timestamp":"2025-02-19T19:30:10.391Z"}
+{"level":"info","message":"Checking RPC connection...","timestamp":"2025-02-19T19:30:10.392Z"}
+{"feature-set":1725507508,"level":"info","message":"Connected to Solana node version:","solana-core":"2.1.13","timestamp":"2025-02-19T19:30:10.752Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/d831b0bb-6199-4307-88c9-a8b1d67ecf58.json","timestamp":"2025-02-19T19:30:10.758Z"}
+{"level":"info","message":"Keypair saved at: /home/computer/.config/solana/temp/d831b0bb-6199-4307-88c9-a8b1d67ecf58.json","timestamp":"2025-02-19T19:30:10.760Z"}
+{"level":"info","message":"Attempting to create token (3 retries left)...","timestamp":"2025-02-19T19:30:10.761Z"}
+{"level":"info","message":"Update: 🏗️ Creating token...","timestamp":"2025-02-19T19:30:10.762Z"}
+{"level":"info","message":"Update: Token created with address: DnHvUxS3HYvd58HYLCbDbn5Vpvs1f9unmKNk2prGDyuf","timestamp":"2025-02-19T19:30:14.116Z"}
+{"level":"info","message":"Token created with address: DnHvUxS3HYvd58HYLCbDbn5Vpvs1f9unmKNk2prGDyuf","timestamp":"2025-02-19T19:30:14.284Z"}
+{"level":"info","message":"Update: 🎨 Creating metadata...","timestamp":"2025-02-19T19:30:14.285Z"}
+{"level":"info","message":"Creating metadata attempt 1/5","timestamp":"2025-02-19T19:30:14.698Z"}
+{"level":"info","message":"Update: Creating metadata attempt 1/5","timestamp":"2025-02-19T19:30:14.704Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-19T19:30:14.813Z"}
+{"level":"info","message":"Transaction sent with signature: 5u3yWBrF9cjZPjZgDX5rRTAVz6vrgS6LjGcCU5Fi2XMQDNLw2VJfRvcXELLWVTpi59u1JazNVNsd8RE1AsRn2DQg","timestamp":"2025-02-19T19:30:15.142Z"}
+{"level":"info","message":"Confirming transaction 5u3yWBrF9cjZPjZgDX5rRTAVz6vrgS6LjGcCU5Fi2XMQDNLw2VJfRvcXELLWVTpi59u1JazNVNsd8RE1AsRn2DQg","timestamp":"2025-02-19T19:30:15.143Z"}
+{"level":"info","message":"Transaction 5u3yWBrF9cjZPjZgDX5rRTAVz6vrgS6LjGcCU5Fi2XMQDNLw2VJfRvcXELLWVTpi59u1JazNVNsd8RE1AsRn2DQg confirmed successfully","timestamp":"2025-02-19T19:30:15.748Z"}
+{"level":"info","message":"Metadata transaction sent: 5u3yWBrF9cjZPjZgDX5rRTAVz6vrgS6LjGcCU5Fi2XMQDNLw2VJfRvcXELLWVTpi59u1JazNVNsd8RE1AsRn2DQg","timestamp":"2025-02-19T19:30:15.749Z"}
+{"level":"info","message":"Update: Metadata transaction sent: 5u3yWBrF9cjZPjZgDX5rRTAVz6vrgS6LjGcCU5Fi2XMQDNLw2VJfRvcXELLWVTpi59u1JazNVNsd8RE1AsRn2DQg","timestamp":"2025-02-19T19:30:15.749Z"}
+{"level":"info","message":"Metadata created successfully","timestamp":"2025-02-19T19:30:15.884Z"}
+{"level":"info","message":"Update: 💰 Minting initial supply...","timestamp":"2025-02-19T19:30:15.884Z"}
+{"level":"info","message":"Minted 12939944 tokens to GjwwCgdhyhcHyMwHrsTg3TZQGVu9AqTcbJzpP9prrXw7","timestamp":"2025-02-19T19:30:20.326Z"}
+{"level":"info","message":"Update: 🔒 Revoking mint authority...","timestamp":"2025-02-19T19:30:20.327Z"}
+{"level":"info","message":"Mint authority revoked","timestamp":"2025-02-19T19:30:22.348Z"}
+{"level":"info","message":"Token created successfully with address: DnHvUxS3HYvd58HYLCbDbn5Vpvs1f9unmKNk2prGDyuf","timestamp":"2025-02-19T19:30:22.350Z"}
+{"level":"info","message":"Cleaned up keypair file: /home/computer/.config/solana/temp/d831b0bb-6199-4307-88c9-a8b1d67ecf58.json","timestamp":"2025-02-19T19:30:22.362Z"}
+{"decimals":8,"fromAmount":5,"fromToken":"SOL","level":"info","message":"Creating AMM pool with params:","timestamp":"2025-02-19T19:30:23.789Z","toAmount":123123,"toToken":"DnHvUxS3HYvd58HYLCbDbn5Vpvs1f9unmKNk2prGDyuf"}
+{"level":"info","message":"Creating/checking token accounts...","timestamp":"2025-02-19T19:30:23.793Z"}
+{"level":"info","message":"Creating token accounts with signature:","timestamp":"2025-02-19T19:30:24.290Z"}
+{"level":"info","message":"Creating market...","timestamp":"2025-02-19T19:30:26.982Z"}
+{"level":"info","message":"Executing market creation...","timestamp":"2025-02-19T19:30:27.767Z"}
+{"0":"2Z5ZGp4kFsg9fk9yvdsc11YeU9h666iKeB1finizWwuKiQtiwYFtkFx76BqtjsEgTRnbKFuarW4h45f6Ls6eoMos","1":"4ACe1eoVv9NFKBFCuFaTyudpEF1X1uhCXrRgw3u4zhBNttSAP6aJCPhwutc164PAxPd7oUP2aVdZjvPUQPM7rUWW","level":"info","message":"Market creation transaction IDs:","timestamp":"2025-02-19T19:30:28.075Z"}
+{"address":{"asks":"7nXeorJa4EaJxftoMeuraUTfan8pCnyR99gkEPbbJtMb","baseMint":"DnHvUxS3HYvd58HYLCbDbn5Vpvs1f9unmKNk2prGDyuf","baseVault":"2Rf9AZm8reqWc2v9Zs9HhdsKu6V9R7exXS5Xncj8LtYp","bids":"3CvrFRCDNuYyZJJ3GseV921qSSE8Z4mDuUCVbTTNSf2r","eventQueue":"6jSvCbFy9wVTqMuTbmHn4UdxVh2CxSoSjtF7XgzmqkXK","marketId":"5XSLyR3jtpsDsh4dB8tARwRWYv4FLotGYjgVagJfKv46","quoteMint":"So11111111111111111111111111111111111111112","quoteVault":"8T3HGBktXW58kkmwJb2CsEsRoStrYxb3DiK4XhmVicf1","requestQueue":"BNMxVyHvv62HAReQnHMEWa1GXCprEwwXBS6pqdDgpnHx"},"level":"info","message":"Market Info:","timestamp":"2025-02-19T19:30:28.077Z"}
+{"level":"error","message":"Error creating AMM pool: you don't has some token account","stack":"Error: you don't has some token account\n    at <anonymous> (/home/computer/dev/java/lunax/typescript/node_modules/@raydium-io/raydium-sdk-v2/lib/index.js)\n    at processTicksAndRejections (native:7:39)","timestamp":"2025-02-19T19:30:28.493Z"}
+{"level":"error","message":"Pool creation error: you don't has some token account","stack":"Error: you don't has some token account\n    at <anonymous> (/home/computer/dev/java/lunax/typescript/node_modules/@raydium-io/raydium-sdk-v2/lib/index.js)\n    at processTicksAndRejections (native:7:39)","timestamp":"2025-02-19T19:30:28.503Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T19:32:14.105Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T19:32:14.108Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T19:32:14.155Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T19:32:27.833Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T19:32:27.837Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T19:32:27.920Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T19:33:39.352Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T19:33:39.355Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T19:33:39.413Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T19:33:45.631Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T19:33:45.634Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T19:33:45.670Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T19:34:53.696Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T19:34:53.701Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T19:34:53.747Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T19:36:25.216Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T19:36:25.219Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T19:36:25.291Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T19:36:50.342Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T19:36:50.359Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T19:36:50.554Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T19:37:04.155Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T19:37:04.158Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T19:37:04.205Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T19:37:07.261Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T19:37:07.265Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T19:37:07.362Z"}
+{"level":"info","message":"Creating memecoin: IDK (SHITTYIKM) with supply 18283821831283","timestamp":"2025-02-19T19:38:49.026Z"}
+{"level":"info","message":"Checking RPC connection...","timestamp":"2025-02-19T19:38:49.027Z"}
+{"feature-set":1725507508,"level":"info","message":"Connected to Solana node version:","solana-core":"2.1.13","timestamp":"2025-02-19T19:38:49.390Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/2f51e4df-9c40-4f58-b850-bea537bb2dc0.json","timestamp":"2025-02-19T19:38:49.397Z"}
+{"level":"info","message":"Keypair saved at: /home/computer/.config/solana/temp/2f51e4df-9c40-4f58-b850-bea537bb2dc0.json","timestamp":"2025-02-19T19:38:49.399Z"}
+{"level":"info","message":"Attempting to create token (3 retries left)...","timestamp":"2025-02-19T19:38:49.399Z"}
+{"level":"info","message":"Update: 🏗️ Creating token...","timestamp":"2025-02-19T19:38:49.403Z"}
+{"level":"info","message":"Update: Token created with address: Vid9nguyt83TcsPruwE4UeqgmcYFA7318xUKhj7WvPk","timestamp":"2025-02-19T19:38:51.941Z"}
+{"level":"info","message":"Token created with address: Vid9nguyt83TcsPruwE4UeqgmcYFA7318xUKhj7WvPk","timestamp":"2025-02-19T19:38:52.281Z"}
+{"level":"info","message":"Update: 🎨 Creating metadata...","timestamp":"2025-02-19T19:38:52.281Z"}
+{"level":"info","message":"Creating metadata attempt 1/5","timestamp":"2025-02-19T19:38:52.808Z"}
+{"level":"info","message":"Update: Creating metadata attempt 1/5","timestamp":"2025-02-19T19:38:52.808Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-19T19:38:52.918Z"}
+{"level":"info","message":"Transaction sent with signature: 4TiLqPfqNowa5rgza1QhtHHzeQwQTYD8LmmVTLpxi9SpTxSgaiS1mZiLnQS5VcAuGfNUsmC2zR5Z8j8QGQ6LgB9d","timestamp":"2025-02-19T19:38:53.256Z"}
+{"level":"info","message":"Confirming transaction 4TiLqPfqNowa5rgza1QhtHHzeQwQTYD8LmmVTLpxi9SpTxSgaiS1mZiLnQS5VcAuGfNUsmC2zR5Z8j8QGQ6LgB9d","timestamp":"2025-02-19T19:38:53.257Z"}
+{"level":"info","message":"Transaction 4TiLqPfqNowa5rgza1QhtHHzeQwQTYD8LmmVTLpxi9SpTxSgaiS1mZiLnQS5VcAuGfNUsmC2zR5Z8j8QGQ6LgB9d confirmed successfully","timestamp":"2025-02-19T19:38:53.845Z"}
+{"level":"info","message":"Metadata transaction sent: 4TiLqPfqNowa5rgza1QhtHHzeQwQTYD8LmmVTLpxi9SpTxSgaiS1mZiLnQS5VcAuGfNUsmC2zR5Z8j8QGQ6LgB9d","timestamp":"2025-02-19T19:38:53.846Z"}
+{"level":"info","message":"Update: Metadata transaction sent: 4TiLqPfqNowa5rgza1QhtHHzeQwQTYD8LmmVTLpxi9SpTxSgaiS1mZiLnQS5VcAuGfNUsmC2zR5Z8j8QGQ6LgB9d","timestamp":"2025-02-19T19:38:53.847Z"}
+{"level":"info","message":"Metadata created successfully","timestamp":"2025-02-19T19:38:53.916Z"}
+{"level":"info","message":"Update: 💰 Minting initial supply...","timestamp":"2025-02-19T19:38:53.917Z"}
+{"level":"info","message":"Minted 18283821831283 tokens to 3WMbxfHmvzJmo7wXTUAUNP8pGCJh48pb62D2ankfz9x6","timestamp":"2025-02-19T19:39:01.185Z"}
+{"level":"info","message":"Update: 🔒 Revoking mint authority...","timestamp":"2025-02-19T19:39:01.185Z"}
+{"level":"info","message":"Mint authority revoked","timestamp":"2025-02-19T19:39:03.091Z"}
+{"level":"info","message":"Token created successfully with address: Vid9nguyt83TcsPruwE4UeqgmcYFA7318xUKhj7WvPk","timestamp":"2025-02-19T19:39:03.092Z"}
+{"level":"info","message":"Cleaned up keypair file: /home/computer/.config/solana/temp/2f51e4df-9c40-4f58-b850-bea537bb2dc0.json","timestamp":"2025-02-19T19:39:03.094Z"}
+{"decimals":7,"fromAmount":4,"fromToken":"SOL","level":"info","message":"Creating AMM pool with params:","timestamp":"2025-02-19T19:39:04.208Z","toAmount":2312482384234,"toToken":"Vid9nguyt83TcsPruwE4UeqgmcYFA7318xUKhj7WvPk"}
+{"level":"info","message":"Creating/checking token accounts...","timestamp":"2025-02-19T19:39:04.212Z"}
+{"level":"info","message":"Creating market...","timestamp":"2025-02-19T19:39:04.407Z"}
+{"level":"info","message":"Executing market creation...","timestamp":"2025-02-19T19:39:05.130Z"}
+{"0":"2agvk7VK41M6vKAtAmF8HcNJgaEKPZCnND5wnBtGnU245KUPHW3qF3ddvjpmcDWkKVGU3mLpE7rgL89w1HZxUAvR","1":"6RikJwmmv3hhhM2e4c6qYgoHZR2TTTj8CS1a3s2KcVXQ89VrwcuonKb5cvmShhQXfNCh3mZuS4WbQZUiXq7uh9W","level":"info","message":"Market creation transaction IDs:","timestamp":"2025-02-19T19:39:05.443Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T19:39:05.444Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T19:39:05.446Z"}
+{"level":"info","message":"Confirming transaction 2agvk7VK41M6vKAtAmF8HcNJgaEKPZCnND5wnBtGnU245KUPHW3qF3ddvjpmcDWkKVGU3mLpE7rgL89w1HZxUAvR","timestamp":"2025-02-19T19:39:05.446Z"}
+{"level":"info","message":"Confirming transaction 2agvk7VK41M6vKAtAmF8HcNJgaEKPZCnND5wnBtGnU245KUPHW3qF3ddvjpmcDWkKVGU3mLpE7rgL89w1HZxUAvR","timestamp":"2025-02-19T19:39:05.446Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T19:39:36.796Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T19:39:36.798Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T19:39:36.834Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T19:39:42.555Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T19:39:42.557Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T19:39:42.599Z"}
+{"level":"info","message":"Creating memecoin: banbnaba (BANANA) with supply 32993293","timestamp":"2025-02-19T19:42:13.804Z"}
+{"level":"info","message":"Checking RPC connection...","timestamp":"2025-02-19T19:42:13.804Z"}
+{"feature-set":1725507508,"level":"info","message":"Connected to Solana node version:","solana-core":"2.1.13","timestamp":"2025-02-19T19:42:14.223Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/3c71cc8f-6a07-4de8-bcf0-7e178c0ffb1d.json","timestamp":"2025-02-19T19:42:14.226Z"}
+{"level":"info","message":"Keypair saved at: /home/computer/.config/solana/temp/3c71cc8f-6a07-4de8-bcf0-7e178c0ffb1d.json","timestamp":"2025-02-19T19:42:14.226Z"}
+{"level":"info","message":"Attempting to create token (3 retries left)...","timestamp":"2025-02-19T19:42:14.227Z"}
+{"level":"info","message":"Update: 🏗️ Creating token...","timestamp":"2025-02-19T19:42:14.228Z"}
+{"level":"info","message":"Update: Token created with address: 5eu1rcBZaf2R3uPfNYJJFxVbMuDXX4zWMfFg7xAfcksw","timestamp":"2025-02-19T19:42:16.129Z"}
+{"level":"info","message":"Token created with address: 5eu1rcBZaf2R3uPfNYJJFxVbMuDXX4zWMfFg7xAfcksw","timestamp":"2025-02-19T19:42:16.319Z"}
+{"level":"info","message":"Update: 🎨 Creating metadata...","timestamp":"2025-02-19T19:42:16.321Z"}
+{"level":"info","message":"Creating metadata attempt 1/5","timestamp":"2025-02-19T19:42:16.561Z"}
+{"level":"info","message":"Update: Creating metadata attempt 1/5","timestamp":"2025-02-19T19:42:16.562Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-19T19:42:16.685Z"}
+{"level":"info","message":"Transaction sent with signature: 3YN6DLKk2gzNsBqaECLwChQjoowuY3kh5DQK6Tf6WJehHVHFgVP3vBStkGCJ9CsTa81YsT9szWhfvwTv4PiiLMvA","timestamp":"2025-02-19T19:42:17.008Z"}
+{"level":"info","message":"Confirming transaction 3YN6DLKk2gzNsBqaECLwChQjoowuY3kh5DQK6Tf6WJehHVHFgVP3vBStkGCJ9CsTa81YsT9szWhfvwTv4PiiLMvA","timestamp":"2025-02-19T19:42:17.011Z"}
+{"level":"info","message":"Transaction 3YN6DLKk2gzNsBqaECLwChQjoowuY3kh5DQK6Tf6WJehHVHFgVP3vBStkGCJ9CsTa81YsT9szWhfvwTv4PiiLMvA confirmed successfully","timestamp":"2025-02-19T19:42:17.797Z"}
+{"level":"info","message":"Metadata transaction sent: 3YN6DLKk2gzNsBqaECLwChQjoowuY3kh5DQK6Tf6WJehHVHFgVP3vBStkGCJ9CsTa81YsT9szWhfvwTv4PiiLMvA","timestamp":"2025-02-19T19:42:17.798Z"}
+{"level":"info","message":"Update: Metadata transaction sent: 3YN6DLKk2gzNsBqaECLwChQjoowuY3kh5DQK6Tf6WJehHVHFgVP3vBStkGCJ9CsTa81YsT9szWhfvwTv4PiiLMvA","timestamp":"2025-02-19T19:42:17.798Z"}
+{"level":"info","message":"Metadata created successfully","timestamp":"2025-02-19T19:42:17.952Z"}
+{"level":"info","message":"Update: 💰 Minting initial supply...","timestamp":"2025-02-19T19:42:17.952Z"}
+{"level":"info","message":"Minted 32993293 tokens to 91oCKL1JhY1N156dpQjyqoyQ5W8nRqQMK5bqpAoMvff","timestamp":"2025-02-19T19:42:21.793Z"}
+{"level":"info","message":"Update: 🔒 Revoking mint authority...","timestamp":"2025-02-19T19:42:21.799Z"}
+{"level":"info","message":"Mint authority revoked","timestamp":"2025-02-19T19:42:23.663Z"}
+{"level":"info","message":"Token created successfully with address: 5eu1rcBZaf2R3uPfNYJJFxVbMuDXX4zWMfFg7xAfcksw","timestamp":"2025-02-19T19:42:23.663Z"}
+{"level":"info","message":"Cleaned up keypair file: /home/computer/.config/solana/temp/3c71cc8f-6a07-4de8-bcf0-7e178c0ffb1d.json","timestamp":"2025-02-19T19:42:23.665Z"}
+{"decimals":7,"fromAmount":4,"fromToken":"SOL","level":"info","message":"Creating AMM pool with params:","timestamp":"2025-02-19T19:42:24.818Z","toAmount":19299129,"toToken":"5eu1rcBZaf2R3uPfNYJJFxVbMuDXX4zWMfFg7xAfcksw"}
+{"level":"info","message":"Creating market...","timestamp":"2025-02-19T19:42:24.825Z"}
+{"level":"info","message":"Executing market creation...","timestamp":"2025-02-19T19:42:25.561Z"}
+{"0":"2LRtDtuUQX3PrDVnG5pZ9Dqx2fgWrMr3yfkiT1T5MDohqWo4pVnDyQhCg1QznffNQSvh7DBZzC2baQnNxgzE19Ag","1":"3mr8mfkVv5w5sgxSca9PFG1yWqRXhgqWhnbf1YkYS3b61W4MxAdNncGu2mhXDtsK8bQtdwcMfu3Lkxupof7MGvyB","level":"info","message":"Market creation transaction IDs:","timestamp":"2025-02-19T19:42:25.872Z"}
+{"address":{"asks":"dueTSTcaB2sDUMejkLczWXjzgsikTWNsBHkfafnrPKJ","baseMint":"5eu1rcBZaf2R3uPfNYJJFxVbMuDXX4zWMfFg7xAfcksw","baseVault":"4cZ7a3b6V7defjzhz2q67PSfjPSDBf1Ueg9EuxEp3gQQ","bids":"3gQFeFFyV5X8tn8ZxCqvpLf3YgrjeauNRgviLiWf3Uaj","eventQueue":"4mUKsd6kwzhTtPU1DBzSUFmKnbf6RQvQNRj7XDwhWbrT","marketId":"5bPiATZYyqzAuJt7uvgNGCmsUJt6jGQ7i8k3tYpGrxef","quoteMint":"So11111111111111111111111111111111111111112","quoteVault":"7SAsZVUxmmKfQ82xCLMt52G4ZSewRJ5eZbqT4SULCGVZ","requestQueue":"7jVSfrYhVbr8x9VtUJ1uPAKpt77AwqY1kP3geq46saL9"},"level":"info","message":"Market Info:","timestamp":"2025-02-19T19:42:25.872Z"}
+{"level":"error","message":"Error creating AMM pool: Invalid public key input","stack":"Error: Invalid public key input\n    at new PublicKey (/home/computer/dev/java/lunax/typescript/node_modules/@solana/web3.js/lib/index.cjs.js:172:21)\n    at <anonymous> (/home/computer/dev/java/lunax/typescript/utils/raydium/CreateStandardAmmPool.ts:151:31)\n    at processTicksAndRejections (native:7:39)","timestamp":"2025-02-19T19:42:26.149Z"}
+{"level":"error","message":"Pool creation error: Invalid public key input","stack":"Error: Invalid public key input\n    at new PublicKey (/home/computer/dev/java/lunax/typescript/node_modules/@solana/web3.js/lib/index.cjs.js:172:21)\n    at <anonymous> (/home/computer/dev/java/lunax/typescript/utils/raydium/CreateStandardAmmPool.ts:151:31)\n    at processTicksAndRejections (native:7:39)","timestamp":"2025-02-19T19:42:26.149Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T19:48:31.044Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T19:48:31.050Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T19:48:31.235Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T19:49:26.549Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T19:49:26.552Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T19:49:26.609Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T19:50:09.042Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T19:50:09.045Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T19:50:09.083Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T19:57:14.126Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-19T19:57:14.130Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T19:57:14.182Z"}

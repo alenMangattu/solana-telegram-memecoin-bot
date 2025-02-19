@@ -1,4 +1,4 @@
-package com.lunax.telegramBot.component.handler.HomePageButtons.MemeCoinCreations.InitialLiquidity;
+package com.lunax.telegramBot.component.Buttons.HomePageButtons.MemeCoinCreations.InitialLiquidity;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;

@@ -4,8 +4,8 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
-import com.lunax.telegramBot.component.handler.HomePageButtons.MemeCoinCreations.AskMemeCoinData;
-import com.lunax.telegramBot.component.handler.HomePageButtons.MemeCoinCreations.InitialLiquidity.AddLiquidity;
+import com.lunax.telegramBot.component.Buttons.HomePageButtons.MemeCoinCreations.AskMemeCoinData;
+import com.lunax.telegramBot.component.Buttons.HomePageButtons.MemeCoinCreations.InitialLiquidity.AddLiquidity;
 import com.lunax.telegramBot.component.navigation.HandlerRegistry;
 import com.lunax.telegramBot.component.navigation.components.Home;
 import com.lunax.telegramBot.component.navigation.components.settings.SettingsImpl;
@@ -68,7 +68,11 @@ public class BotController extends TelegramLongPollingBot {
                 ButtonHandler handler = handlerRegistry.getHandler(callbackData);
 
                 if (handler != null) {
-                    handler.handleCallback(update);
+                    try {
+                        handler.handleCallback(update);
+                    } catch (Exception e) {
+                        log.error("Error handling callback {}: {}", callbackData, e.getMessage());
+                    }
                 } else {
                     log.warn("No handler found for callback data: {}", callbackData);
                 }

@@ -1,4 +1,4 @@
-package com.lunax.telegramBot.component.handler.SettingsButtons;
+package com.lunax.telegramBot.component.Buttons.SettingsButtons;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;

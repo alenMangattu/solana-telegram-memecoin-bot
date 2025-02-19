@@ -1,0 +1,281 @@
+# Guide to Creating a CPMM Pool and Adding Liquidity in a RESTful Backend
+
+## Overview
+This guide will help you set up a backend service that allows users to create a CPMM pool and add liquidity to it. The service will expose RESTful APIs for these operations.
+
+## Prerequisites
+- Basic knowledge of Node.js and Express.js (or any other backend framework).
+- Familiarity with blockchain concepts, particularly AMMs and liquidity pools.
+- Understanding of how to interact with smart contracts (if applicable).
+
+## Project Structure
+Your project should have a structure similar to the following:
+
+```
+my-cpmm-backend/
+├── src/
+│   ├── controllers/
+│   │   ├── poolController.js
+│   │   └── liquidityController.js
+│   ├── models/
+│   │   └── poolModel.js
+│   ├── routes/
+│   │   ├── poolRoutes.js
+│   │   └── liquidityRoutes.js
+│   ├── services/
+│   │   └── poolService.js
+│   ├── utils/
+│   │   └── blockchain.js
+│   └── app.js
+├── package.json
+└── README.md
+```
+
+## Step 1: Set Up Your Project
+1. **Initialize a Node.js Project**:
+   ```bash
+   mkdir my-cpmm-backend
+   cd my-cpmm-backend
+   npm init -y
+   ```
+
+2. **Install Required Packages**:
+   ```bash
+   npm install express body-parser axios dotenv
+   ```
+
+## Step 2: Create the Server
+**File: `src/app.js`**
+```javascript
+const express = require('express');
+const bodyParser = require('body-parser');
+const poolRoutes = require('./routes/poolRoutes');
+const liquidityRoutes = require('./routes/liquidityRoutes');
+
+const app = express();
+app.use(bodyParser.json());
+
+// Define routes
+app.use('/api/pools', poolRoutes);
+app.use('/api/liquidity', liquidityRoutes);
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
+```
+
+## Step 3: Define the Pool Model
+**File: `src/models/poolModel.js`**
+```javascript
+class Pool {
+  constructor(token1, token2, price) {
+    this.token1 = token1;
+    this.token2 = token2;
+    this.price = price;
+    this.liquidity = 0; // Initial liquidity
+  }
+}
+
+module.exports = Pool;
+```
+
+## Step 4: Create the Pool Controller
+**File: `src/controllers/poolController.js`**
+```javascript
+const Pool = require('../models/poolModel');
+
+let pools = []; // In-memory storage for pools
+
+exports.createPool = (req, res) => {
+  const { token1, token2, price } = req.body;
+  const newPool = new Pool(token1, token2, price);
+  pools.push(newPool);
+  res.status(201).json({ message: 'Pool created successfully', pool: newPool });
+};
+
+exports.getPools = (req, res) => {
+  res.status(200).json(pools);
+};
+```
+
+## Step 5: Create the Liquidity Controller
+**File: `src/controllers/liquidityController.js`**
+```javascript
+const pools = require('../controllers/poolController').pools;
+
+exports.addLiquidity = (req, res) => {
+  const { poolId, amount1, amount2 } = req.body;
+  const pool = pools[poolId];
+
+  if (!pool) {
+    return res.status(404).json({ message: 'Pool not found' });
+  }
+
+  pool.liquidity += (amount1 + amount2); // Update liquidity
+  res.status(200).json({ message: 'Liquidity added successfully', pool });
+};
+```
+
+## Step 6: Define the Routes
+**File: `src/routes/poolRoutes.js`**
+```javascript
+const express = require('express');
+const router = express.Router();
+const poolController = require('../controllers/poolController');
+
+router.post('/', poolController.createPool);
+router.get('/', poolController.getPools);
+
+module.exports = router;
+```
+
+**File: `src/routes/liquidityRoutes.js`**
+```javascript
+const express = require('express');
+const router = express.Router();
+const liquidityController = require('../controllers/liquidityController');
+
+router.post('/add', liquidityController.addLiquidity);
+
+module.exports = router;
+```
+
+## Step 7: Interact with the Blockchain (Optional)
+If your CPMM pool interacts with a blockchain, you will need to implement the logic to call smart contracts. This can be done in the `src/utils/blockchain.js` file using libraries like `web3.js` or `ethers.js`.
+
+## Step 8: Testing the API
+1. **Start the Server**:
+   ```bash
+   node src/app.js
+   ```
+
+2. **Use Postman or cURL to Test the API**:
+   - **Create a Pool**:
+     ```bash
+     POST http://localhost:3000/api/pools
+     Content-Type: application/json
+
+     {
+       "token1": "TokenA",
+       "token2": "TokenB",
+       "price": "1.0"
+     }
+     ```
+
+   - **Add Liquidity**:
+     ```bash
+     POST http://localhost:3000/api/liquidity/add
+     Content-Type: application/json
+
+     {
+       "poolId": 0,
+       "amount1": 100,
+       "amount2": 200
+     }
+     ```
+
+## Conclusion
+This guide provides a foundational understanding of how to create a CPMM pool and add liquidity in a RESTful backend service. You can expand upon this by adding error handling, database integration, and user authentication as needed.
+
+# Guide to Creating a CPMM Pool
+
+## Overview
+The process of creating a CPMM (Constant Product Market Maker) pool involves several steps, including selecting tokens, setting price ranges, and confirming the pool creation. The main components involved in this process are located in the `CreateClmmPool.tsx` and `create-pool.tsx` files, along with the `AddLiquidityModal.tsx` for adding liquidity to the pool.
+
+## Step-by-Step Process
+
+1. **Page Setup** (`src/pages/liquidity/create-pool.tsx`)
+   - The `CreatePoolPage` component is responsible for rendering the pool creation interface.
+   - It uses the `useLiquidityStore` to fetch CPMM configurations when the component mounts.
+   - The `CreatePool` component is dynamically imported from `src/features/Create/StandardPool`.
+
+   ```typescript
+   const CreatePool = dynamic(() => import('@/features/Create/StandardPool'), { ssr: false })
+   ```
+
+2. **Creating the Pool** (`src/features/Create/ClmmPool/CreateClmmPool.tsx`)
+   - The `CreateClmmPool` component handles the logic for creating a new CPMM pool.
+   - It uses the `createClmmPool` function from the `useClmmStore` to initiate the pool creation process.
+
+   **Key Functions**:
+   - **Step 1: Token Selection**
+     - Users select the tokens they want to include in the pool.
+     - The `handleStep1Confirm` function is called when the user confirms their selection.
+
+     ```typescript
+     const handleStep1Confirm = useCallback(
+       ({ token1, token2, ammConfig }) => {
+         createClmmPool({
+           config: ammConfig,
+           token1: solToWSolToken(token1),
+           token2: solToWSolToken(token2),
+           price: '1',
+           forerunCreate: true
+         })
+       },
+       [createClmmPool]
+     )
+     ```
+
+   - **Step 2: Price and Range Setting**
+     - Users set the price and range for the pool.
+     - The `handlePriceChange` function updates the pool data based on the price input.
+
+     ```typescript
+     const handlePriceChange = useCallback(
+       ({ price }) => {
+         createClmmPool({ config, token1, token2, price, forerunCreate: true })
+       },
+       [createClmmPool]
+     )
+     ```
+
+   - **Step 3: Confirming Pool Creation**
+     - The `handleCreateAndOpen` function is called to finalize the pool creation and open the position.
+
+     ```typescript
+     const handleCreateAndOpen = useEvent(
+       exhaustCall(async () => {
+         const { buildData } = await createClmmPool({
+           config: config!,
+           token1: token1!,
+           token2: token2!,
+           price,
+           forerunCreate: true
+         })
+       })
+     )
+     ```
+
+3. **Adding Liquidity** (`src/features/Clmm/LiquidityEditModal/AddLiquidityModal.tsx`)
+   - After the pool is created, users can add liquidity using the `AddLiquidityModal`.
+   - The `increaseLiquidityAct` function is called to add liquidity to the newly created pool.
+
+   ```typescript
+   increaseLiquidityAct({
+     poolInfo,
+     position,
+     liquidity: tickPriceRef.current.liquidity!,
+     amountMaxA: new Decimal(tokenAmount[0]!).mul(10 ** poolInfo.mintA.decimals).toFixed(0),
+     amountMaxB: new Decimal(tokenAmount[1]!).mul(10 ** poolInfo.mintB.decimals).toFixed(0),
+   })
+   ```
+
+## Additional Features from `Swap.tsx`
+
+1. **Overview of Swap Functionality**:
+   - The `Swap` component allows users to swap tokens on the platform. It manages the state of the input and output tokens, handles user interactions, and updates the UI accordingly.
+
+2. **Key Features**:
+   - **Token Selection**: Users can select the tokens they wish to swap.
+   - **Direction Toggle**: Users can toggle the direction of the swap (input/output).
+   - **Slippage Adjuster**: Users can adjust the slippage tolerance for their swaps.
+   - **Kline Chart**: Displays historical price data for the selected tokens.
+
+3. **Important Functions**:
+   - **State Management**: Uses `useAppStore` and `useTokenStore` to manage the state of the connected wallet and token information.
+   - **Effect Hooks**: Utilizes `useEffect` to load cached token selections and update the swap direction based on user input.
+
+## Conclusion
+The CPMM pool creation process involves selecting tokens, setting price ranges, and confirming the pool creation. The `CreateClmmPool` component orchestrates these steps, while the `AddLiquidityModal` allows users to add liquidity to the created pool. The `Swap` component provides functionality for users to swap tokens seamlessly.

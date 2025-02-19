@@ -9,12 +9,12 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
-import com.lunax.telegramBot.component.handler.AcceptTosHandler;
-import com.lunax.telegramBot.component.handler.HomePageButtons.MyMemeCoins;
-import com.lunax.telegramBot.component.handler.HomePageButtons.RefreshHome;
-import com.lunax.telegramBot.component.handler.HomePageButtons.Settings;
-import com.lunax.telegramBot.component.handler.HomePageButtons.TradeMemeCoin;
-import com.lunax.telegramBot.component.handler.HomePageButtons.MemeCoinCreations.AskMemeCoinData;
+import com.lunax.telegramBot.component.Buttons.AcceptTosHandler;
+import com.lunax.telegramBot.component.Buttons.HomePageButtons.MyMemeCoins;
+import com.lunax.telegramBot.component.Buttons.HomePageButtons.RefreshHome;
+import com.lunax.telegramBot.component.Buttons.HomePageButtons.Settings;
+import com.lunax.telegramBot.component.Buttons.HomePageButtons.TradeMemeCoin;
+import com.lunax.telegramBot.component.Buttons.HomePageButtons.MemeCoinCreations.AskMemeCoinData;
 import com.lunax.telegramBot.event.NavigationEvent;
 import com.lunax.telegramBot.model.db.User;
 import com.lunax.telegramBot.model.db.Wallet;

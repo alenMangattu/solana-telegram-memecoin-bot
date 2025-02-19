@@ -1,25 +1,19 @@
-package com.lunax.telegramBot.component.handler.HomePageButtons;
+package com.lunax.telegramBot.component.Buttons.SettingsButtons;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
-import com.lunax.telegramBot.event.NavigationEvent;
 import com.lunax.telegramBot.utils.components.ButtonHandler;
 
 @Component
-public class RefreshHome implements ButtonHandler {
-
-    @Autowired
-    private ApplicationEventPublisher eventPublisher;
+public class TraidingPerfernces implements ButtonHandler {
 
     private final String buttonText;
     private final String callbackData;
 
-    public RefreshHome(@Value("⟳ Refresh") String buttonText,
-            @Value("refresh") String callbackData) {
+    public TraidingPerfernces(@Value("📊 Traiding Perfernces") String buttonText, 
+                      @Value("traiding_perfernces") String callbackData) {
         this.buttonText = buttonText;
         this.callbackData = callbackData;
     }
@@ -36,6 +30,9 @@ public class RefreshHome implements ButtonHandler {
 
     @Override
     public void handleCallback(Update update) {
-        eventPublisher.publishEvent(new NavigationEvent(this, update, "HOME"));
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'handleCallback'");
     }
+
+    
 }
