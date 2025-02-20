@@ -1,26 +1,30 @@
 package com.lunax.telegramBot.component.navigation.components.mymemecoin;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.concurrent.ConcurrentMapCache;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import com.lunax.telegramBot.component.navigation.components.StateHandler;
-import com.lunax.telegramBot.model.repository.MemecoinRepo;
 import com.lunax.telegramBot.model.db.Memecoin;
-import com.lunax.telegramBot.utils.components.MessageUtils;
+import com.lunax.telegramBot.model.db.User;
+import com.lunax.telegramBot.model.repository.MemecoinRepo;
+import com.lunax.telegramBot.service.UserService;
 import com.lunax.telegramBot.utils.SolanaUtils;
+import com.lunax.telegramBot.utils.components.MessageUtils;
 
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.Map;
-import java.util.ArrayList;
-import java.util.Collections;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -33,6 +37,12 @@ public class MemecoinList implements StateHandler {
     @Autowired
     private SolanaUtils solanaUtils;
 
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private CacheManager cacheManager;
+
     private Map<Long, Memecoin> memecoinCache = new ConcurrentHashMap<>();
     private static final int PAGE_SIZE = 5; // Number of memecoins per page
 
@@ -41,10 +51,11 @@ public class MemecoinList implements StateHandler {
         executeVoid(update, 0); // Default to the first page if no page is specified
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public void executeVoid(Update update, int page) {
-        // Send a loading message first
-        Message loadingMessage = MessageUtils.sendLoadingMessage(update);
+        // Print cache contents at the start of each request
+        printCacheContents();
 
         // Get the original message from the update
         Message originalMessage = (Message) update.getCallbackQuery().getMessage();
@@ -55,72 +66,118 @@ public class MemecoinList implements StateHandler {
             return; // Exit if the message is not accessible
         }
 
-        // Now proceed to fetch and format the memecoin data
-        List<Memecoin> memecoins = getMemecoins();
-        int totalPages = (int) Math.ceil((double) memecoins.size() / PAGE_SIZE);
-        int start = page * PAGE_SIZE;
-        int end = Math.min(start + PAGE_SIZE, memecoins.size());
+        // Fetch the user based on the Telegram ID
+        Long telegramId = update.getCallbackQuery().getFrom().getId();
+        User user = userService.findByTelegramId(telegramId).orElse(null);
 
+        if (user == null) {
+            log.error("User not found for Telegram ID: {}", telegramId);
+            return; // Exit if user is not found
+        }
+
+        // Check if data is in cache
+        Cache userTokenAccountsCache = cacheManager.getCache("userTokenAccounts");
+        String walletAddress = user.getCurrentWalletAddress();
+        boolean isDataCached = false;
+
+        if (userTokenAccountsCache != null && walletAddress != null) {
+            Cache.ValueWrapper cachedValue = userTokenAccountsCache.get(walletAddress);
+            isDataCached = (cachedValue != null && cachedValue.get() != null);
+        }
+
+        // Only show loading if data is not cached
+        if (!isDataCached) {
+            EditMessageText loadingMessage = new EditMessageText();
+            loadingMessage.setChatId(originalMessage.getChatId().toString());
+            loadingMessage.setMessageId(originalMessage.getMessageId());
+            loadingMessage.setText("⟳ Loading...");
+            loadingMessage.setReplyMarkup(null); // Remove keyboard
+
+            try {
+                MessageUtils.getBotInstance().execute(loadingMessage);
+            } catch (TelegramApiException e) {
+                log.error("Error setting loading message: {}", e.getMessage());
+            }
+        }
+
+        // Fetch token accounts for the user
+        if (walletAddress == null) {
+            log.error("Current wallet not set for user: {}", telegramId);
+            return; // Exit if wallet is not found
+        }
+
+        List<String> tokenAddresses;
+        if (isDataCached && userTokenAccountsCache != null) {
+            // Get from cache
+            Object cachedValue = userTokenAccountsCache.get(walletAddress).get();
+            tokenAddresses = cachedValue instanceof List<?> ? new ArrayList<>((List<String>) cachedValue) : new ArrayList<>();
+            log.info("Retrieved token addresses from cache for wallet: {}", walletAddress);
+        } else {
+            // Fetch from Solana
+            tokenAddresses = solanaUtils.getTokenAccounts(walletAddress);
+            // Save to cache
+            if (userTokenAccountsCache != null) {
+                userTokenAccountsCache.put(walletAddress, tokenAddresses);
+                log.info("Saved token addresses to cache for wallet: {}", walletAddress);
+            }
+        }
+
+        // Prepare the formatted list of tokens
         StringBuilder formattedList = new StringBuilder();
-        formattedList.append(String.format("%-20s %-10s %-15s %-15s %-15s %-15s %-15s %-15s %-15s\n", 
-                "Name", "Symbol", "Total Supply", "Current Price", "Market Cap", "Liquidity", "Age", "Volume", "Makers"));
-        formattedList.append("------------------------------------------------------------------------------------------\n");
+        formattedList.append("*Here is the list of your token holdings (Page " + (page + 1) + "):*\n\n");
+        
+        int totalTokens = tokenAddresses.size();
+        int totalPages = (int) Math.ceil((double) totalTokens / PAGE_SIZE);
+        int start = page * PAGE_SIZE;
+        int end = Math.min(start + PAGE_SIZE, totalTokens);
 
         for (int i = start; i < end; i++) {
-            Memecoin memecoin = memecoins.get(i);
-            Map<String, Object> details = solanaUtils.getMemecoinDetails(memecoin.getTokenAddress());
-            formattedList.append(String.format("%-20s %-10s %-15.2f %-15s %-15s %-15s %-15s %-15s %-15s\n", 
-                    memecoin.getName(), 
-                    memecoin.getSymbol(), 
-                    memecoin.getTotalSupply(), 
-                    details.get("currentPrice"), 
-                    details.get("marketCap"), 
-                    details.get("liquidity"), 
-                    details.get("age"), 
-                    details.get("volume"), 
-                    details.get("makers")));
+            formattedList.append("• `").append(tokenAddresses.get(i)).append("`\n");
         }
 
         // Create pagination buttons
         InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
-
-        List<InlineKeyboardButton> row = new ArrayList<>(); // Create a new row for buttons
+        List<InlineKeyboardButton> row = new ArrayList<>();
 
         if (page > 0) {
             // Previous page button
             InlineKeyboardButton prevButton = InlineKeyboardButton.builder()
-                    .text("Previous (Page " + (page + 1) + ")") // Show the current page number
+                    .text("⬅️ Page " + page + "")
                     .callbackData("page_" + (page - 1))
                     .build();
-            row.add(prevButton); // Add to the row
+            row.add(prevButton);
         }
 
         if (page < totalPages - 1) {
             // Next page button
             InlineKeyboardButton nextButton = InlineKeyboardButton.builder()
-                    .text("Next (Page " + (page + 1) + ")") // Show the next page number
+                    .text("Page " + (page + 2) + " ➡️")
                     .callbackData("page_" + (page + 1))
                     .build();
-            row.add(nextButton); // Add to the row
+            row.add(nextButton);
         }
 
-        buttons.add(row); // Add the row to the buttons list
-        markup.setKeyboard(buttons); // Set the keyboard
+        buttons.add(row);
+        markup.setKeyboard(buttons);
 
-        // Edit the loading message with the actual data
+        // Edit the original message with the actual data
         EditMessageText editMessage = new EditMessageText();
-        editMessage.setChatId(loadingMessage.getChatId().toString());
-        editMessage.setMessageId(loadingMessage.getMessageId());
+        editMessage.setChatId(originalMessage.getChatId().toString());
+        editMessage.setMessageId(originalMessage.getMessageId());
         editMessage.setText(formattedList.toString());
+        editMessage.setParseMode("Markdown");
         editMessage.setReplyMarkup(markup);
 
         try {
-            // Execute the edit message
             MessageUtils.getBotInstance().execute(editMessage);
         } catch (TelegramApiException e) {
             log.error("Error editing message: {}", e.getMessage());
         }
+
+        // After fetching token accounts, print cache again to see changes
+        log.info("Token accounts fetched for wallet: {}", walletAddress);
+        printCacheContents();
     }
 
     private List<Memecoin> getMemecoins() {
@@ -131,5 +188,20 @@ public class MemecoinList implements StateHandler {
             }
         }
         return new ArrayList<>(memecoinCache.values());
+    }
+
+    private void printCacheContents() {
+        Cache userTokenAccountsCache = cacheManager.getCache("userTokenAccounts");
+        if (userTokenAccountsCache != null) {
+            log.info("=== Current Cache Contents ===");
+            if (userTokenAccountsCache instanceof ConcurrentMapCache) {
+                ConcurrentMapCache concurrentCache = (ConcurrentMapCache) userTokenAccountsCache;
+                concurrentCache.getNativeCache().forEach((key, value) -> {
+                    log.info("Cache Key: {}", key);
+                    log.info("Cache Value: {}", value);
+                });
+            }
+            log.info("===========================");
+        }
     }
 }

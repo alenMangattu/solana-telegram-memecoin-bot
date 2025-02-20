@@ -3,6 +3,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
 
 import org.bitcoinj.core.Base58;
 import org.p2p.solanaj.core.Account;
@@ -531,5 +534,39 @@ public class SolanaUtils {
         }
 
         return details;
+    }
+
+    /**
+     * Fetches all token accounts for a given wallet address.
+     * @param walletAddress The wallet address to check.
+     * @return A list of token addresses.
+     */
+    public List<String> getTokenAccounts(String walletAddress) {
+        try {
+            // Fetch token accounts using SolanaCliUtils
+            JsonNode tokenAccountsResponse = solanaCliUtils.getWalletTokenAccounts(walletAddress);
+            List<String> tokenAddresses = new ArrayList<>();
+
+            // Check if the response has the "accounts" field and is an array
+            JsonNode tokenAccounts = tokenAccountsResponse.get("accounts");
+            if (tokenAccounts != null && tokenAccounts.isArray()) {
+                for (JsonNode account : tokenAccounts) {
+                    JsonNode addressNode = account.get("address");
+                    if (addressNode != null) {
+                        // Add the address to the list
+                        tokenAddresses.add(addressNode.asText()); // Get the address
+                    } else {
+                        log.warn("Address is null for account: {}", account);
+                    }
+                }
+            } else {
+                log.warn("Expected tokenAccounts to be an array, but got: {}", tokenAccountsResponse);
+            }
+
+            return tokenAddresses;
+        } catch (Exception e) {
+            log.error("Failed to fetch token accounts for wallet {}: {}", walletAddress, e.getMessage());
+            return Collections.emptyList();
+        }
     }
 }

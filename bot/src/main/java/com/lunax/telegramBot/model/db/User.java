@@ -65,4 +65,12 @@ public class User {
         this.wallets = wallets;
     }
 
+    public String getCurrentWalletAddress() {
+        return wallets.stream()
+                .filter(wallet -> wallet.getWalletId().equals(currentWallet))
+                .findFirst()
+                .map(Wallet::getWalletAddress)
+                .orElse(null);
+    }
+
 }
