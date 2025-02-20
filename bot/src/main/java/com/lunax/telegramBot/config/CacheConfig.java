@@ -19,7 +19,8 @@ public class CacheConfig {
             "stateData", 
             "userValidation",
             "userInfo",
-            "walletsByUser"
+            "walletsByUser",
+            "userTokenAccounts"
         );
     }
 }
