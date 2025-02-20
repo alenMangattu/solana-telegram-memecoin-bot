@@ -28,6 +28,9 @@ import org.p2p.solanaj.core.PublicKey;
 import org.p2p.solanaj.rpc.RpcClient;
 import org.p2p.solanaj.core.Account;
 import org.p2p.solanaj.core.Transaction;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.scheduling.annotation.Scheduled;
 
 @Slf4j
 @Component
@@ -728,6 +731,8 @@ public class SolanaCliUtils {
                     fullMetadata.set(entry.getKey(), entry.getValue());
                 }
             });
+        } else {
+            log.warn("Token list data is null for token address: {}", tokenAddress);
         }
         
         return fullMetadata;
@@ -764,13 +769,9 @@ public class SolanaCliUtils {
         return null;
     }
 
-    /**
-     * Gets information about a user's token account
-     * @param tokenAddress The token's address
-     * @param userAddress The user's wallet address
-     * @return JsonNode containing account information
-     */
+    @Cacheable(value = "userTokenAccounts", key = "#userAddress + '-' + #tokenAddress")
     public JsonNode getUserTokenAccount(String tokenAddress, String userAddress) throws Exception {
+        log.info("Fetching token account info for token: {} and user: {}", tokenAddress, userAddress);
         ProcessBuilder processBuilder = new ProcessBuilder(
             "spl-token",
             "account-info",
@@ -789,6 +790,13 @@ public class SolanaCliUtils {
         }
 
         return objectMapper.readTree(output);
+    }
+
+    // Add this method to automatically evict cache entries every 30 seconds
+    @Scheduled(fixedRate = 30000) // 30000 milliseconds = 30 seconds
+    @CacheEvict(value = "userTokenAccounts", allEntries = true)
+    public void evictUserTokenAccountCache() {
+        log.debug("Evicting user token account cache");
     }
 
     /**
