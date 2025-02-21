@@ -2832,3 +2832,31 @@
 {"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-19T19:57:14.126Z"}
 {"level":"info","message":"Connection initialized","timestamp":"2025-02-19T19:57:14.130Z"}
 {"level":"info","message":"Server running on port 3000","timestamp":"2025-02-19T19:57:14.182Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-21T19:11:08.978Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-21T19:11:08.981Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-21T19:11:09.015Z"}
+{"level":"info","message":"Creating memecoin: NELLO (NELLO) with supply 12123123132","timestamp":"2025-02-21T19:11:36.722Z"}
+{"level":"info","message":"Checking RPC connection...","timestamp":"2025-02-21T19:11:36.724Z"}
+{"feature-set":1725507508,"level":"info","message":"Connected to Solana node version:","solana-core":"2.1.13","timestamp":"2025-02-21T19:11:37.099Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/25f92568-fc25-42dd-8183-93e799a1227a.json","timestamp":"2025-02-21T19:11:37.103Z"}
+{"level":"info","message":"Keypair saved at: /home/computer/.config/solana/temp/25f92568-fc25-42dd-8183-93e799a1227a.json","timestamp":"2025-02-21T19:11:37.103Z"}
+{"level":"info","message":"Attempting to create token (3 retries left)...","timestamp":"2025-02-21T19:11:37.104Z"}
+{"level":"info","message":"Update: 🏗️ Creating token...","timestamp":"2025-02-21T19:11:37.105Z"}
+{"level":"info","message":"Update: Token created with address: Gau5JDCeaoqER3wtgXrK31SDpZeNAxm2Sgmjc9Beyuig","timestamp":"2025-02-21T19:11:39.780Z"}
+{"level":"info","message":"Token created with address: Gau5JDCeaoqER3wtgXrK31SDpZeNAxm2Sgmjc9Beyuig","timestamp":"2025-02-21T19:11:39.852Z"}
+{"level":"info","message":"Update: 🎨 Creating metadata...","timestamp":"2025-02-21T19:11:39.852Z"}
+{"level":"info","message":"Creating metadata attempt 1/5","timestamp":"2025-02-21T19:11:40.044Z"}
+{"level":"info","message":"Update: Creating metadata attempt 1/5","timestamp":"2025-02-21T19:11:40.044Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-21T19:11:40.127Z"}
+{"level":"info","message":"Transaction sent with signature: 4BEUxdTWYTJRcALuVMVRaKfdpUEo9CsUeBfF6NK7k1w3cwTso22tJjA2yK3jpEQRPysPyJpFFXHWCr9KQ7F8Ur4F","timestamp":"2025-02-21T19:11:40.449Z"}
+{"level":"info","message":"Confirming transaction 4BEUxdTWYTJRcALuVMVRaKfdpUEo9CsUeBfF6NK7k1w3cwTso22tJjA2yK3jpEQRPysPyJpFFXHWCr9KQ7F8Ur4F","timestamp":"2025-02-21T19:11:40.452Z"}
+{"level":"info","message":"Transaction 4BEUxdTWYTJRcALuVMVRaKfdpUEo9CsUeBfF6NK7k1w3cwTso22tJjA2yK3jpEQRPysPyJpFFXHWCr9KQ7F8Ur4F confirmed successfully","timestamp":"2025-02-21T19:11:41.014Z"}
+{"level":"info","message":"Metadata transaction sent: 4BEUxdTWYTJRcALuVMVRaKfdpUEo9CsUeBfF6NK7k1w3cwTso22tJjA2yK3jpEQRPysPyJpFFXHWCr9KQ7F8Ur4F","timestamp":"2025-02-21T19:11:41.023Z"}
+{"level":"info","message":"Update: Metadata transaction sent: 4BEUxdTWYTJRcALuVMVRaKfdpUEo9CsUeBfF6NK7k1w3cwTso22tJjA2yK3jpEQRPysPyJpFFXHWCr9KQ7F8Ur4F","timestamp":"2025-02-21T19:11:41.023Z"}
+{"level":"info","message":"Metadata created successfully","timestamp":"2025-02-21T19:11:41.139Z"}
+{"level":"info","message":"Update: 💰 Minting initial supply...","timestamp":"2025-02-21T19:11:41.139Z"}
+{"level":"info","message":"Minted 12123123132 tokens to 38j4AqPg5ZnAn1KzYF3Xsmje3a8qysCBkFwsnXGFfdd4","timestamp":"2025-02-21T19:11:45.702Z"}
+{"level":"info","message":"Update: 🔒 Revoking mint authority...","timestamp":"2025-02-21T19:11:45.702Z"}
+{"level":"info","message":"Mint authority revoked","timestamp":"2025-02-21T19:11:48.989Z"}
+{"level":"info","message":"Token created successfully with address: Gau5JDCeaoqER3wtgXrK31SDpZeNAxm2Sgmjc9Beyuig","timestamp":"2025-02-21T19:11:48.989Z"}
+{"level":"info","message":"Cleaned up keypair file: /home/computer/.config/solana/temp/25f92568-fc25-42dd-8183-93e799a1227a.json","timestamp":"2025-02-21T19:11:48.991Z"}

@@ -1,14 +1,17 @@
 package com.lunax.telegramBot.component.Buttons;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import com.lunax.telegramBot.event.NavigationEvent;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.lunax.telegramBot.component.navigation.components.Home;
 import com.lunax.telegramBot.model.session.ChatState;
 import com.lunax.telegramBot.service.StateService;
 import com.lunax.telegramBot.utils.components.ButtonHandler;
+import com.lunax.telegramBot.utils.components.MessageUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -20,17 +23,45 @@ public class BacktoHome implements ButtonHandler {
     private StateService stateService;
 
     @Autowired
-    private ApplicationEventPublisher eventPublisher;
+    private Home home;
 
     @Override
     public void handleCallback(Update update) {
         Long telegramId = update.getCallbackQuery().getFrom().getId();
-        // Set state to IDLE to trigger home page
+        Long chatId = update.getCallbackQuery().getMessage().getChatId();
+        
+        // Delete the current message
+        if (update.hasCallbackQuery()) {
+            DeleteMessage deleteMessage = new DeleteMessage();
+            deleteMessage.setChatId(chatId.toString());
+            deleteMessage.setMessageId(update.getCallbackQuery().getMessage().getMessageId());
+            try {
+                MessageUtils.getBotInstance().execute(deleteMessage);
+            } catch (TelegramApiException e) {
+                log.error("Error deleting message: {}", e.getMessage());
+            }
+        }
+
+        // Delete keyboard message if it exists in state data
+        ObjectNode stateData = stateService.getStateData(telegramId);
+        if (stateData != null && stateData.has("tokenKeyboardMessageId")) {
+            Integer keyboardMessageId = stateData.get("tokenKeyboardMessageId").asInt();
+            DeleteMessage deleteKeyboardMessage = new DeleteMessage();
+            deleteKeyboardMessage.setChatId(chatId.toString());
+            deleteKeyboardMessage.setMessageId(keyboardMessageId);
+            try {
+                MessageUtils.getBotInstance().execute(deleteKeyboardMessage);
+            } catch (TelegramApiException e) {
+                log.error("Error deleting keyboard message: {}", e.getMessage());
+            }
+        }
+
+        // Set state to IDLE and clear state data
         stateService.setState(telegramId, ChatState.IDLE);
-        // Clear any existing state data
         stateService.clearStateData(telegramId);
 
-        eventPublisher.publishEvent(new NavigationEvent(this, update, "HOME"));
+        // Send the home page directly
+        home.executeVoid(update);
     }
 
     @Override

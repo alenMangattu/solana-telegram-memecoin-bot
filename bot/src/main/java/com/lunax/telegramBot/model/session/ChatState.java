@@ -46,7 +46,10 @@ public enum ChatState {
     AWAITING_REVOKE_MINT_AUTHORITY_CONFIRMATION, // New state for revoking mint authority
     AWAITING_REVOKE_FREEZE_AUTHORITY_CONFIRMATION, // New state for revoking freeze authority
     
-    ERROR_STATE;        // Error occurred during processing
+    ERROR_STATE,        // Error occurred during processing
+    
+    // Add new state for token selection
+    AWAITING_TOKEN_SELECTION;    // Waiting for token selection from keyboard
 
     /**
      * Check if the current state is a terminal state
