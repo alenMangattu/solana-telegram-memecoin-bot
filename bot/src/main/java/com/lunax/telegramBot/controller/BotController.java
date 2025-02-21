@@ -136,6 +136,14 @@ public class BotController extends TelegramLongPollingBot {
                         createMemeCoin.handleMessage(update);
                     } else if (currentState.isLiquidityAddition()) {
                         addLiquidity.handleMessage(update);
+                    } else if (currentState == ChatState.AWAITING_TOKEN_SELECTION) {
+
+                        // Add handler for token selection
+                        if (currentState == ChatState.AWAITING_TOKEN_SELECTION) {
+                            MessageUtils.sendMessage(update, "Selected token: " + messageText);
+                            return;
+                        }
+
                     } else if (message.hasText()) {
                         log.info("Received: {}", messageText);
                     }
@@ -147,6 +155,7 @@ public class BotController extends TelegramLongPollingBot {
                         createMemeCoin.handleMessage(update);
                     }
                 }
+
             }
         });
     }
