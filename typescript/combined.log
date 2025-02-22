@@ -2860,3 +2860,673 @@
 {"level":"info","message":"Mint authority revoked","timestamp":"2025-02-21T19:11:48.989Z"}
 {"level":"info","message":"Token created successfully with address: Gau5JDCeaoqER3wtgXrK31SDpZeNAxm2Sgmjc9Beyuig","timestamp":"2025-02-21T19:11:48.989Z"}
 {"level":"info","message":"Cleaned up keypair file: /home/computer/.config/solana/temp/25f92568-fc25-42dd-8183-93e799a1227a.json","timestamp":"2025-02-21T19:11:48.991Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-22T11:51:01.947Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-22T11:51:01.950Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-22T11:51:01.982Z"}
+{"level":"info","message":"Creating memecoin: Isk (LOL) with supply 2838833883833","timestamp":"2025-02-22T11:54:02.576Z"}
+{"level":"info","message":"Checking RPC connection...","timestamp":"2025-02-22T11:54:02.577Z"}
+{"feature-set":1725507508,"level":"info","message":"Connected to Solana node version:","solana-core":"2.1.13","timestamp":"2025-02-22T11:54:02.960Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/ec74667e-5271-49af-9006-f2f7a7e1ffac.json","timestamp":"2025-02-22T11:54:02.966Z"}
+{"level":"info","message":"Keypair saved at: /home/computer/.config/solana/temp/ec74667e-5271-49af-9006-f2f7a7e1ffac.json","timestamp":"2025-02-22T11:54:02.967Z"}
+{"level":"info","message":"Attempting to create token (3 retries left)...","timestamp":"2025-02-22T11:54:02.968Z"}
+{"level":"info","message":"Update: 🏗️ Creating token...","timestamp":"2025-02-22T11:54:02.969Z"}
+{"level":"info","message":"Update: Token created with address: 7i55TVniGFqXiKT881icLdNjeQE46cv3aMQA9xCfCnoN","timestamp":"2025-02-22T11:54:05.215Z"}
+{"level":"info","message":"Token created with address: 7i55TVniGFqXiKT881icLdNjeQE46cv3aMQA9xCfCnoN","timestamp":"2025-02-22T11:54:05.298Z"}
+{"level":"info","message":"Update: 🎨 Creating metadata...","timestamp":"2025-02-22T11:54:05.298Z"}
+{"level":"info","message":"Creating metadata attempt 1/5","timestamp":"2025-02-22T11:54:05.706Z"}
+{"level":"info","message":"Update: Creating metadata attempt 1/5","timestamp":"2025-02-22T11:54:05.708Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-22T11:54:05.837Z"}
+{"level":"info","message":"Transaction sent with signature: 4yYbLWLgv65hXE1mgeLz5KgKHN5yJWQypskLBy65ZDjnkJNb5EoRVmymLTMRP3MHWYtezgKUU9MKg4M7EpoGRH5i","timestamp":"2025-02-22T11:54:06.179Z"}
+{"level":"info","message":"Confirming transaction 4yYbLWLgv65hXE1mgeLz5KgKHN5yJWQypskLBy65ZDjnkJNb5EoRVmymLTMRP3MHWYtezgKUU9MKg4M7EpoGRH5i","timestamp":"2025-02-22T11:54:06.180Z"}
+{"level":"info","message":"Transaction 4yYbLWLgv65hXE1mgeLz5KgKHN5yJWQypskLBy65ZDjnkJNb5EoRVmymLTMRP3MHWYtezgKUU9MKg4M7EpoGRH5i confirmed successfully","timestamp":"2025-02-22T11:54:09.698Z"}
+{"level":"info","message":"Metadata transaction sent: 4yYbLWLgv65hXE1mgeLz5KgKHN5yJWQypskLBy65ZDjnkJNb5EoRVmymLTMRP3MHWYtezgKUU9MKg4M7EpoGRH5i","timestamp":"2025-02-22T11:54:09.699Z"}
+{"level":"info","message":"Update: Metadata transaction sent: 4yYbLWLgv65hXE1mgeLz5KgKHN5yJWQypskLBy65ZDjnkJNb5EoRVmymLTMRP3MHWYtezgKUU9MKg4M7EpoGRH5i","timestamp":"2025-02-22T11:54:09.699Z"}
+{"level":"info","message":"Metadata created successfully","timestamp":"2025-02-22T11:54:09.775Z"}
+{"level":"info","message":"Update: 💰 Minting initial supply...","timestamp":"2025-02-22T11:54:09.777Z"}
+{"level":"info","message":"Minted 2838833883833 tokens to Ry28QGZxeTxAXqkzePzLbeMr2ttELiJEahvpbE1HTTQ","timestamp":"2025-02-22T11:54:13.622Z"}
+{"level":"info","message":"Update: 🔒 Revoking mint authority...","timestamp":"2025-02-22T11:54:13.622Z"}
+{"level":"info","message":"Mint authority revoked","timestamp":"2025-02-22T11:54:15.540Z"}
+{"level":"info","message":"Token created successfully with address: 7i55TVniGFqXiKT881icLdNjeQE46cv3aMQA9xCfCnoN","timestamp":"2025-02-22T11:54:15.541Z"}
+{"level":"info","message":"Cleaned up keypair file: /home/computer/.config/solana/temp/ec74667e-5271-49af-9006-f2f7a7e1ffac.json","timestamp":"2025-02-22T11:54:15.543Z"}
+{"level":"info","message":"Creating memecoin: Cool clon (NIHAHS) with supply 38388383","timestamp":"2025-02-22T12:04:10.564Z"}
+{"level":"info","message":"Checking RPC connection...","timestamp":"2025-02-22T12:04:10.570Z"}
+{"feature-set":1725507508,"level":"info","message":"Connected to Solana node version:","solana-core":"2.1.13","timestamp":"2025-02-22T12:04:10.907Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/567eb6fb-0d6b-40ba-b1f3-ceb1d3cd2126.json","timestamp":"2025-02-22T12:04:10.909Z"}
+{"level":"info","message":"Keypair saved at: /home/computer/.config/solana/temp/567eb6fb-0d6b-40ba-b1f3-ceb1d3cd2126.json","timestamp":"2025-02-22T12:04:10.909Z"}
+{"level":"info","message":"Attempting to create token (3 retries left)...","timestamp":"2025-02-22T12:04:10.909Z"}
+{"level":"info","message":"Update: 🏗️ Creating token...","timestamp":"2025-02-22T12:04:10.910Z"}
+{"level":"info","message":"Update: Token created with address: HgqS1tnBuKW9NL6DTnTYdhQuVdzXSbgWPAKNisLUbDte","timestamp":"2025-02-22T12:04:16.463Z"}
+{"level":"info","message":"Token created with address: HgqS1tnBuKW9NL6DTnTYdhQuVdzXSbgWPAKNisLUbDte","timestamp":"2025-02-22T12:04:16.575Z"}
+{"level":"info","message":"Update: 🎨 Creating metadata...","timestamp":"2025-02-22T12:04:16.577Z"}
+{"level":"info","message":"Creating metadata attempt 1/5","timestamp":"2025-02-22T12:04:16.670Z"}
+{"level":"info","message":"Update: Creating metadata attempt 1/5","timestamp":"2025-02-22T12:04:16.670Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-22T12:04:16.763Z"}
+{"level":"info","message":"Transaction sent with signature: 4YBuVJxX6VeFhvbXTHTrbiz421qtCkRLPdVessrZeqdfc4quZ816DNHnDfXJ5BoPRVd7b2acYBPJdzJRXEykswH9","timestamp":"2025-02-22T12:04:17.078Z"}
+{"level":"info","message":"Confirming transaction 4YBuVJxX6VeFhvbXTHTrbiz421qtCkRLPdVessrZeqdfc4quZ816DNHnDfXJ5BoPRVd7b2acYBPJdzJRXEykswH9","timestamp":"2025-02-22T12:04:17.078Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-22T12:11:38.149Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-22T12:11:38.154Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-22T12:11:38.230Z"}
+{"level":"info","message":"Creating memecoin: Jjjytrf (GFDDFF) with supply 5432224567","timestamp":"2025-02-22T12:12:30.786Z"}
+{"level":"info","message":"Checking RPC connection...","timestamp":"2025-02-22T12:12:30.787Z"}
+{"feature-set":1725507508,"level":"info","message":"Connected to Solana node version:","solana-core":"2.1.13","timestamp":"2025-02-22T12:12:31.199Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/123a7bd4-82a3-4b81-942c-c9e621129d9c.json","timestamp":"2025-02-22T12:12:31.209Z"}
+{"level":"info","message":"Keypair saved at: /home/computer/.config/solana/temp/123a7bd4-82a3-4b81-942c-c9e621129d9c.json","timestamp":"2025-02-22T12:12:31.210Z"}
+{"level":"info","message":"Attempting to create token (3 retries left)...","timestamp":"2025-02-22T12:12:31.210Z"}
+{"level":"info","message":"Update: 🏗️ Creating token...","timestamp":"2025-02-22T12:12:31.211Z"}
+{"level":"info","message":"Update: Token created with address: 5eReJ8DuW5YQDVTymjmoK1hSpiC6SPsG8r3VqLw4WsWm","timestamp":"2025-02-22T12:12:33.327Z"}
+{"level":"info","message":"Token created with address: 5eReJ8DuW5YQDVTymjmoK1hSpiC6SPsG8r3VqLw4WsWm","timestamp":"2025-02-22T12:12:33.404Z"}
+{"level":"info","message":"Update: 🎨 Creating metadata...","timestamp":"2025-02-22T12:12:33.405Z"}
+{"level":"info","message":"Creating metadata attempt 1/5","timestamp":"2025-02-22T12:12:33.597Z"}
+{"level":"info","message":"Update: Creating metadata attempt 1/5","timestamp":"2025-02-22T12:12:33.597Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-22T12:12:33.676Z"}
+{"level":"info","message":"Transaction sent with signature: 2FkcrDtY9fL2ExySkMND28soAZNDY968XdUxdykLPbhnxUu6HodEy85YKCPw99ngt6frTGqPVuPH1178UJMyu5jS","timestamp":"2025-02-22T12:12:34.072Z"}
+{"level":"info","message":"Confirming transaction 2FkcrDtY9fL2ExySkMND28soAZNDY968XdUxdykLPbhnxUu6HodEy85YKCPw99ngt6frTGqPVuPH1178UJMyu5jS","timestamp":"2025-02-22T12:12:34.074Z"}
+{"level":"info","message":"Transaction 2FkcrDtY9fL2ExySkMND28soAZNDY968XdUxdykLPbhnxUu6HodEy85YKCPw99ngt6frTGqPVuPH1178UJMyu5jS confirmed successfully","timestamp":"2025-02-22T12:12:34.758Z"}
+{"level":"info","message":"Metadata transaction sent: 2FkcrDtY9fL2ExySkMND28soAZNDY968XdUxdykLPbhnxUu6HodEy85YKCPw99ngt6frTGqPVuPH1178UJMyu5jS","timestamp":"2025-02-22T12:12:34.759Z"}
+{"level":"info","message":"Update: Metadata transaction sent: 2FkcrDtY9fL2ExySkMND28soAZNDY968XdUxdykLPbhnxUu6HodEy85YKCPw99ngt6frTGqPVuPH1178UJMyu5jS","timestamp":"2025-02-22T12:12:34.760Z"}
+{"level":"info","message":"Metadata created successfully","timestamp":"2025-02-22T12:12:34.824Z"}
+{"level":"info","message":"Update: 💰 Minting initial supply...","timestamp":"2025-02-22T12:12:34.824Z"}
+{"level":"info","message":"Minted 5432224567 tokens to FS6LHVUgUqh5DWby5ZGcNAma28srvc6L1rPYSk8fDqsj","timestamp":"2025-02-22T12:12:38.953Z"}
+{"level":"info","message":"Update: 🔒 Revoking mint authority...","timestamp":"2025-02-22T12:12:38.953Z"}
+{"level":"info","message":"Mint authority revoked","timestamp":"2025-02-22T12:12:41.042Z"}
+{"level":"info","message":"Token created successfully with address: 5eReJ8DuW5YQDVTymjmoK1hSpiC6SPsG8r3VqLw4WsWm","timestamp":"2025-02-22T12:12:41.042Z"}
+{"level":"info","message":"Cleaned up keypair file: /home/computer/.config/solana/temp/123a7bd4-82a3-4b81-942c-c9e621129d9c.json","timestamp":"2025-02-22T12:12:41.044Z"}
+{"level":"info","message":"Creating memecoin: Idklol (WORKIIDJ) with supply 283773617181","timestamp":"2025-02-22T12:17:14.503Z"}
+{"level":"info","message":"Checking RPC connection...","timestamp":"2025-02-22T12:17:14.504Z"}
+{"feature-set":1725507508,"level":"info","message":"Connected to Solana node version:","solana-core":"2.1.13","timestamp":"2025-02-22T12:17:14.847Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/1d2b6485-77a7-40aa-879d-d5f8a9f21cbb.json","timestamp":"2025-02-22T12:17:14.849Z"}
+{"level":"info","message":"Keypair saved at: /home/computer/.config/solana/temp/1d2b6485-77a7-40aa-879d-d5f8a9f21cbb.json","timestamp":"2025-02-22T12:17:14.849Z"}
+{"level":"info","message":"Attempting to create token (3 retries left)...","timestamp":"2025-02-22T12:17:14.849Z"}
+{"level":"info","message":"Update: 🏗️ Creating token...","timestamp":"2025-02-22T12:17:14.851Z"}
+{"level":"info","message":"Update: Token created with address: 9CXNzvjmSdZi7ADTKXHgkdLXkPJHa8Yni4iNUP7zf5KH","timestamp":"2025-02-22T12:17:16.733Z"}
+{"level":"info","message":"Token created with address: 9CXNzvjmSdZi7ADTKXHgkdLXkPJHa8Yni4iNUP7zf5KH","timestamp":"2025-02-22T12:17:16.847Z"}
+{"level":"info","message":"Update: 🎨 Creating metadata...","timestamp":"2025-02-22T12:17:16.850Z"}
+{"level":"info","message":"Creating metadata attempt 1/5","timestamp":"2025-02-22T12:17:16.947Z"}
+{"level":"info","message":"Update: Creating metadata attempt 1/5","timestamp":"2025-02-22T12:17:16.947Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-22T12:17:17.089Z"}
+{"level":"info","message":"Transaction sent with signature: 4FisZSC6RtiyL2irutmApKQiB5SQF9CX6ZjUgcCcqWaHxNJWPTspXu9NUctUDHxf6NkmzfS4FDb7dxHz6ukSqGLq","timestamp":"2025-02-22T12:17:17.429Z"}
+{"level":"info","message":"Confirming transaction 4FisZSC6RtiyL2irutmApKQiB5SQF9CX6ZjUgcCcqWaHxNJWPTspXu9NUctUDHxf6NkmzfS4FDb7dxHz6ukSqGLq","timestamp":"2025-02-22T12:17:17.430Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-22T12:18:37.559Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-22T12:18:37.563Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-22T12:18:37.616Z"}
+{"level":"info","message":"Creating memecoin: Nihsheh (BDJEJEK) with supply 8288","timestamp":"2025-02-22T12:19:35.264Z"}
+{"level":"info","message":"Checking RPC connection...","timestamp":"2025-02-22T12:19:35.267Z"}
+{"feature-set":1725507508,"level":"info","message":"Connected to Solana node version:","solana-core":"2.1.13","timestamp":"2025-02-22T12:19:35.677Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/d48db5f3-e1b9-4fe8-93db-1a945f30b62b.json","timestamp":"2025-02-22T12:19:35.682Z"}
+{"level":"info","message":"Keypair saved at: /home/computer/.config/solana/temp/d48db5f3-e1b9-4fe8-93db-1a945f30b62b.json","timestamp":"2025-02-22T12:19:35.683Z"}
+{"level":"info","message":"Attempting to create token (3 retries left)...","timestamp":"2025-02-22T12:19:35.683Z"}
+{"level":"info","message":"Update: 🏗️ Creating token...","timestamp":"2025-02-22T12:19:35.684Z"}
+{"level":"info","message":"Update: Token created with address: DSJYJzMrsijW7pCQTQCgH4h6qMAHwh61bPYTyX832qZ5","timestamp":"2025-02-22T12:19:37.718Z"}
+{"level":"info","message":"Token created with address: DSJYJzMrsijW7pCQTQCgH4h6qMAHwh61bPYTyX832qZ5","timestamp":"2025-02-22T12:19:37.812Z"}
+{"level":"info","message":"Update: 🎨 Creating metadata...","timestamp":"2025-02-22T12:19:37.812Z"}
+{"level":"info","message":"Creating metadata attempt 1/5","timestamp":"2025-02-22T12:19:38.218Z"}
+{"level":"info","message":"Update: Creating metadata attempt 1/5","timestamp":"2025-02-22T12:19:38.220Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-22T12:19:38.353Z"}
+{"level":"info","message":"Transaction sent with signature: 2TLZSfJdirBUrpMxYs6Dgw9xatnRypfXnEsQaxze8yQnvXz6XuxEkFnnuonHMkTC4hB4b1mBxqaRNKpJ4EyQBKbA","timestamp":"2025-02-22T12:19:38.754Z"}
+{"level":"info","message":"Confirming transaction 2TLZSfJdirBUrpMxYs6Dgw9xatnRypfXnEsQaxze8yQnvXz6XuxEkFnnuonHMkTC4hB4b1mBxqaRNKpJ4EyQBKbA","timestamp":"2025-02-22T12:19:38.757Z"}
+{"level":"info","message":"Attempt 1: No status yet, waiting...","timestamp":"2025-02-22T12:19:38.883Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-22T12:46:58.272Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-22T12:46:58.274Z"}
+{"level":"info","message":"Helius RPC interface initialized","timestamp":"2025-02-22T12:46:58.276Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-22T12:46:58.305Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-22T12:47:51.679Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-22T12:47:51.681Z"}
+{"level":"info","message":"Helius RPC interface initialized","timestamp":"2025-02-22T12:47:51.683Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-22T12:47:51.719Z"}
+{"level":"info","message":"Creating memecoin: Jfjfjf (BAHBRUH) with supply 38388383","timestamp":"2025-02-22T12:49:59.713Z"}
+{"level":"info","message":"Checking RPC connection...","timestamp":"2025-02-22T12:49:59.714Z"}
+{"feature-set":1725507508,"level":"info","message":"Connected to Solana node version:","solana-core":"2.1.13","timestamp":"2025-02-22T12:50:00.119Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/073778b5-4a0d-4206-96ec-39256aebee7a.json","timestamp":"2025-02-22T12:50:00.126Z"}
+{"level":"info","message":"Keypair saved at: /home/computer/.config/solana/temp/073778b5-4a0d-4206-96ec-39256aebee7a.json","timestamp":"2025-02-22T12:50:00.126Z"}
+{"level":"info","message":"Attempting to create token (3 retries left)...","timestamp":"2025-02-22T12:50:00.126Z"}
+{"level":"info","message":"Update: 🏗️ Creating token...","timestamp":"2025-02-22T12:50:00.127Z"}
+{"level":"info","message":"Update: Token created with address: Eo26wmZ6Yqco2ecksQQPMvGT5BR9AutCwoRNbsYkXjKB","timestamp":"2025-02-22T12:50:04.091Z"}
+{"level":"info","message":"Token created with address: Eo26wmZ6Yqco2ecksQQPMvGT5BR9AutCwoRNbsYkXjKB","timestamp":"2025-02-22T12:50:04.167Z"}
+{"level":"info","message":"Update: 🎨 Creating metadata...","timestamp":"2025-02-22T12:50:04.171Z"}
+{"level":"info","message":"Creating metadata attempt 1/5","timestamp":"2025-02-22T12:50:04.390Z"}
+{"level":"info","message":"Update: Creating metadata attempt 1/5","timestamp":"2025-02-22T12:50:04.390Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-22T12:50:04.472Z"}
+{"level":"info","message":"Transaction sent with signature: 4qnsoaxNEQsEssPi8Hs4uFqL6ZFjRjWGfbBK5Tk6PWs4RqZM8sYzw1FQc34KpcxRKuhjVgK5Diiv81ZVmamGgR9H","timestamp":"2025-02-22T12:50:04.834Z"}
+{"level":"info","message":"Confirming transaction 4qnsoaxNEQsEssPi8Hs4uFqL6ZFjRjWGfbBK5Tk6PWs4RqZM8sYzw1FQc34KpcxRKuhjVgK5Diiv81ZVmamGgR9H","timestamp":"2025-02-22T12:50:04.836Z"}
+{"level":"info","message":"Attempt 1: No status yet from Helius, waiting...","timestamp":"2025-02-22T12:50:06.454Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-22T12:50:31.490Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-22T12:50:31.492Z"}
+{"level":"info","message":"Helius RPC interface initialized","timestamp":"2025-02-22T12:50:31.495Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-22T12:50:31.524Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-22T12:51:20.675Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-22T12:51:20.677Z"}
+{"level":"info","message":"Helius RPC interface initialized","timestamp":"2025-02-22T12:51:20.679Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-22T12:51:20.720Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-22T12:51:21.507Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-22T12:51:21.510Z"}
+{"level":"info","message":"Helius RPC interface initialized","timestamp":"2025-02-22T12:51:21.511Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-22T12:51:21.545Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-22T12:53:15.452Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-22T12:53:15.454Z"}
+{"level":"info","message":"Helius RPC interface initialized","timestamp":"2025-02-22T12:53:15.456Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-22T12:53:15.494Z"}
+{"level":"info","message":"Creating memecoin: Nice lblock (BLOCKKK) with supply 456788776554443","timestamp":"2025-02-22T12:54:23.820Z"}
+{"level":"info","message":"Checking RPC connection...","timestamp":"2025-02-22T12:54:23.821Z"}
+{"feature-set":1725507508,"level":"info","message":"Connected to Solana node version:","solana-core":"2.1.13","timestamp":"2025-02-22T12:54:24.153Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/0a68ef5a-b370-4912-b43e-7a9346262e6b.json","timestamp":"2025-02-22T12:54:24.157Z"}
+{"level":"info","message":"Keypair saved at: /home/computer/.config/solana/temp/0a68ef5a-b370-4912-b43e-7a9346262e6b.json","timestamp":"2025-02-22T12:54:24.157Z"}
+{"level":"info","message":"Attempting to create token (3 retries left)...","timestamp":"2025-02-22T12:54:24.157Z"}
+{"level":"info","message":"Update: 🏗️ Creating token...","timestamp":"2025-02-22T12:54:24.159Z"}
+{"level":"info","message":"Update: Token created with address: 9jTYFh7U6vXyZn2RGL4uUEEEZ49BF8FAx7bsJ23QgW4p","timestamp":"2025-02-22T12:54:26.028Z"}
+{"level":"info","message":"Token created with address: 9jTYFh7U6vXyZn2RGL4uUEEEZ49BF8FAx7bsJ23QgW4p","timestamp":"2025-02-22T12:54:26.149Z"}
+{"level":"info","message":"Update: 🎨 Creating metadata...","timestamp":"2025-02-22T12:54:26.149Z"}
+{"level":"info","message":"Creating metadata attempt 1/5","timestamp":"2025-02-22T12:54:26.349Z"}
+{"level":"info","message":"Update: Creating metadata attempt 1/5","timestamp":"2025-02-22T12:54:26.355Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-22T12:54:26.448Z"}
+{"level":"info","message":"Transaction sent with signature: 3rideYCfafKCNuYvmpCvAX82mFKZvwuRyeUHkbBahYaPud5MzTGpxvwS7GkwrC25YA1tE2DCpbHCPJ2BYZrD1Ta1","timestamp":"2025-02-22T12:54:26.765Z"}
+{"level":"info","message":"Confirming transaction 3rideYCfafKCNuYvmpCvAX82mFKZvwuRyeUHkbBahYaPud5MzTGpxvwS7GkwrC25YA1tE2DCpbHCPJ2BYZrD1Ta1","timestamp":"2025-02-22T12:54:26.766Z"}
+{"level":"info","message":"Attempt 1: No status yet from Helius, waiting...","timestamp":"2025-02-22T12:54:27.462Z"}
+{"level":"info","message":"Attempt 2: No status yet from Helius, waiting...","timestamp":"2025-02-22T12:54:27.831Z"}
+{"level":"info","message":"Attempt 3: No status yet from Helius, waiting...","timestamp":"2025-02-22T12:54:28.122Z"}
+{"level":"info","message":"Attempt 4: No status yet from Helius, waiting...","timestamp":"2025-02-22T12:54:28.441Z"}
+{"level":"info","message":"Attempt 5: No status yet from Helius, waiting...","timestamp":"2025-02-22T12:54:28.790Z"}
+{"level":"info","message":"Attempt 6: No status yet from Helius, waiting...","timestamp":"2025-02-22T12:54:29.138Z"}
+{"level":"info","message":"Attempt 7: No status yet from Helius, waiting...","timestamp":"2025-02-22T12:54:29.409Z"}
+{"level":"info","message":"Attempt 8: No status yet from Helius, waiting...","timestamp":"2025-02-22T12:54:29.742Z"}
+{"level":"info","message":"Attempt 9: No status yet from Helius, waiting...","timestamp":"2025-02-22T12:54:30.115Z"}
+{"level":"info","message":"Attempt 10: No status yet from Helius, waiting...","timestamp":"2025-02-22T12:54:30.596Z"}
+{"level":"error","message":"Transaction confirmation failed: Transaction 3rideYCfafKCNuYvmpCvAX82mFKZvwuRyeUHkbBahYaPud5MzTGpxvwS7GkwrC25YA1tE2DCpbHCPJ2BYZrD1Ta1 timed out after 60 seconds","timestamp":"2025-02-22T12:54:30.597Z"}
+{"level":"info","message":"Update: Transaction failed: Transaction 3rideYCfafKCNuYvmpCvAX82mFKZvwuRyeUHkbBahYaPud5MzTGpxvwS7GkwrC25YA1tE2DCpbHCPJ2BYZrD1Ta1 timed out after 60 seconds","timestamp":"2025-02-22T12:54:30.597Z"}
+{"error":"Transaction 3rideYCfafKCNuYvmpCvAX82mFKZvwuRyeUHkbBahYaPud5MzTGpxvwS7GkwrC25YA1tE2DCpbHCPJ2BYZrD1Ta1 timed out after 60 seconds","level":"error","message":"Metadata creation attempt 1 failed:","stack":"TransactionTimeoutError: Transaction 3rideYCfafKCNuYvmpCvAX82mFKZvwuRyeUHkbBahYaPud5MzTGpxvwS7GkwrC25YA1tE2DCpbHCPJ2BYZrD1Ta1 timed out after 60 seconds\n    at new TransactionTimeoutError (/home/computer/dev/java/lunax/typescript/utils/solanaUtils.ts:28:9)\n    at <anonymous> (/home/computer/dev/java/lunax/typescript/utils/solanaUtils.ts:572:19)\n    at processTicksAndRejections (native:7:39)","timestamp":"2025-02-22T12:54:30.805Z"}
+{"level":"info","message":"Waiting 5000ms before retry 2/5...","timestamp":"2025-02-22T12:54:30.806Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-22T12:55:35.599Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-22T12:55:35.605Z"}
+{"level":"info","message":"Helius RPC interface initialized","timestamp":"2025-02-22T12:55:35.609Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-22T12:55:35.665Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-22T12:55:36.948Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-22T12:55:36.951Z"}
+{"level":"info","message":"Helius RPC interface initialized","timestamp":"2025-02-22T12:55:36.953Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-22T12:55:36.993Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-22T12:55:38.333Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-22T12:55:38.336Z"}
+{"level":"info","message":"Helius RPC interface initialized","timestamp":"2025-02-22T12:55:38.337Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-22T12:55:38.376Z"}
+{"level":"info","message":"Creating memecoin: Gggfg (HUTYH) with supply 4465433865","timestamp":"2025-02-22T12:56:23.802Z"}
+{"level":"info","message":"Checking RPC connection...","timestamp":"2025-02-22T12:56:23.803Z"}
+{"feature-set":1725507508,"level":"info","message":"Connected to Solana node version:","solana-core":"2.1.13","timestamp":"2025-02-22T12:56:24.239Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/571e51e8-2f5c-453e-8f76-8094e9d1e38b.json","timestamp":"2025-02-22T12:56:24.257Z"}
+{"level":"info","message":"Keypair saved at: /home/computer/.config/solana/temp/571e51e8-2f5c-453e-8f76-8094e9d1e38b.json","timestamp":"2025-02-22T12:56:24.257Z"}
+{"level":"info","message":"Attempting to create token (3 retries left)...","timestamp":"2025-02-22T12:56:24.258Z"}
+{"level":"info","message":"Update: 🏗️ Creating token...","timestamp":"2025-02-22T12:56:24.260Z"}
+{"level":"info","message":"Update: Token created with address: 74UC2Sc9VMDYpYKbKFCTMC9hpX1qVsSJNS8KJowZCbxs","timestamp":"2025-02-22T12:56:29.634Z"}
+{"level":"info","message":"Token created with address: 74UC2Sc9VMDYpYKbKFCTMC9hpX1qVsSJNS8KJowZCbxs","timestamp":"2025-02-22T12:56:29.707Z"}
+{"level":"info","message":"Update: 🎨 Creating metadata...","timestamp":"2025-02-22T12:56:29.707Z"}
+{"level":"info","message":"Creating metadata attempt 1/5","timestamp":"2025-02-22T12:56:29.857Z"}
+{"level":"info","message":"Update: Creating metadata attempt 1/5","timestamp":"2025-02-22T12:56:29.857Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-22T12:56:29.972Z"}
+{"level":"info","message":"Transaction sent with signature: dCmGb5DQfqvozkdss5RVD1jXxcUfY1Qh9KQEnmoLnzeemjkPmDKGgzoRbvmPAby3UzBjVk9fSWPh9tnL3F5cac1","timestamp":"2025-02-22T12:56:30.295Z"}
+{"level":"info","message":"Confirming transaction dCmGb5DQfqvozkdss5RVD1jXxcUfY1Qh9KQEnmoLnzeemjkPmDKGgzoRbvmPAby3UzBjVk9fSWPh9tnL3F5cac1","timestamp":"2025-02-22T12:56:30.297Z"}
+{"level":"info","message":"Attempt 1: No status yet from Helius, waiting...","timestamp":"2025-02-22T12:56:30.847Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-22T12:56:45.374Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-22T12:56:45.376Z"}
+{"level":"info","message":"Helius RPC interface initialized","timestamp":"2025-02-22T12:56:45.378Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-22T12:56:45.427Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-22T12:56:46.172Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-22T12:56:46.175Z"}
+{"level":"info","message":"Helius RPC interface initialized","timestamp":"2025-02-22T12:56:46.177Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-22T12:56:46.204Z"}
+{"level":"info","message":"Creating memecoin: Nah (RHISISJSJS) with supply 28288388322","timestamp":"2025-02-22T12:57:31.332Z"}
+{"level":"info","message":"Checking RPC connection...","timestamp":"2025-02-22T12:57:31.333Z"}
+{"feature-set":1725507508,"level":"info","message":"Connected to Solana node version:","solana-core":"2.1.13","timestamp":"2025-02-22T12:57:31.720Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/0d75eceb-34cf-45d9-975c-989a97422d08.json","timestamp":"2025-02-22T12:57:31.723Z"}
+{"level":"info","message":"Keypair saved at: /home/computer/.config/solana/temp/0d75eceb-34cf-45d9-975c-989a97422d08.json","timestamp":"2025-02-22T12:57:31.723Z"}
+{"level":"info","message":"Attempting to create token (3 retries left)...","timestamp":"2025-02-22T12:57:31.723Z"}
+{"level":"info","message":"Update: 🏗️ Creating token...","timestamp":"2025-02-22T12:57:31.725Z"}
+{"level":"info","message":"Update: Token created with address: RdqvPiXtMGaZEu5c1XK34TPLPkezbbgntgQ34hE54KX","timestamp":"2025-02-22T12:57:39.940Z"}
+{"level":"info","message":"Token created with address: RdqvPiXtMGaZEu5c1XK34TPLPkezbbgntgQ34hE54KX","timestamp":"2025-02-22T12:57:40.069Z"}
+{"level":"info","message":"Update: 🎨 Creating metadata...","timestamp":"2025-02-22T12:57:40.070Z"}
+{"level":"info","message":"Creating metadata attempt 1/5","timestamp":"2025-02-22T12:57:40.266Z"}
+{"level":"info","message":"Update: Creating metadata attempt 1/5","timestamp":"2025-02-22T12:57:40.267Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-22T12:57:40.350Z"}
+{"level":"info","message":"Transaction sent with signature: 59Si5vLLxsvyUeip6mqKFi34ngu2siXugf3k1WrB4JPSvG4GUB8mN8pMCRwHzZWyCiuMpECEs2mhU2LjwW93JZeW","timestamp":"2025-02-22T12:57:40.669Z"}
+{"level":"info","message":"Confirming transaction 59Si5vLLxsvyUeip6mqKFi34ngu2siXugf3k1WrB4JPSvG4GUB8mN8pMCRwHzZWyCiuMpECEs2mhU2LjwW93JZeW","timestamp":"2025-02-22T12:57:40.671Z"}
+{"level":"info","message":"Attempt 1: No status yet from Helius, waiting...","timestamp":"2025-02-22T12:57:41.456Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-22T12:58:38.279Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-22T12:58:38.288Z"}
+{"level":"info","message":"Helius RPC interface initialized","timestamp":"2025-02-22T12:58:38.298Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-22T12:58:38.517Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-22T12:58:59.437Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-22T12:58:59.441Z"}
+{"level":"info","message":"Helius RPC interface initialized","timestamp":"2025-02-22T12:58:59.443Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-22T12:58:59.476Z"}
+{"level":"info","message":"Creating memecoin: Paseo (NIFJFJEML) with supply 3883888383883","timestamp":"2025-02-22T12:59:53.263Z"}
+{"level":"info","message":"Checking RPC connection...","timestamp":"2025-02-22T12:59:53.264Z"}
+{"feature-set":1725507508,"level":"info","message":"Connected to Solana node version:","solana-core":"2.1.13","timestamp":"2025-02-22T12:59:53.608Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/d8ecb872-b364-43f6-a5a1-525292bc581d.json","timestamp":"2025-02-22T12:59:53.611Z"}
+{"level":"info","message":"Keypair saved at: /home/computer/.config/solana/temp/d8ecb872-b364-43f6-a5a1-525292bc581d.json","timestamp":"2025-02-22T12:59:53.611Z"}
+{"level":"info","message":"Attempting to create token (3 retries left)...","timestamp":"2025-02-22T12:59:53.612Z"}
+{"level":"info","message":"Update: 🏗️ Creating token...","timestamp":"2025-02-22T12:59:53.613Z"}
+{"level":"info","message":"Update: Token created with address: AkBjrAup18QvLMMZnV7a8s7V6XWGUQS5ego8DZFuiupu","timestamp":"2025-02-22T12:59:55.476Z"}
+{"level":"info","message":"Token created with address: AkBjrAup18QvLMMZnV7a8s7V6XWGUQS5ego8DZFuiupu","timestamp":"2025-02-22T12:59:55.578Z"}
+{"level":"info","message":"Update: 🎨 Creating metadata...","timestamp":"2025-02-22T12:59:55.579Z"}
+{"level":"info","message":"Creating metadata attempt 1/5","timestamp":"2025-02-22T12:59:55.850Z"}
+{"level":"info","message":"Update: Creating metadata attempt 1/5","timestamp":"2025-02-22T12:59:55.851Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-22T12:59:56.235Z"}
+{"level":"info","message":"Transaction sent with signature: 2iJYxh4d1kS5B4HvKfacxdFdyksvYN4zAEVbNMgZeL6J3Ebu1zadsyLaNTwiqHU2swzofHKxKL4WNV6oPias18Jv","timestamp":"2025-02-22T12:59:56.584Z"}
+{"level":"info","message":"Confirming transaction 2iJYxh4d1kS5B4HvKfacxdFdyksvYN4zAEVbNMgZeL6J3Ebu1zadsyLaNTwiqHU2swzofHKxKL4WNV6oPias18Jv","timestamp":"2025-02-22T12:59:56.586Z"}
+{"level":"info","message":"Attempt 1: No status yet from Helius, waiting...","timestamp":"2025-02-22T12:59:57.204Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-22T13:01:31.541Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-22T13:01:31.544Z"}
+{"level":"info","message":"Helius RPC interface initialized","timestamp":"2025-02-22T13:01:31.545Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-22T13:01:31.583Z"}
+{"level":"info","message":"Creating memecoin: Niccvgghj (LOLGGGG) with supply 3456788","timestamp":"2025-02-22T13:01:33.363Z"}
+{"level":"info","message":"Checking RPC connection...","timestamp":"2025-02-22T13:01:33.364Z"}
+{"feature-set":1725507508,"level":"info","message":"Connected to Solana node version:","solana-core":"2.1.13","timestamp":"2025-02-22T13:01:33.746Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/057e86d7-c2e8-474b-80d7-07a6c6527646.json","timestamp":"2025-02-22T13:01:33.749Z"}
+{"level":"info","message":"Keypair saved at: /home/computer/.config/solana/temp/057e86d7-c2e8-474b-80d7-07a6c6527646.json","timestamp":"2025-02-22T13:01:33.750Z"}
+{"level":"info","message":"Attempting to create token (3 retries left)...","timestamp":"2025-02-22T13:01:33.750Z"}
+{"level":"info","message":"Update: 🏗️ Creating token...","timestamp":"2025-02-22T13:01:33.752Z"}
+{"level":"info","message":"Update: Token created with address: GeRusvUWMo5jNfnrJeq463ZAJv2aM9MFMeABB4FrXQj5","timestamp":"2025-02-22T13:01:37.245Z"}
+{"level":"info","message":"Token created with address: GeRusvUWMo5jNfnrJeq463ZAJv2aM9MFMeABB4FrXQj5","timestamp":"2025-02-22T13:01:37.329Z"}
+{"level":"info","message":"Update: 🎨 Creating metadata...","timestamp":"2025-02-22T13:01:37.330Z"}
+{"level":"info","message":"Creating metadata attempt 1/5","timestamp":"2025-02-22T13:01:37.528Z"}
+{"level":"info","message":"Update: Creating metadata attempt 1/5","timestamp":"2025-02-22T13:01:37.529Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-22T13:01:37.613Z"}
+{"level":"info","message":"Transaction sent with signature: KxdVfuSDPWPgrXhPCdjjRogbuK8kzeaRE6DgRzroKEv14Cn1p1UVArDHrNnVL2cPuDrk8jKh7hqa6fmXznkgwwF","timestamp":"2025-02-22T13:01:37.942Z"}
+{"level":"info","message":"Confirming transaction KxdVfuSDPWPgrXhPCdjjRogbuK8kzeaRE6DgRzroKEv14Cn1p1UVArDHrNnVL2cPuDrk8jKh7hqa6fmXznkgwwF","timestamp":"2025-02-22T13:01:37.943Z"}
+{"level":"info","message":"Helius response: {\"context\":{\"apiVersion\":\"2.2.0\",\"slot\":322347241},\"value\":[null]}","timestamp":"2025-02-22T13:01:38.858Z"}
+{"level":"info","message":"Attempt 1: No status yet from Helius, waiting...","timestamp":"2025-02-22T13:01:38.858Z"}
+{"level":"info","message":"Helius response: {\"context\":{\"apiVersion\":\"2.2.0\",\"slot\":322347243},\"value\":[null]}","timestamp":"2025-02-22T13:01:39.227Z"}
+{"level":"info","message":"Attempt 2: No status yet from Helius, waiting...","timestamp":"2025-02-22T13:01:39.227Z"}
+{"level":"info","message":"Helius response: {\"context\":{\"apiVersion\":\"2.2.0\",\"slot\":322347244},\"value\":[null]}","timestamp":"2025-02-22T13:01:39.681Z"}
+{"level":"info","message":"Attempt 3: No status yet from Helius, waiting...","timestamp":"2025-02-22T13:01:39.682Z"}
+{"level":"info","message":"Helius response: {\"context\":{\"apiVersion\":\"2.2.0\",\"slot\":322347245},\"value\":[null]}","timestamp":"2025-02-22T13:01:40.182Z"}
+{"level":"info","message":"Attempt 4: No status yet from Helius, waiting...","timestamp":"2025-02-22T13:01:40.184Z"}
+{"level":"info","message":"Helius response: {\"context\":{\"apiVersion\":\"2.2.0\",\"slot\":322347247},\"value\":[null]}","timestamp":"2025-02-22T13:01:40.600Z"}
+{"level":"info","message":"Attempt 5: No status yet from Helius, waiting...","timestamp":"2025-02-22T13:01:40.600Z"}
+{"level":"info","message":"Helius response: {\"context\":{\"apiVersion\":\"2.2.0\",\"slot\":322347248},\"value\":[null]}","timestamp":"2025-02-22T13:01:40.862Z"}
+{"level":"info","message":"Attempt 6: No status yet from Helius, waiting...","timestamp":"2025-02-22T13:01:40.863Z"}
+{"level":"info","message":"Helius response: {\"context\":{\"apiVersion\":\"2.2.0\",\"slot\":322347248},\"value\":[null]}","timestamp":"2025-02-22T13:01:41.190Z"}
+{"level":"info","message":"Attempt 7: No status yet from Helius, waiting...","timestamp":"2025-02-22T13:01:41.190Z"}
+{"level":"info","message":"Helius response: {\"context\":{\"apiVersion\":\"2.2.0\",\"slot\":322347249},\"value\":[null]}","timestamp":"2025-02-22T13:01:41.428Z"}
+{"level":"info","message":"Attempt 8: No status yet from Helius, waiting...","timestamp":"2025-02-22T13:01:41.429Z"}
+{"level":"info","message":"Helius response: {\"context\":{\"apiVersion\":\"2.2.0\",\"slot\":322347250},\"value\":[null]}","timestamp":"2025-02-22T13:01:41.780Z"}
+{"level":"info","message":"Attempt 9: No status yet from Helius, waiting...","timestamp":"2025-02-22T13:01:41.780Z"}
+{"level":"info","message":"Helius response: {\"context\":{\"apiVersion\":\"2.2.0\",\"slot\":322347251},\"value\":[null]}","timestamp":"2025-02-22T13:01:42.036Z"}
+{"level":"info","message":"Attempt 10: No status yet from Helius, waiting...","timestamp":"2025-02-22T13:01:42.036Z"}
+{"level":"error","message":"Transaction confirmation failed: Transaction KxdVfuSDPWPgrXhPCdjjRogbuK8kzeaRE6DgRzroKEv14Cn1p1UVArDHrNnVL2cPuDrk8jKh7hqa6fmXznkgwwF timed out after 60 seconds","timestamp":"2025-02-22T13:01:42.037Z"}
+{"level":"info","message":"Update: Transaction failed: Transaction KxdVfuSDPWPgrXhPCdjjRogbuK8kzeaRE6DgRzroKEv14Cn1p1UVArDHrNnVL2cPuDrk8jKh7hqa6fmXznkgwwF timed out after 60 seconds","timestamp":"2025-02-22T13:01:42.037Z"}
+{"error":"Transaction KxdVfuSDPWPgrXhPCdjjRogbuK8kzeaRE6DgRzroKEv14Cn1p1UVArDHrNnVL2cPuDrk8jKh7hqa6fmXznkgwwF timed out after 60 seconds","level":"error","message":"Metadata creation attempt 1 failed:","stack":"TransactionTimeoutError: Transaction KxdVfuSDPWPgrXhPCdjjRogbuK8kzeaRE6DgRzroKEv14Cn1p1UVArDHrNnVL2cPuDrk8jKh7hqa6fmXznkgwwF timed out after 60 seconds\n    at new TransactionTimeoutError (/home/computer/dev/java/lunax/typescript/utils/solanaUtils.ts:28:9)\n    at <anonymous> (/home/computer/dev/java/lunax/typescript/utils/solanaUtils.ts:570:19)\n    at processTicksAndRejections (native:7:39)","timestamp":"2025-02-22T13:01:42.191Z"}
+{"level":"info","message":"Waiting 5000ms before retry 2/5...","timestamp":"2025-02-22T13:01:42.192Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-22T13:12:13.532Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-22T13:12:13.534Z"}
+{"level":"info","message":"Helius RPC and SDK initialized","timestamp":"2025-02-22T13:12:13.536Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-22T13:12:13.581Z"}
+{"level":"info","message":"Creating memecoin: PLEJAJD (NIHSHDH) with supply 293993948484","timestamp":"2025-02-22T13:12:59.496Z"}
+{"level":"info","message":"Checking RPC connection...","timestamp":"2025-02-22T13:12:59.496Z"}
+{"feature-set":1725507508,"level":"info","message":"Connected to Solana node version:","solana-core":"2.1.13","timestamp":"2025-02-22T13:12:59.926Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/9bb66014-7bf1-4dbd-b8e2-3657a7528f2f.json","timestamp":"2025-02-22T13:12:59.931Z"}
+{"level":"info","message":"Keypair saved at: /home/computer/.config/solana/temp/9bb66014-7bf1-4dbd-b8e2-3657a7528f2f.json","timestamp":"2025-02-22T13:12:59.932Z"}
+{"level":"info","message":"Attempting to create token (3 retries left)...","timestamp":"2025-02-22T13:12:59.932Z"}
+{"level":"info","message":"Update: 🏗️ Creating token...","timestamp":"2025-02-22T13:12:59.933Z"}
+{"level":"info","message":"Update: Token created with address: 61nzZhAzKdg1hDYJ9HqdnjsixPNSEmvBHo7aiX7BwAkg","timestamp":"2025-02-22T13:13:02.151Z"}
+{"level":"info","message":"Token created with address: 61nzZhAzKdg1hDYJ9HqdnjsixPNSEmvBHo7aiX7BwAkg","timestamp":"2025-02-22T13:13:02.272Z"}
+{"level":"info","message":"Update: 🎨 Creating metadata...","timestamp":"2025-02-22T13:13:02.272Z"}
+{"level":"info","message":"Creating metadata attempt 1/5","timestamp":"2025-02-22T13:13:02.554Z"}
+{"level":"info","message":"Update: Creating metadata attempt 1/5","timestamp":"2025-02-22T13:13:02.555Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-22T13:13:02.701Z"}
+{"level":"info","message":"Using Helius SDK for transaction","timestamp":"2025-02-22T13:13:02.799Z"}
+{"level":"error","message":"Transaction failed: Error sending smart transaction: Error: Error fetching compute units for the instructions provided","timestamp":"2025-02-22T13:13:03.906Z"}
+{"level":"info","message":"Update: Transaction failed: Error sending smart transaction: Error: Error fetching compute units for the instructions provided","timestamp":"2025-02-22T13:13:03.907Z"}
+{"error":"Error sending smart transaction: Error: Error fetching compute units for the instructions provided","level":"error","message":"Metadata creation attempt 1 failed:","stack":"Error: Error sending smart transaction: Error: Error fetching compute units for the instructions provided\n    at <anonymous> (/home/computer/dev/java/lunax/typescript/node_modules/helius-sdk/dist/src/RpcClient.js:659:27)\n    at rejected (/home/computer/dev/java/lunax/typescript/node_modules/helius-sdk/dist/src/RpcClient.js:6:57)\n    at processTicksAndRejections (native:7:39)","timestamp":"2025-02-22T13:13:03.984Z"}
+{"level":"info","message":"Waiting 5000ms before retry 2/5...","timestamp":"2025-02-22T13:13:03.985Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-22T13:14:05.547Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-22T13:14:05.550Z"}
+{"level":"info","message":"Helius RPC and SDK initialized","timestamp":"2025-02-22T13:14:05.553Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-22T13:14:05.599Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-22T13:14:14.193Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-22T13:14:14.195Z"}
+{"level":"info","message":"Helius RPC and SDK initialized","timestamp":"2025-02-22T13:14:14.197Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-22T13:14:14.235Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-22T13:14:18.892Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-22T13:14:18.894Z"}
+{"level":"info","message":"Helius RPC and SDK initialized","timestamp":"2025-02-22T13:14:18.896Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-22T13:14:18.940Z"}
+{"level":"info","message":"Creating memecoin: Nivvg (BRIGHJJ) with supply 34678889","timestamp":"2025-02-22T13:15:43.954Z"}
+{"level":"info","message":"Checking RPC connection...","timestamp":"2025-02-22T13:15:43.955Z"}
+{"feature-set":1725507508,"level":"info","message":"Connected to Solana node version:","solana-core":"2.1.13","timestamp":"2025-02-22T13:15:44.334Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/f43743fb-ac1e-4693-ad69-e1913458191e.json","timestamp":"2025-02-22T13:15:44.337Z"}
+{"level":"info","message":"Keypair saved at: /home/computer/.config/solana/temp/f43743fb-ac1e-4693-ad69-e1913458191e.json","timestamp":"2025-02-22T13:15:44.337Z"}
+{"level":"info","message":"Attempting to create token (3 retries left)...","timestamp":"2025-02-22T13:15:44.338Z"}
+{"level":"info","message":"Update: 🏗️ Creating token...","timestamp":"2025-02-22T13:15:44.339Z"}
+{"level":"info","message":"Update: Token created with address: EKJT63413sTHS7f7imzCkBgLUd6pm3p9XQw5uLHvfztQ","timestamp":"2025-02-22T13:15:50.017Z"}
+{"level":"info","message":"Token created with address: EKJT63413sTHS7f7imzCkBgLUd6pm3p9XQw5uLHvfztQ","timestamp":"2025-02-22T13:15:50.113Z"}
+{"level":"info","message":"Update: 🎨 Creating metadata...","timestamp":"2025-02-22T13:15:50.116Z"}
+{"level":"info","message":"Creating metadata attempt 1/5","timestamp":"2025-02-22T13:15:50.297Z"}
+{"level":"info","message":"Update: Creating metadata attempt 1/5","timestamp":"2025-02-22T13:15:50.297Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-22T13:15:50.377Z"}
+{"level":"info","message":"Using Helius SDK for transaction","timestamp":"2025-02-22T13:15:50.494Z"}
+{"level":"error","message":"Transaction failed: Error sending transaction: Error: RPC error: {\"code\":-32002,\"message\":\"Transaction simulation failed: Blockhash not found\",\"data\":{\"accounts\":null,\"err\":\"BlockhashNotFound\",\"innerInstructions\":null,\"logs\":[],\"replacementBlockhash\":null,\"returnData\":null,\"unitsConsumed\":0}}","timestamp":"2025-02-22T13:15:51.477Z"}
+{"level":"info","message":"Update: Transaction failed: Error sending transaction: Error: RPC error: {\"code\":-32002,\"message\":\"Transaction simulation failed: Blockhash not found\",\"data\":{\"accounts\":null,\"err\":\"BlockhashNotFound\",\"innerInstructions\":null,\"logs\":[],\"replacementBlockhash\":null,\"returnData\":null,\"unitsConsumed\":0}}","timestamp":"2025-02-22T13:15:51.477Z"}
+{"error":"Error sending transaction: Error: RPC error: {\"code\":-32002,\"message\":\"Transaction simulation failed: Blockhash not found\",\"data\":{\"accounts\":null,\"err\":\"BlockhashNotFound\",\"innerInstructions\":null,\"logs\":[],\"replacementBlockhash\":null,\"returnData\":null,\"unitsConsumed\":0}}","level":"error","message":"Metadata creation attempt 1 failed:","stack":"Error: Error sending transaction: Error: RPC error: {\"code\":-32002,\"message\":\"Transaction simulation failed: Blockhash not found\",\"data\":{\"accounts\":null,\"err\":\"BlockhashNotFound\",\"innerInstructions\":null,\"logs\":[],\"replacementBlockhash\":null,\"returnData\":null,\"unitsConsumed\":0}}\n    at <anonymous> (/home/computer/dev/java/lunax/typescript/node_modules/helius-sdk/dist/src/RpcClient.js:881:27)\n    at fulfilled (/home/computer/dev/java/lunax/typescript/node_modules/helius-sdk/dist/src/RpcClient.js:5:58)\n    at processTicksAndRejections (native:7:39)","timestamp":"2025-02-22T13:15:51.558Z"}
+{"level":"info","message":"Waiting 5000ms before retry 2/5...","timestamp":"2025-02-22T13:15:51.559Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-22T13:16:47.173Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-22T13:16:47.176Z"}
+{"level":"info","message":"Helius RPC and SDK initialized","timestamp":"2025-02-22T13:16:47.179Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-22T13:16:47.244Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-22T13:16:52.806Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-22T13:16:52.810Z"}
+{"level":"info","message":"Helius RPC and SDK initialized","timestamp":"2025-02-22T13:16:52.816Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-22T13:16:52.882Z"}
+{"level":"info","message":"Creating memecoin: Lol (BHGGGGJKJG) with supply 23567899","timestamp":"2025-02-22T13:17:29.396Z"}
+{"level":"info","message":"Checking RPC connection...","timestamp":"2025-02-22T13:17:29.396Z"}
+{"feature-set":1725507508,"level":"info","message":"Connected to Solana node version:","solana-core":"2.1.13","timestamp":"2025-02-22T13:17:29.780Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/68f7a936-023a-43d7-8775-06f4369fe14d.json","timestamp":"2025-02-22T13:17:29.785Z"}
+{"level":"info","message":"Keypair saved at: /home/computer/.config/solana/temp/68f7a936-023a-43d7-8775-06f4369fe14d.json","timestamp":"2025-02-22T13:17:29.786Z"}
+{"level":"info","message":"Attempting to create token (3 retries left)...","timestamp":"2025-02-22T13:17:29.787Z"}
+{"level":"info","message":"Update: 🏗️ Creating token...","timestamp":"2025-02-22T13:17:29.788Z"}
+{"level":"info","message":"Update: Token created with address: HTN9c2rpgG9qx6DNHK4JUhHQYYzPSgA6HefbEMaydV3i","timestamp":"2025-02-22T13:17:32.349Z"}
+{"level":"info","message":"Token created with address: HTN9c2rpgG9qx6DNHK4JUhHQYYzPSgA6HefbEMaydV3i","timestamp":"2025-02-22T13:17:32.530Z"}
+{"level":"info","message":"Update: 🎨 Creating metadata...","timestamp":"2025-02-22T13:17:32.531Z"}
+{"level":"info","message":"Creating metadata attempt 1/5","timestamp":"2025-02-22T13:17:32.752Z"}
+{"level":"info","message":"Update: Creating metadata attempt 1/5","timestamp":"2025-02-22T13:17:32.752Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-22T13:17:32.929Z"}
+{"level":"info","message":"Using Helius SDK for transaction","timestamp":"2025-02-22T13:17:33.041Z"}
+{"level":"error","message":"Transaction failed: Signature verification failed.\nInvalid signature for public key [`aG2a5StxVg76wccQGVp1U1Xwiby86rUmvRW1CxUrLo5`].","timestamp":"2025-02-22T13:17:33.612Z"}
+{"level":"info","message":"Update: Transaction failed: Signature verification failed.\nInvalid signature for public key [`aG2a5StxVg76wccQGVp1U1Xwiby86rUmvRW1CxUrLo5`].","timestamp":"2025-02-22T13:17:33.612Z"}
+{"error":"Signature verification failed.\nInvalid signature for public key [`aG2a5StxVg76wccQGVp1U1Xwiby86rUmvRW1CxUrLo5`].","level":"error","message":"Metadata creation attempt 1 failed:","stack":"Error\n    at serialize (/home/computer/dev/java/lunax/typescript/node_modules/@solana/web3.js/lib/index.cjs.js:881:26)\n    at <anonymous> (/home/computer/dev/java/lunax/typescript/node_modules/helius-sdk/dist/src/RpcClient.js:535:49)\n    at <anonymous> (/home/computer/dev/java/lunax/typescript/node_modules/helius-sdk/dist/src/RpcClient.js:620:73)\n    at Promise (unknown)\n    at <anonymous> (/home/computer/dev/java/lunax/typescript/node_modules/helius-sdk/dist/src/RpcClient.js:602:36)\n    at <anonymous> (/home/computer/dev/java/lunax/typescript/utils/solanaUtils.ts:363:67)\n    at processTicksAndRejections (unknown:7:39)","timestamp":"2025-02-22T13:17:33.742Z"}
+{"level":"info","message":"Waiting 5000ms before retry 2/5...","timestamp":"2025-02-22T13:17:33.742Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-22T13:18:17.596Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-22T13:18:17.601Z"}
+{"level":"info","message":"Helius RPC and SDK initialized","timestamp":"2025-02-22T13:18:17.603Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-22T13:18:17.650Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-22T13:18:34.831Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-22T13:18:34.833Z"}
+{"level":"info","message":"Helius RPC and SDK initialized","timestamp":"2025-02-22T13:18:34.834Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-22T13:18:34.882Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-22T13:19:05.102Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-22T13:19:05.106Z"}
+{"level":"info","message":"Helius RPC and SDK initialized","timestamp":"2025-02-22T13:19:05.109Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-22T13:19:05.166Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-22T13:19:09.504Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-22T13:19:09.506Z"}
+{"level":"info","message":"Helius RPC and SDK initialized","timestamp":"2025-02-22T13:19:09.509Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-22T13:19:09.545Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-22T13:19:18.477Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-22T13:19:18.482Z"}
+{"level":"info","message":"Helius RPC and SDK initialized","timestamp":"2025-02-22T13:19:18.484Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-22T13:19:18.549Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-22T13:19:29.849Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-22T13:19:29.852Z"}
+{"level":"info","message":"Helius RPC and SDK initialized","timestamp":"2025-02-22T13:19:29.854Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-22T13:19:29.894Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-22T13:19:32.341Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-22T13:19:32.343Z"}
+{"level":"info","message":"Helius RPC and SDK initialized","timestamp":"2025-02-22T13:19:32.345Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-22T13:19:32.381Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-22T13:19:36.410Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-22T13:19:36.413Z"}
+{"level":"info","message":"Helius RPC and SDK initialized","timestamp":"2025-02-22T13:19:36.415Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-22T13:19:36.476Z"}
+{"level":"info","message":"Creating memecoin: Ggggssg (N8HBBJ) with supply 33578654333","timestamp":"2025-02-22T13:20:35.792Z"}
+{"level":"info","message":"Checking RPC connection...","timestamp":"2025-02-22T13:20:35.792Z"}
+{"feature-set":1725507508,"level":"info","message":"Connected to Solana node version:","solana-core":"2.1.13","timestamp":"2025-02-22T13:20:36.173Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/59d37729-ca04-437a-a5d8-3eef47936eeb.json","timestamp":"2025-02-22T13:20:36.180Z"}
+{"level":"info","message":"Keypair saved at: /home/computer/.config/solana/temp/59d37729-ca04-437a-a5d8-3eef47936eeb.json","timestamp":"2025-02-22T13:20:36.181Z"}
+{"level":"info","message":"Attempting to create token (3 retries left)...","timestamp":"2025-02-22T13:20:36.181Z"}
+{"level":"info","message":"Update: 🏗️ Creating token...","timestamp":"2025-02-22T13:20:36.182Z"}
+{"level":"info","message":"Update: Token created with address: FirGRzALZxyDpq4DAThxTMwmKb9PGLRfxKJHWq546GTc","timestamp":"2025-02-22T13:20:40.451Z"}
+{"level":"info","message":"Token created with address: FirGRzALZxyDpq4DAThxTMwmKb9PGLRfxKJHWq546GTc","timestamp":"2025-02-22T13:20:40.521Z"}
+{"level":"info","message":"Update: 🎨 Creating metadata...","timestamp":"2025-02-22T13:20:40.521Z"}
+{"level":"info","message":"Creating metadata attempt 1/5","timestamp":"2025-02-22T13:20:40.683Z"}
+{"level":"info","message":"Update: Creating metadata attempt 1/5","timestamp":"2025-02-22T13:20:40.684Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-22T13:20:40.779Z"}
+{"level":"info","message":"Using Helius SDK for transaction","timestamp":"2025-02-22T13:20:40.894Z"}
+{"level":"error","message":"Transaction failed: Error sending transaction: AxiosError: Request failed with status code 429","timestamp":"2025-02-22T13:20:41.956Z"}
+{"level":"info","message":"Update: Transaction failed: Error sending transaction: AxiosError: Request failed with status code 429","timestamp":"2025-02-22T13:20:41.956Z"}
+{"error":"Error sending transaction: AxiosError: Request failed with status code 429","level":"error","message":"Metadata creation attempt 1 failed:","stack":"Error: Error sending transaction: AxiosError: Request failed with status code 429\n    at <anonymous> (/home/computer/dev/java/lunax/typescript/node_modules/helius-sdk/dist/src/RpcClient.js:881:27)\n    at rejected (/home/computer/dev/java/lunax/typescript/node_modules/helius-sdk/dist/src/RpcClient.js:6:57)\n    at processTicksAndRejections (native:7:39)","timestamp":"2025-02-22T13:20:42.064Z"}
+{"level":"info","message":"Waiting 5000ms before retry 2/5...","timestamp":"2025-02-22T13:20:42.065Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-22T13:21:34.775Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-22T13:21:34.777Z"}
+{"level":"info","message":"Helius RPC and SDK initialized","timestamp":"2025-02-22T13:21:34.779Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-22T13:21:34.821Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-22T13:21:40.973Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-22T13:21:40.976Z"}
+{"level":"info","message":"Helius RPC and SDK initialized","timestamp":"2025-02-22T13:21:40.977Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-22T13:21:41.015Z"}
+{"level":"info","message":"Creating memecoin: Cervl9 (PORCODI9) with supply 383883858838283","timestamp":"2025-02-22T13:22:43.752Z"}
+{"level":"info","message":"Checking RPC connection...","timestamp":"2025-02-22T13:22:43.752Z"}
+{"feature-set":1725507508,"level":"info","message":"Connected to Solana node version:","solana-core":"2.1.13","timestamp":"2025-02-22T13:22:44.101Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/6bc9bbcb-b026-45aa-a788-6f19cc3f8fa6.json","timestamp":"2025-02-22T13:22:44.104Z"}
+{"level":"info","message":"Keypair saved at: /home/computer/.config/solana/temp/6bc9bbcb-b026-45aa-a788-6f19cc3f8fa6.json","timestamp":"2025-02-22T13:22:44.105Z"}
+{"level":"info","message":"Attempting to create token (3 retries left)...","timestamp":"2025-02-22T13:22:44.105Z"}
+{"level":"info","message":"Update: 🏗️ Creating token...","timestamp":"2025-02-22T13:22:44.107Z"}
+{"level":"info","message":"Update: Token created with address: Hxzcq37vi5rqFV8pWYqoeZu8vokt1dCEdZywZbpMixTj","timestamp":"2025-02-22T13:22:46.257Z"}
+{"level":"info","message":"Token created with address: Hxzcq37vi5rqFV8pWYqoeZu8vokt1dCEdZywZbpMixTj","timestamp":"2025-02-22T13:22:46.328Z"}
+{"level":"info","message":"Update: 🎨 Creating metadata...","timestamp":"2025-02-22T13:22:46.329Z"}
+{"level":"info","message":"Creating metadata attempt 1/5","timestamp":"2025-02-22T13:22:46.494Z"}
+{"level":"info","message":"Update: Creating metadata attempt 1/5","timestamp":"2025-02-22T13:22:46.495Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-22T13:22:46.574Z"}
+{"level":"info","message":"Using Helius SDK for transaction","timestamp":"2025-02-22T13:22:46.680Z"}
+{"level":"error","message":"Transaction failed: Error sending transaction: AxiosError: Request failed with status code 429","timestamp":"2025-02-22T13:22:47.500Z"}
+{"level":"info","message":"Update: Transaction failed: Error sending transaction: AxiosError: Request failed with status code 429","timestamp":"2025-02-22T13:22:47.500Z"}
+{"error":"Error sending transaction: AxiosError: Request failed with status code 429","level":"error","message":"Metadata creation attempt 1 failed:","stack":"Error: Error sending transaction: AxiosError: Request failed with status code 429\n    at <anonymous> (/home/computer/dev/java/lunax/typescript/node_modules/helius-sdk/dist/src/RpcClient.js:881:27)\n    at rejected (/home/computer/dev/java/lunax/typescript/node_modules/helius-sdk/dist/src/RpcClient.js:6:57)\n    at processTicksAndRejections (native:7:39)","timestamp":"2025-02-22T13:22:47.616Z"}
+{"level":"info","message":"Creating metadata attempt 2/5","timestamp":"2025-02-22T13:22:47.617Z"}
+{"level":"info","message":"Update: Creating metadata attempt 2/5","timestamp":"2025-02-22T13:22:47.617Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-22T13:22:47.707Z"}
+{"level":"info","message":"Using Helius SDK for transaction","timestamp":"2025-02-22T13:22:47.809Z"}
+{"level":"info","message":"Transaction sent with signature: 2mVvTdwahuSofnT4kYRWMKr4skL5Kn9ynbngtTVCDoBeYHP6u9WCPR5BU363Xf6QwYAe3BfD2iNSLGmEAK775xGk","timestamp":"2025-02-22T13:22:48.183Z"}
+{"level":"info","message":"Update: Transaction sent with signature: 2mVvTdwahuSofnT4kYRWMKr4skL5Kn9ynbngtTVCDoBeYHP6u9WCPR5BU363Xf6QwYAe3BfD2iNSLGmEAK775xGk","timestamp":"2025-02-22T13:22:48.184Z"}
+{"level":"info","message":"Confirming transaction 2mVvTdwahuSofnT4kYRWMKr4skL5Kn9ynbngtTVCDoBeYHP6u9WCPR5BU363Xf6QwYAe3BfD2iNSLGmEAK775xGk","timestamp":"2025-02-22T13:22:48.276Z"}
+{"level":"info","message":"Helius response: {\"context\":{\"apiVersion\":\"2.2.0\",\"slot\":322350453},\"value\":[null]}","timestamp":"2025-02-22T13:22:48.965Z"}
+{"level":"info","message":"Attempt 1: No status yet from Helius, waiting...","timestamp":"2025-02-22T13:22:48.965Z"}
+{"level":"info","message":"Helius response: {\"context\":{\"apiVersion\":\"2.2.0\",\"slot\":322350454},\"value\":[null]}","timestamp":"2025-02-22T13:22:49.216Z"}
+{"level":"info","message":"Attempt 2: No status yet from Helius, waiting...","timestamp":"2025-02-22T13:22:49.216Z"}
+{"level":"info","message":"Helius response: {\"context\":{\"apiVersion\":\"2.2.0\",\"slot\":322350455},\"value\":[null]}","timestamp":"2025-02-22T13:22:49.477Z"}
+{"level":"info","message":"Attempt 3: No status yet from Helius, waiting...","timestamp":"2025-02-22T13:22:49.477Z"}
+{"level":"info","message":"Helius response: {\"context\":{\"apiVersion\":\"2.2.0\",\"slot\":322350455},\"value\":[null]}","timestamp":"2025-02-22T13:22:49.806Z"}
+{"level":"info","message":"Attempt 4: No status yet from Helius, waiting...","timestamp":"2025-02-22T13:22:49.807Z"}
+{"level":"info","message":"Helius response: {\"context\":{\"apiVersion\":\"2.2.0\",\"slot\":322350456},\"value\":[null]}","timestamp":"2025-02-22T13:22:50.048Z"}
+{"level":"info","message":"Attempt 5: No status yet from Helius, waiting...","timestamp":"2025-02-22T13:22:50.048Z"}
+{"level":"info","message":"Helius response: {\"context\":{\"apiVersion\":\"2.2.0\",\"slot\":322350457},\"value\":[null]}","timestamp":"2025-02-22T13:22:50.285Z"}
+{"level":"info","message":"Attempt 6: No status yet from Helius, waiting...","timestamp":"2025-02-22T13:22:50.285Z"}
+{"level":"info","message":"Helius response: {\"context\":{\"apiVersion\":\"2.2.0\",\"slot\":322350457},\"value\":[null]}","timestamp":"2025-02-22T13:22:50.521Z"}
+{"level":"info","message":"Attempt 7: No status yet from Helius, waiting...","timestamp":"2025-02-22T13:22:50.521Z"}
+{"level":"info","message":"Helius response: {\"context\":{\"apiVersion\":\"2.2.0\",\"slot\":322350458},\"value\":[null]}","timestamp":"2025-02-22T13:22:50.947Z"}
+{"level":"info","message":"Attempt 8: No status yet from Helius, waiting...","timestamp":"2025-02-22T13:22:50.948Z"}
+{"level":"info","message":"Helius response: {\"context\":{\"apiVersion\":\"2.2.0\",\"slot\":322350459},\"value\":[null]}","timestamp":"2025-02-22T13:22:51.281Z"}
+{"level":"info","message":"Attempt 9: No status yet from Helius, waiting...","timestamp":"2025-02-22T13:22:51.281Z"}
+{"level":"info","message":"Helius response: {\"context\":{\"apiVersion\":\"2.2.0\",\"slot\":322350459},\"value\":[null]}","timestamp":"2025-02-22T13:22:51.514Z"}
+{"level":"info","message":"Attempt 10: No status yet from Helius, waiting...","timestamp":"2025-02-22T13:22:51.514Z"}
+{"level":"error","message":"Transaction failed: Transaction 2mVvTdwahuSofnT4kYRWMKr4skL5Kn9ynbngtTVCDoBeYHP6u9WCPR5BU363Xf6QwYAe3BfD2iNSLGmEAK775xGk timed out after 60 seconds","timestamp":"2025-02-22T13:22:51.514Z"}
+{"level":"info","message":"Update: Transaction failed: Transaction 2mVvTdwahuSofnT4kYRWMKr4skL5Kn9ynbngtTVCDoBeYHP6u9WCPR5BU363Xf6QwYAe3BfD2iNSLGmEAK775xGk timed out after 60 seconds","timestamp":"2025-02-22T13:22:51.515Z"}
+{"error":"Transaction 2mVvTdwahuSofnT4kYRWMKr4skL5Kn9ynbngtTVCDoBeYHP6u9WCPR5BU363Xf6QwYAe3BfD2iNSLGmEAK775xGk timed out after 60 seconds","level":"error","message":"Metadata creation attempt 2 failed:","stack":"TransactionTimeoutError: Transaction 2mVvTdwahuSofnT4kYRWMKr4skL5Kn9ynbngtTVCDoBeYHP6u9WCPR5BU363Xf6QwYAe3BfD2iNSLGmEAK775xGk timed out after 60 seconds\n    at new TransactionTimeoutError (/home/computer/dev/java/lunax/typescript/utils/solanaUtils.ts:29:9)\n    at <anonymous> (/home/computer/dev/java/lunax/typescript/utils/solanaUtils.ts:573:19)\n    at processTicksAndRejections (native:7:39)","timestamp":"2025-02-22T13:22:51.589Z"}
+{"level":"info","message":"Creating metadata attempt 3/5","timestamp":"2025-02-22T13:22:51.590Z"}
+{"level":"info","message":"Update: Creating metadata attempt 3/5","timestamp":"2025-02-22T13:22:51.590Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-22T13:22:51.698Z"}
+{"level":"info","message":"Using Helius SDK for transaction","timestamp":"2025-02-22T13:22:51.795Z"}
+{"level":"error","message":"Transaction failed: Error sending transaction: AxiosError: Request failed with status code 429","timestamp":"2025-02-22T13:22:51.939Z"}
+{"level":"info","message":"Update: Transaction failed: Error sending transaction: AxiosError: Request failed with status code 429","timestamp":"2025-02-22T13:22:51.939Z"}
+{"error":"Error sending transaction: AxiosError: Request failed with status code 429","level":"error","message":"Metadata creation attempt 3 failed:","stack":"Error: Error sending transaction: AxiosError: Request failed with status code 429\n    at <anonymous> (/home/computer/dev/java/lunax/typescript/node_modules/helius-sdk/dist/src/RpcClient.js:881:27)\n    at rejected (/home/computer/dev/java/lunax/typescript/node_modules/helius-sdk/dist/src/RpcClient.js:6:57)\n    at processTicksAndRejections (native:7:39)","timestamp":"2025-02-22T13:22:52.076Z"}
+{"level":"info","message":"Creating metadata attempt 4/5","timestamp":"2025-02-22T13:22:52.076Z"}
+{"level":"info","message":"Update: Creating metadata attempt 4/5","timestamp":"2025-02-22T13:22:52.076Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-22T13:22:52.230Z"}
+{"level":"info","message":"Using Helius SDK for transaction","timestamp":"2025-02-22T13:22:52.328Z"}
+{"level":"info","message":"Transaction sent with signature: CWaqqKpa5eZF5ATGwou4wNk5NBZHPXknqS1pce2UxtW96979ZaVUXJz2A9AsBvUh8EyJDYgSzz83M7GNQ3ReV2G","timestamp":"2025-02-22T13:22:52.673Z"}
+{"level":"info","message":"Update: Transaction sent with signature: CWaqqKpa5eZF5ATGwou4wNk5NBZHPXknqS1pce2UxtW96979ZaVUXJz2A9AsBvUh8EyJDYgSzz83M7GNQ3ReV2G","timestamp":"2025-02-22T13:22:52.674Z"}
+{"level":"info","message":"Confirming transaction CWaqqKpa5eZF5ATGwou4wNk5NBZHPXknqS1pce2UxtW96979ZaVUXJz2A9AsBvUh8EyJDYgSzz83M7GNQ3ReV2G","timestamp":"2025-02-22T13:22:52.796Z"}
+{"level":"info","message":"Helius response: {\"context\":{\"apiVersion\":\"2.2.0\",\"slot\":322350463},\"value\":[null]}","timestamp":"2025-02-22T13:22:53.320Z"}
+{"level":"info","message":"Attempt 1: No status yet from Helius, waiting...","timestamp":"2025-02-22T13:22:53.320Z"}
+{"level":"info","message":"Helius response: {\"context\":{\"apiVersion\":\"2.2.0\",\"slot\":322350465},\"value\":[null]}","timestamp":"2025-02-22T13:22:53.620Z"}
+{"level":"info","message":"Attempt 2: No status yet from Helius, waiting...","timestamp":"2025-02-22T13:22:53.620Z"}
+{"level":"info","message":"Helius response: {\"context\":{\"apiVersion\":\"2.2.0\",\"slot\":322350466},\"value\":[null]}","timestamp":"2025-02-22T13:22:53.861Z"}
+{"level":"info","message":"Attempt 3: No status yet from Helius, waiting...","timestamp":"2025-02-22T13:22:53.862Z"}
+{"level":"info","message":"Helius response: {\"context\":{\"apiVersion\":\"2.2.0\",\"slot\":322350466},\"value\":[null]}","timestamp":"2025-02-22T13:22:54.104Z"}
+{"level":"info","message":"Attempt 4: No status yet from Helius, waiting...","timestamp":"2025-02-22T13:22:54.104Z"}
+{"level":"info","message":"Helius response: {\"context\":{\"apiVersion\":\"2.2.0\",\"slot\":322350467},\"value\":[null]}","timestamp":"2025-02-22T13:22:54.344Z"}
+{"level":"info","message":"Attempt 5: No status yet from Helius, waiting...","timestamp":"2025-02-22T13:22:54.344Z"}
+{"level":"info","message":"Helius response: {\"context\":{\"apiVersion\":\"2.2.0\",\"slot\":322350467},\"value\":[null]}","timestamp":"2025-02-22T13:22:54.719Z"}
+{"level":"info","message":"Attempt 6: No status yet from Helius, waiting...","timestamp":"2025-02-22T13:22:54.719Z"}
+{"level":"info","message":"Helius response: {\"context\":{\"apiVersion\":\"2.2.0\",\"slot\":322350468},\"value\":[null]}","timestamp":"2025-02-22T13:22:55.076Z"}
+{"level":"info","message":"Attempt 7: No status yet from Helius, waiting...","timestamp":"2025-02-22T13:22:55.077Z"}
+{"level":"info","message":"Helius response: {\"context\":{\"apiVersion\":\"2.2.0\",\"slot\":322350468},\"value\":[null]}","timestamp":"2025-02-22T13:22:55.462Z"}
+{"level":"info","message":"Attempt 8: No status yet from Helius, waiting...","timestamp":"2025-02-22T13:22:55.462Z"}
+{"level":"info","message":"Helius response: {\"context\":{\"apiVersion\":\"2.2.0\",\"slot\":322350469},\"value\":[null]}","timestamp":"2025-02-22T13:22:55.694Z"}
+{"level":"info","message":"Attempt 9: No status yet from Helius, waiting...","timestamp":"2025-02-22T13:22:55.694Z"}
+{"level":"info","message":"Helius response: {\"context\":{\"apiVersion\":\"2.2.0\",\"slot\":322350470},\"value\":[null]}","timestamp":"2025-02-22T13:22:55.936Z"}
+{"level":"info","message":"Attempt 10: No status yet from Helius, waiting...","timestamp":"2025-02-22T13:22:55.936Z"}
+{"level":"error","message":"Transaction failed: Transaction CWaqqKpa5eZF5ATGwou4wNk5NBZHPXknqS1pce2UxtW96979ZaVUXJz2A9AsBvUh8EyJDYgSzz83M7GNQ3ReV2G timed out after 60 seconds","timestamp":"2025-02-22T13:22:55.936Z"}
+{"level":"info","message":"Update: Transaction failed: Transaction CWaqqKpa5eZF5ATGwou4wNk5NBZHPXknqS1pce2UxtW96979ZaVUXJz2A9AsBvUh8EyJDYgSzz83M7GNQ3ReV2G timed out after 60 seconds","timestamp":"2025-02-22T13:22:55.936Z"}
+{"error":"Transaction CWaqqKpa5eZF5ATGwou4wNk5NBZHPXknqS1pce2UxtW96979ZaVUXJz2A9AsBvUh8EyJDYgSzz83M7GNQ3ReV2G timed out after 60 seconds","level":"error","message":"Metadata creation attempt 4 failed:","stack":"TransactionTimeoutError: Transaction CWaqqKpa5eZF5ATGwou4wNk5NBZHPXknqS1pce2UxtW96979ZaVUXJz2A9AsBvUh8EyJDYgSzz83M7GNQ3ReV2G timed out after 60 seconds\n    at new TransactionTimeoutError (/home/computer/dev/java/lunax/typescript/utils/solanaUtils.ts:29:9)\n    at <anonymous> (/home/computer/dev/java/lunax/typescript/utils/solanaUtils.ts:573:19)\n    at processTicksAndRejections (native:7:39)","timestamp":"2025-02-22T13:22:56.003Z"}
+{"level":"info","message":"Creating metadata attempt 5/5","timestamp":"2025-02-22T13:22:56.003Z"}
+{"level":"info","message":"Update: Creating metadata attempt 5/5","timestamp":"2025-02-22T13:22:56.005Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-22T13:22:56.087Z"}
+{"level":"info","message":"Using Helius SDK for transaction","timestamp":"2025-02-22T13:22:56.184Z"}
+{"level":"error","message":"Transaction failed: Error sending transaction: AxiosError: Request failed with status code 429","timestamp":"2025-02-22T13:22:56.318Z"}
+{"level":"info","message":"Update: Transaction failed: Error sending transaction: AxiosError: Request failed with status code 429","timestamp":"2025-02-22T13:22:56.318Z"}
+{"error":"Error sending transaction: AxiosError: Request failed with status code 429","level":"error","message":"Metadata creation attempt 5 failed:","stack":"Error: Error sending transaction: AxiosError: Request failed with status code 429\n    at <anonymous> (/home/computer/dev/java/lunax/typescript/node_modules/helius-sdk/dist/src/RpcClient.js:881:27)\n    at rejected (/home/computer/dev/java/lunax/typescript/node_modules/helius-sdk/dist/src/RpcClient.js:6:57)\n    at processTicksAndRejections (native:7:39)","timestamp":"2025-02-22T13:22:56.423Z"}
+{"level":"error","message":"Error creating token: Error sending transaction: AxiosError: Request failed with status code 429","stack":"Error: Error sending transaction: AxiosError: Request failed with status code 429\n    at <anonymous> (/home/computer/dev/java/lunax/typescript/node_modules/helius-sdk/dist/src/RpcClient.js:881:27)\n    at rejected (/home/computer/dev/java/lunax/typescript/node_modules/helius-sdk/dist/src/RpcClient.js:6:57)\n    at processTicksAndRejections (native:7:39)","timestamp":"2025-02-22T13:22:56.424Z"}
+{"level":"error","message":"Token creation attempt failed: Failed to create token: Error sending transaction: AxiosError: Request failed with status code 429","timestamp":"2025-02-22T13:22:56.425Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-22T13:29:21.539Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-22T13:29:21.541Z"}
+{"level":"info","message":"Helius RPC and SDK initialized for devnet","timestamp":"2025-02-22T13:29:21.543Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-22T13:29:21.581Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-22T13:30:10.085Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-22T13:30:10.087Z"}
+{"level":"info","message":"Helius RPC and SDK initialized for devnet","timestamp":"2025-02-22T13:30:10.089Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-22T13:30:10.135Z"}
+{"level":"info","message":"Creating memecoin: Jice (NFJFNNF) with supply 4848828284773","timestamp":"2025-02-22T13:30:30.143Z"}
+{"level":"info","message":"Checking RPC connection...","timestamp":"2025-02-22T13:30:30.144Z"}
+{"feature-set":1725507508,"level":"info","message":"Connected to Solana node version:","solana-core":"2.1.13","timestamp":"2025-02-22T13:30:30.523Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/22841778-0512-4c78-9ff3-3a138c496520.json","timestamp":"2025-02-22T13:30:30.528Z"}
+{"level":"info","message":"Keypair saved at: /home/computer/.config/solana/temp/22841778-0512-4c78-9ff3-3a138c496520.json","timestamp":"2025-02-22T13:30:30.529Z"}
+{"level":"info","message":"Attempting to create token (3 retries left)...","timestamp":"2025-02-22T13:30:30.530Z"}
+{"level":"info","message":"Update: 🏗️ Creating token...","timestamp":"2025-02-22T13:30:30.531Z"}
+{"level":"info","message":"Update: Token created with address: 8jh3KiwagTLJYvpeNXUxuBe8k99Dm851YSqBqZsryNAp","timestamp":"2025-02-22T13:30:32.531Z"}
+{"level":"info","message":"Token created with address: 8jh3KiwagTLJYvpeNXUxuBe8k99Dm851YSqBqZsryNAp","timestamp":"2025-02-22T13:30:32.601Z"}
+{"level":"info","message":"Update: 🎨 Creating metadata...","timestamp":"2025-02-22T13:30:32.602Z"}
+{"level":"info","message":"Creating metadata attempt 1/5","timestamp":"2025-02-22T13:30:32.769Z"}
+{"level":"info","message":"Update: Creating metadata attempt 1/5","timestamp":"2025-02-22T13:30:32.770Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-22T13:30:32.833Z"}
+{"level":"info","message":"Using Helius SDK for transaction","timestamp":"2025-02-22T13:30:32.955Z"}
+{"level":"error","message":"Transaction failed: Error sending transaction: AxiosError: Request failed with status code 429","timestamp":"2025-02-22T13:30:33.923Z"}
+{"level":"info","message":"Update: Transaction failed: Error sending transaction: AxiosError: Request failed with status code 429","timestamp":"2025-02-22T13:30:33.924Z"}
+{"error":"Error sending transaction: AxiosError: Request failed with status code 429","level":"error","message":"Metadata creation attempt 1 failed:","stack":"Error: Error sending transaction: AxiosError: Request failed with status code 429\n    at <anonymous> (/home/computer/dev/java/lunax/typescript/node_modules/helius-sdk/dist/src/RpcClient.js:881:27)\n    at rejected (/home/computer/dev/java/lunax/typescript/node_modules/helius-sdk/dist/src/RpcClient.js:6:57)\n    at processTicksAndRejections (native:7:39)","timestamp":"2025-02-22T13:30:33.996Z"}
+{"level":"info","message":"Creating metadata attempt 2/5","timestamp":"2025-02-22T13:30:33.997Z"}
+{"level":"info","message":"Update: Creating metadata attempt 2/5","timestamp":"2025-02-22T13:30:33.997Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-22T13:30:34.108Z"}
+{"level":"info","message":"Using Helius SDK for transaction","timestamp":"2025-02-22T13:30:34.211Z"}
+{"level":"error","message":"Transaction failed: Error sending transaction: AxiosError: Request failed with status code 429","timestamp":"2025-02-22T13:30:34.745Z"}
+{"level":"info","message":"Update: Transaction failed: Error sending transaction: AxiosError: Request failed with status code 429","timestamp":"2025-02-22T13:30:34.747Z"}
+{"error":"Error sending transaction: AxiosError: Request failed with status code 429","level":"error","message":"Metadata creation attempt 2 failed:","stack":"Error: Error sending transaction: AxiosError: Request failed with status code 429\n    at <anonymous> (/home/computer/dev/java/lunax/typescript/node_modules/helius-sdk/dist/src/RpcClient.js:881:27)\n    at rejected (/home/computer/dev/java/lunax/typescript/node_modules/helius-sdk/dist/src/RpcClient.js:6:57)\n    at processTicksAndRejections (native:7:39)","timestamp":"2025-02-22T13:30:34.825Z"}
+{"level":"info","message":"Creating metadata attempt 3/5","timestamp":"2025-02-22T13:30:34.825Z"}
+{"level":"info","message":"Update: Creating metadata attempt 3/5","timestamp":"2025-02-22T13:30:34.827Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-22T13:30:34.901Z"}
+{"level":"info","message":"Using Helius SDK for transaction","timestamp":"2025-02-22T13:30:35.029Z"}
+{"level":"error","message":"Transaction failed: Error sending transaction: AxiosError: Request failed with status code 429","timestamp":"2025-02-22T13:30:35.164Z"}
+{"level":"info","message":"Update: Transaction failed: Error sending transaction: AxiosError: Request failed with status code 429","timestamp":"2025-02-22T13:30:35.164Z"}
+{"error":"Error sending transaction: AxiosError: Request failed with status code 429","level":"error","message":"Metadata creation attempt 3 failed:","stack":"Error: Error sending transaction: AxiosError: Request failed with status code 429\n    at <anonymous> (/home/computer/dev/java/lunax/typescript/node_modules/helius-sdk/dist/src/RpcClient.js:881:27)\n    at rejected (/home/computer/dev/java/lunax/typescript/node_modules/helius-sdk/dist/src/RpcClient.js:6:57)\n    at processTicksAndRejections (native:7:39)","timestamp":"2025-02-22T13:30:35.235Z"}
+{"level":"info","message":"Creating metadata attempt 4/5","timestamp":"2025-02-22T13:30:35.235Z"}
+{"level":"info","message":"Update: Creating metadata attempt 4/5","timestamp":"2025-02-22T13:30:35.236Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-22T13:30:35.339Z"}
+{"level":"info","message":"Using Helius SDK for transaction","timestamp":"2025-02-22T13:30:35.443Z"}
+{"level":"error","message":"Transaction failed: Error sending transaction: AxiosError: Request failed with status code 429","timestamp":"2025-02-22T13:30:35.583Z"}
+{"level":"info","message":"Update: Transaction failed: Error sending transaction: AxiosError: Request failed with status code 429","timestamp":"2025-02-22T13:30:35.584Z"}
+{"error":"Error sending transaction: AxiosError: Request failed with status code 429","level":"error","message":"Metadata creation attempt 4 failed:","stack":"Error: Error sending transaction: AxiosError: Request failed with status code 429\n    at <anonymous> (/home/computer/dev/java/lunax/typescript/node_modules/helius-sdk/dist/src/RpcClient.js:881:27)\n    at rejected (/home/computer/dev/java/lunax/typescript/node_modules/helius-sdk/dist/src/RpcClient.js:6:57)\n    at processTicksAndRejections (native:7:39)","timestamp":"2025-02-22T13:30:35.685Z"}
+{"level":"info","message":"Creating metadata attempt 5/5","timestamp":"2025-02-22T13:30:35.685Z"}
+{"level":"info","message":"Update: Creating metadata attempt 5/5","timestamp":"2025-02-22T13:30:35.686Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-22T13:30:35.753Z"}
+{"level":"info","message":"Using Helius SDK for transaction","timestamp":"2025-02-22T13:30:35.850Z"}
+{"level":"error","message":"Transaction failed: Error sending transaction: AxiosError: Request failed with status code 429","timestamp":"2025-02-22T13:30:35.999Z"}
+{"level":"info","message":"Update: Transaction failed: Error sending transaction: AxiosError: Request failed with status code 429","timestamp":"2025-02-22T13:30:35.999Z"}
+{"error":"Error sending transaction: AxiosError: Request failed with status code 429","level":"error","message":"Metadata creation attempt 5 failed:","stack":"Error: Error sending transaction: AxiosError: Request failed with status code 429\n    at <anonymous> (/home/computer/dev/java/lunax/typescript/node_modules/helius-sdk/dist/src/RpcClient.js:881:27)\n    at rejected (/home/computer/dev/java/lunax/typescript/node_modules/helius-sdk/dist/src/RpcClient.js:6:57)\n    at processTicksAndRejections (native:7:39)","timestamp":"2025-02-22T13:30:36.082Z"}
+{"level":"error","message":"Error creating token: Error sending transaction: AxiosError: Request failed with status code 429","stack":"Error: Error sending transaction: AxiosError: Request failed with status code 429\n    at <anonymous> (/home/computer/dev/java/lunax/typescript/node_modules/helius-sdk/dist/src/RpcClient.js:881:27)\n    at rejected (/home/computer/dev/java/lunax/typescript/node_modules/helius-sdk/dist/src/RpcClient.js:6:57)\n    at processTicksAndRejections (native:7:39)","timestamp":"2025-02-22T13:30:36.082Z"}
+{"level":"error","message":"Token creation attempt failed: Failed to create token: Error sending transaction: AxiosError: Request failed with status code 429","timestamp":"2025-02-22T13:30:36.083Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-22T13:31:17.007Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-22T13:31:17.009Z"}
+{"level":"info","message":"Helius RPC and SDK initialized for devnet","timestamp":"2025-02-22T13:31:17.013Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-22T13:31:17.061Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-22T13:31:22.852Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-22T13:31:22.855Z"}
+{"level":"info","message":"Helius RPC and SDK initialized for devnet","timestamp":"2025-02-22T13:31:22.858Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-22T13:31:22.895Z"}
+{"level":"info","message":"Creating memecoin: Ni ehsif (MVMVMVMVKG) with supply 4848929384884","timestamp":"2025-02-22T13:32:01.187Z"}
+{"level":"info","message":"Checking RPC connection...","timestamp":"2025-02-22T13:32:01.189Z"}
+{"feature-set":1725507508,"level":"info","message":"Connected to Solana node version:","solana-core":"2.1.13","timestamp":"2025-02-22T13:32:01.558Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/7ce59a72-099c-4e25-ae8e-bbdbcf8ab76a.json","timestamp":"2025-02-22T13:32:01.562Z"}
+{"level":"info","message":"Keypair saved at: /home/computer/.config/solana/temp/7ce59a72-099c-4e25-ae8e-bbdbcf8ab76a.json","timestamp":"2025-02-22T13:32:01.562Z"}
+{"level":"info","message":"Attempting to create token (3 retries left)...","timestamp":"2025-02-22T13:32:01.562Z"}
+{"level":"info","message":"Update: 🏗️ Creating token...","timestamp":"2025-02-22T13:32:01.563Z"}
+{"level":"info","message":"Update: Token created with address: 31nuqo9Q2Fc2M6j2PCjvrjWUnB4PXqo8aWWLhgycG8wU","timestamp":"2025-02-22T13:32:03.459Z"}
+{"level":"info","message":"Token created with address: 31nuqo9Q2Fc2M6j2PCjvrjWUnB4PXqo8aWWLhgycG8wU","timestamp":"2025-02-22T13:32:03.550Z"}
+{"level":"info","message":"Update: 🎨 Creating metadata...","timestamp":"2025-02-22T13:32:03.554Z"}
+{"level":"info","message":"Creating metadata attempt 1/5","timestamp":"2025-02-22T13:32:03.776Z"}
+{"level":"info","message":"Update: Creating metadata attempt 1/5","timestamp":"2025-02-22T13:32:03.777Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-22T13:32:03.861Z"}
+{"level":"info","message":"Attempting to use Helius SDK for transaction","timestamp":"2025-02-22T13:32:03.960Z"}
+{"level":"error","message":"Transaction failed: Error sending transaction: Error: RPC error: {\"code\":-32002,\"message\":\"Transaction simulation failed: Blockhash not found\",\"data\":{\"accounts\":null,\"err\":\"BlockhashNotFound\",\"innerInstructions\":null,\"logs\":[],\"replacementBlockhash\":null,\"returnData\":null,\"unitsConsumed\":0}}","timestamp":"2025-02-22T13:32:04.477Z"}
+{"level":"info","message":"Update: Transaction failed: Error sending transaction: Error: RPC error: {\"code\":-32002,\"message\":\"Transaction simulation failed: Blockhash not found\",\"data\":{\"accounts\":null,\"err\":\"BlockhashNotFound\",\"innerInstructions\":null,\"logs\":[],\"replacementBlockhash\":null,\"returnData\":null,\"unitsConsumed\":0}}","timestamp":"2025-02-22T13:32:04.477Z"}
+{"error":"Error sending transaction: Error: RPC error: {\"code\":-32002,\"message\":\"Transaction simulation failed: Blockhash not found\",\"data\":{\"accounts\":null,\"err\":\"BlockhashNotFound\",\"innerInstructions\":null,\"logs\":[],\"replacementBlockhash\":null,\"returnData\":null,\"unitsConsumed\":0}}","level":"error","message":"Metadata creation attempt 1 failed:","stack":"Error: Error sending transaction: Error: RPC error: {\"code\":-32002,\"message\":\"Transaction simulation failed: Blockhash not found\",\"data\":{\"accounts\":null,\"err\":\"BlockhashNotFound\",\"innerInstructions\":null,\"logs\":[],\"replacementBlockhash\":null,\"returnData\":null,\"unitsConsumed\":0}}\n    at <anonymous> (/home/computer/dev/java/lunax/typescript/node_modules/helius-sdk/dist/src/RpcClient.js:881:27)\n    at fulfilled (/home/computer/dev/java/lunax/typescript/node_modules/helius-sdk/dist/src/RpcClient.js:5:58)\n    at processTicksAndRejections (native:7:39)","timestamp":"2025-02-22T13:32:04.580Z"}
+{"level":"info","message":"Creating metadata attempt 2/5","timestamp":"2025-02-22T13:32:04.581Z"}
+{"level":"info","message":"Update: Creating metadata attempt 2/5","timestamp":"2025-02-22T13:32:04.582Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-22T13:32:04.745Z"}
+{"level":"info","message":"Attempting to use Helius SDK for transaction","timestamp":"2025-02-22T13:32:04.845Z"}
+{"level":"error","message":"Transaction failed: Error sending transaction: Error: RPC error: {\"code\":-32002,\"message\":\"Transaction simulation failed: Blockhash not found\",\"data\":{\"accounts\":null,\"err\":\"BlockhashNotFound\",\"innerInstructions\":null,\"logs\":[],\"replacementBlockhash\":null,\"returnData\":null,\"unitsConsumed\":0}}","timestamp":"2025-02-22T13:32:05.203Z"}
+{"level":"info","message":"Update: Transaction failed: Error sending transaction: Error: RPC error: {\"code\":-32002,\"message\":\"Transaction simulation failed: Blockhash not found\",\"data\":{\"accounts\":null,\"err\":\"BlockhashNotFound\",\"innerInstructions\":null,\"logs\":[],\"replacementBlockhash\":null,\"returnData\":null,\"unitsConsumed\":0}}","timestamp":"2025-02-22T13:32:05.203Z"}
+{"error":"Error sending transaction: Error: RPC error: {\"code\":-32002,\"message\":\"Transaction simulation failed: Blockhash not found\",\"data\":{\"accounts\":null,\"err\":\"BlockhashNotFound\",\"innerInstructions\":null,\"logs\":[],\"replacementBlockhash\":null,\"returnData\":null,\"unitsConsumed\":0}}","level":"error","message":"Metadata creation attempt 2 failed:","stack":"Error: Error sending transaction: Error: RPC error: {\"code\":-32002,\"message\":\"Transaction simulation failed: Blockhash not found\",\"data\":{\"accounts\":null,\"err\":\"BlockhashNotFound\",\"innerInstructions\":null,\"logs\":[],\"replacementBlockhash\":null,\"returnData\":null,\"unitsConsumed\":0}}\n    at <anonymous> (/home/computer/dev/java/lunax/typescript/node_modules/helius-sdk/dist/src/RpcClient.js:881:27)\n    at fulfilled (/home/computer/dev/java/lunax/typescript/node_modules/helius-sdk/dist/src/RpcClient.js:5:58)\n    at processTicksAndRejections (native:7:39)","timestamp":"2025-02-22T13:32:05.380Z"}
+{"level":"info","message":"Creating metadata attempt 3/5","timestamp":"2025-02-22T13:32:05.381Z"}
+{"level":"info","message":"Update: Creating metadata attempt 3/5","timestamp":"2025-02-22T13:32:05.381Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-22T13:32:05.574Z"}
+{"level":"info","message":"Attempting to use Helius SDK for transaction","timestamp":"2025-02-22T13:32:05.671Z"}
+{"level":"error","message":"Transaction failed: Error sending transaction: Error: RPC error: {\"code\":-32002,\"message\":\"Transaction simulation failed: Blockhash not found\",\"data\":{\"accounts\":null,\"err\":\"BlockhashNotFound\",\"innerInstructions\":null,\"logs\":[],\"replacementBlockhash\":null,\"returnData\":null,\"unitsConsumed\":0}}","timestamp":"2025-02-22T13:32:05.922Z"}
+{"level":"info","message":"Update: Transaction failed: Error sending transaction: Error: RPC error: {\"code\":-32002,\"message\":\"Transaction simulation failed: Blockhash not found\",\"data\":{\"accounts\":null,\"err\":\"BlockhashNotFound\",\"innerInstructions\":null,\"logs\":[],\"replacementBlockhash\":null,\"returnData\":null,\"unitsConsumed\":0}}","timestamp":"2025-02-22T13:32:05.922Z"}
+{"error":"Error sending transaction: Error: RPC error: {\"code\":-32002,\"message\":\"Transaction simulation failed: Blockhash not found\",\"data\":{\"accounts\":null,\"err\":\"BlockhashNotFound\",\"innerInstructions\":null,\"logs\":[],\"replacementBlockhash\":null,\"returnData\":null,\"unitsConsumed\":0}}","level":"error","message":"Metadata creation attempt 3 failed:","stack":"Error: Error sending transaction: Error: RPC error: {\"code\":-32002,\"message\":\"Transaction simulation failed: Blockhash not found\",\"data\":{\"accounts\":null,\"err\":\"BlockhashNotFound\",\"innerInstructions\":null,\"logs\":[],\"replacementBlockhash\":null,\"returnData\":null,\"unitsConsumed\":0}}\n    at <anonymous> (/home/computer/dev/java/lunax/typescript/node_modules/helius-sdk/dist/src/RpcClient.js:881:27)\n    at fulfilled (/home/computer/dev/java/lunax/typescript/node_modules/helius-sdk/dist/src/RpcClient.js:5:58)\n    at processTicksAndRejections (native:7:39)","timestamp":"2025-02-22T13:32:06.090Z"}
+{"level":"info","message":"Creating metadata attempt 4/5","timestamp":"2025-02-22T13:32:06.091Z"}
+{"level":"info","message":"Update: Creating metadata attempt 4/5","timestamp":"2025-02-22T13:32:06.091Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-22T13:32:06.268Z"}
+{"level":"info","message":"Attempting to use Helius SDK for transaction","timestamp":"2025-02-22T13:32:06.369Z"}
+{"level":"error","message":"Transaction failed: Error sending transaction: Error: RPC error: {\"code\":-32002,\"message\":\"Transaction simulation failed: Blockhash not found\",\"data\":{\"accounts\":null,\"err\":\"BlockhashNotFound\",\"innerInstructions\":null,\"logs\":[],\"replacementBlockhash\":null,\"returnData\":null,\"unitsConsumed\":0}}","timestamp":"2025-02-22T13:32:06.719Z"}
+{"level":"info","message":"Update: Transaction failed: Error sending transaction: Error: RPC error: {\"code\":-32002,\"message\":\"Transaction simulation failed: Blockhash not found\",\"data\":{\"accounts\":null,\"err\":\"BlockhashNotFound\",\"innerInstructions\":null,\"logs\":[],\"replacementBlockhash\":null,\"returnData\":null,\"unitsConsumed\":0}}","timestamp":"2025-02-22T13:32:06.720Z"}
+{"error":"Error sending transaction: Error: RPC error: {\"code\":-32002,\"message\":\"Transaction simulation failed: Blockhash not found\",\"data\":{\"accounts\":null,\"err\":\"BlockhashNotFound\",\"innerInstructions\":null,\"logs\":[],\"replacementBlockhash\":null,\"returnData\":null,\"unitsConsumed\":0}}","level":"error","message":"Metadata creation attempt 4 failed:","stack":"Error: Error sending transaction: Error: RPC error: {\"code\":-32002,\"message\":\"Transaction simulation failed: Blockhash not found\",\"data\":{\"accounts\":null,\"err\":\"BlockhashNotFound\",\"innerInstructions\":null,\"logs\":[],\"replacementBlockhash\":null,\"returnData\":null,\"unitsConsumed\":0}}\n    at <anonymous> (/home/computer/dev/java/lunax/typescript/node_modules/helius-sdk/dist/src/RpcClient.js:881:27)\n    at fulfilled (/home/computer/dev/java/lunax/typescript/node_modules/helius-sdk/dist/src/RpcClient.js:5:58)\n    at processTicksAndRejections (native:7:39)","timestamp":"2025-02-22T13:32:06.827Z"}
+{"level":"info","message":"Creating metadata attempt 5/5","timestamp":"2025-02-22T13:32:06.827Z"}
+{"level":"info","message":"Update: Creating metadata attempt 5/5","timestamp":"2025-02-22T13:32:06.827Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-22T13:32:06.935Z"}
+{"level":"info","message":"Attempting to use Helius SDK for transaction","timestamp":"2025-02-22T13:32:07.045Z"}
+{"level":"error","message":"Transaction failed: Error sending transaction: Error: RPC error: {\"code\":-32002,\"message\":\"Transaction simulation failed: Blockhash not found\",\"data\":{\"accounts\":null,\"err\":\"BlockhashNotFound\",\"innerInstructions\":null,\"logs\":[],\"replacementBlockhash\":null,\"returnData\":null,\"unitsConsumed\":0}}","timestamp":"2025-02-22T13:32:07.445Z"}
+{"level":"info","message":"Update: Transaction failed: Error sending transaction: Error: RPC error: {\"code\":-32002,\"message\":\"Transaction simulation failed: Blockhash not found\",\"data\":{\"accounts\":null,\"err\":\"BlockhashNotFound\",\"innerInstructions\":null,\"logs\":[],\"replacementBlockhash\":null,\"returnData\":null,\"unitsConsumed\":0}}","timestamp":"2025-02-22T13:32:07.445Z"}
+{"error":"Error sending transaction: Error: RPC error: {\"code\":-32002,\"message\":\"Transaction simulation failed: Blockhash not found\",\"data\":{\"accounts\":null,\"err\":\"BlockhashNotFound\",\"innerInstructions\":null,\"logs\":[],\"replacementBlockhash\":null,\"returnData\":null,\"unitsConsumed\":0}}","level":"error","message":"Metadata creation attempt 5 failed:","stack":"Error: Error sending transaction: Error: RPC error: {\"code\":-32002,\"message\":\"Transaction simulation failed: Blockhash not found\",\"data\":{\"accounts\":null,\"err\":\"BlockhashNotFound\",\"innerInstructions\":null,\"logs\":[],\"replacementBlockhash\":null,\"returnData\":null,\"unitsConsumed\":0}}\n    at <anonymous> (/home/computer/dev/java/lunax/typescript/node_modules/helius-sdk/dist/src/RpcClient.js:881:27)\n    at fulfilled (/home/computer/dev/java/lunax/typescript/node_modules/helius-sdk/dist/src/RpcClient.js:5:58)\n    at processTicksAndRejections (native:7:39)","timestamp":"2025-02-22T13:32:07.523Z"}
+{"level":"error","message":"Error creating token: Error sending transaction: Error: RPC error: {\"code\":-32002,\"message\":\"Transaction simulation failed: Blockhash not found\",\"data\":{\"accounts\":null,\"err\":\"BlockhashNotFound\",\"innerInstructions\":null,\"logs\":[],\"replacementBlockhash\":null,\"returnData\":null,\"unitsConsumed\":0}}","stack":"Error: Error sending transaction: Error: RPC error: {\"code\":-32002,\"message\":\"Transaction simulation failed: Blockhash not found\",\"data\":{\"accounts\":null,\"err\":\"BlockhashNotFound\",\"innerInstructions\":null,\"logs\":[],\"replacementBlockhash\":null,\"returnData\":null,\"unitsConsumed\":0}}\n    at <anonymous> (/home/computer/dev/java/lunax/typescript/node_modules/helius-sdk/dist/src/RpcClient.js:881:27)\n    at fulfilled (/home/computer/dev/java/lunax/typescript/node_modules/helius-sdk/dist/src/RpcClient.js:5:58)\n    at processTicksAndRejections (native:7:39)","timestamp":"2025-02-22T13:32:07.524Z"}
+{"level":"error","message":"Token creation attempt failed: Failed to create token: Error sending transaction: Error: RPC error: {\"code\":-32002,\"message\":\"Transaction simulation failed: Blockhash not found\",\"data\":{\"accounts\":null,\"err\":\"BlockhashNotFound\",\"innerInstructions\":null,\"logs\":[],\"replacementBlockhash\":null,\"returnData\":null,\"unitsConsumed\":0}}","timestamp":"2025-02-22T13:32:07.525Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-22T13:32:55.506Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-22T13:32:55.509Z"}
+{"level":"info","message":"Helius RPC and SDK initialized for devnet","timestamp":"2025-02-22T13:32:55.512Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-22T13:32:55.553Z"}
+{"level":"info","message":"Initializing SolanaUtils with cluster URL: https://api.devnet.solana.com","timestamp":"2025-02-22T13:33:05.264Z"}
+{"level":"info","message":"Connection initialized","timestamp":"2025-02-22T13:33:05.266Z"}
+{"level":"info","message":"Helius RPC and SDK initialized for devnet","timestamp":"2025-02-22T13:33:05.268Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-02-22T13:33:05.309Z"}
+{"level":"info","message":"Creating memecoin: Uuuuu (KKKJKKI) with supply 876655","timestamp":"2025-02-22T13:33:37.025Z"}
+{"level":"info","message":"Checking RPC connection...","timestamp":"2025-02-22T13:33:37.026Z"}
+{"feature-set":1725507508,"level":"info","message":"Connected to Solana node version:","solana-core":"2.1.13","timestamp":"2025-02-22T13:33:37.361Z"}
+{"level":"info","message":"Created keypair file at: /home/computer/.config/solana/temp/712218c5-ca7f-4993-ad71-ead832df2e30.json","timestamp":"2025-02-22T13:33:37.366Z"}
+{"level":"info","message":"Keypair saved at: /home/computer/.config/solana/temp/712218c5-ca7f-4993-ad71-ead832df2e30.json","timestamp":"2025-02-22T13:33:37.366Z"}
+{"level":"info","message":"Attempting to create token (3 retries left)...","timestamp":"2025-02-22T13:33:37.367Z"}
+{"level":"info","message":"Update: 🏗️ Creating token...","timestamp":"2025-02-22T13:33:37.368Z"}
+{"level":"info","message":"Update: Token created with address: 52i3Fb5pHeNYqZmjJTEU7e73atMDfFCoVmPneJj86owG","timestamp":"2025-02-22T13:33:39.183Z"}
+{"level":"info","message":"Token created with address: 52i3Fb5pHeNYqZmjJTEU7e73atMDfFCoVmPneJj86owG","timestamp":"2025-02-22T13:33:39.248Z"}
+{"level":"info","message":"Update: 🎨 Creating metadata...","timestamp":"2025-02-22T13:33:39.249Z"}
+{"level":"info","message":"Creating metadata attempt 1/5","timestamp":"2025-02-22T13:33:39.409Z"}
+{"level":"info","message":"Update: Creating metadata attempt 1/5","timestamp":"2025-02-22T13:33:39.410Z"}
+{"level":"info","message":"Getting latest blockhash...","timestamp":"2025-02-22T13:33:39.482Z"}
+{"level":"info","message":"Attempting to use Helius SDK for transaction","timestamp":"2025-02-22T13:33:39.693Z"}
+{"level":"warn","message":"Helius error, falling back to Solana RPC:","timestamp":"2025-02-22T13:33:40.104Z"}
+{"level":"info","message":"Using Solana Web3.js for transaction","timestamp":"2025-02-22T13:33:40.105Z"}
+{"level":"info","message":"Transaction sent with signature: 4gJpRBAe8dmnMjeuTYVs5CtcwcKJftAW7eNrFnAFfD1QiJoYWNvC8mF6jy1TbvBjPyDYUgHKVc5BEaQjSfUX5NS8 (via Solana RPC)","timestamp":"2025-02-22T13:33:40.212Z"}
+{"level":"info","message":"Update: Transaction sent with signature: 4gJpRBAe8dmnMjeuTYVs5CtcwcKJftAW7eNrFnAFfD1QiJoYWNvC8mF6jy1TbvBjPyDYUgHKVc5BEaQjSfUX5NS8","timestamp":"2025-02-22T13:33:40.213Z"}
+{"level":"info","message":"Confirming transaction 4gJpRBAe8dmnMjeuTYVs5CtcwcKJftAW7eNrFnAFfD1QiJoYWNvC8mF6jy1TbvBjPyDYUgHKVc5BEaQjSfUX5NS8","timestamp":"2025-02-22T13:33:40.297Z"}
+{"level":"info","message":"Helius response: {\"context\":{\"apiVersion\":\"2.2.0\",\"slot\":362835991},\"value\":[{\"confirmationStatus\":\"confirmed\",\"confirmations\":1,\"err\":null,\"slot\":362835990,\"status\":{\"Ok\":null}}]}","timestamp":"2025-02-22T13:33:41.271Z"}
+{"level":"info","message":"Transaction 4gJpRBAe8dmnMjeuTYVs5CtcwcKJftAW7eNrFnAFfD1QiJoYWNvC8mF6jy1TbvBjPyDYUgHKVc5BEaQjSfUX5NS8 confirmed with status: confirmed (via Helius)","timestamp":"2025-02-22T13:33:41.272Z"}
+{"level":"info","message":"Metadata transaction sent: 4gJpRBAe8dmnMjeuTYVs5CtcwcKJftAW7eNrFnAFfD1QiJoYWNvC8mF6jy1TbvBjPyDYUgHKVc5BEaQjSfUX5NS8","timestamp":"2025-02-22T13:33:41.272Z"}
+{"level":"info","message":"Update: Metadata transaction sent: 4gJpRBAe8dmnMjeuTYVs5CtcwcKJftAW7eNrFnAFfD1QiJoYWNvC8mF6jy1TbvBjPyDYUgHKVc5BEaQjSfUX5NS8","timestamp":"2025-02-22T13:33:41.272Z"}
+{"level":"info","message":"Metadata created successfully","timestamp":"2025-02-22T13:33:41.353Z"}
+{"level":"info","message":"Update: 💰 Minting initial supply...","timestamp":"2025-02-22T13:33:41.353Z"}
+{"level":"info","message":"Minted 876655 tokens to E6924xdwGd8W1t27PdRWnheeeWfF62o3n9asBwAbE56J","timestamp":"2025-02-22T13:33:47.383Z"}
+{"level":"info","message":"Update: 🔒 Revoking mint authority...","timestamp":"2025-02-22T13:33:47.384Z"}
+{"level":"info","message":"Mint authority revoked","timestamp":"2025-02-22T13:33:49.274Z"}
+{"level":"info","message":"Token created successfully with address: 52i3Fb5pHeNYqZmjJTEU7e73atMDfFCoVmPneJj86owG","timestamp":"2025-02-22T13:33:49.274Z"}
+{"level":"info","message":"Cleaned up keypair file: /home/computer/.config/solana/temp/712218c5-ca7f-4993-ad71-ead832df2e30.json","timestamp":"2025-02-22T13:33:49.275Z"}

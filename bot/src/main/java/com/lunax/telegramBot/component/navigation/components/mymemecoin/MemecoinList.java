@@ -192,67 +192,22 @@ public class MemecoinList implements StateHandler {
         try {
             MessageUtils.getBotInstance().execute(editMessage);
             
-            // Delete existing custom keyboard message if it exists
-            ObjectNode stateData = stateService.getStateData(telegramId);
-            Integer previousMessageId = null;
-            if (stateData.has("tokenKeyboardMessageId")) {
-                previousMessageId = stateData.get("tokenKeyboardMessageId").asInt();
-            }
-
-            if (previousMessageId != null) {
-                DeleteMessage deleteMessage = new DeleteMessage();
-                deleteMessage.setChatId(originalMessage.getChatId().toString());
-                deleteMessage.setMessageId(previousMessageId);
-                try {
-                    MessageUtils.getBotInstance().execute(deleteMessage);
-                } catch (TelegramApiException e) {
-                    log.error("Error deleting previous keyboard message: {}", e.getMessage());
-                }
-            }
-
-            // Create keyboard with current page tokens
-            String[][] keyboardButtons = new String[end - start][1];
-            for (int i = start; i < end; i++) {
-                keyboardButtons[i - start] = new String[]{tokenAddresses.get(i)};
-            }
-
-            // Send new custom keyboard message
-            ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
-            List<KeyboardRow> keyboard = new ArrayList<>();
-            
-            for (String[] rowButton : keyboardButtons) {
-                KeyboardRow keyboardRow = new KeyboardRow();
-                for (String button : rowButton) {
-                    keyboardRow.add(button);
-                }
-                keyboard.add(keyboardRow);
-            }
-            
-            keyboardMarkup.setKeyboard(keyboard);
-            keyboardMarkup.setOneTimeKeyboard(true);
-            keyboardMarkup.setResizeKeyboard(true);
-
-            SendMessage keyboardMsg = SendMessage.builder()
+            // Send a message that the user can reply to
+            SendMessage replyMessage = SendMessage.builder()
                 .chatId(originalMessage.getChatId().toString())
-                .text("Enter the token address to see more information:")
-                .replyMarkup(keyboardMarkup)
+                .text("Please reply with the token address to see more information:")
                 .build();
 
-            try {
-                Message sentMessage = MessageUtils.getBotInstance().execute(keyboardMsg);
-                
-                // First set the state to await token selection
-                stateService.setState(telegramId, ChatState.AWAITING_TOKEN_SELECTION);
-                
-                // Then store the message ID in state data
-                ObjectNode newStateData = stateData.deepCopy();
-                newStateData.put("tokenKeyboardMessageId", sentMessage.getMessageId());
-                stateService.setStateData(telegramId, newStateData);
-                
-            } catch (TelegramApiException e) {
-                log.error("Error sending keyboard message: {}", e.getMessage());
-            }
-
+            Message sentMessage = MessageUtils.getBotInstance().execute(replyMessage);
+            
+            // Set the state to await token selection
+            stateService.setState(telegramId, ChatState.AWAITING_TOKEN_SELECTION);
+            
+            // Store the message ID in state data
+            ObjectNode newStateData = stateService.getStateData(telegramId).deepCopy();
+            newStateData.put("tokenReplyMessageId", sentMessage.getMessageId());
+            stateService.setStateData(telegramId, newStateData);
+            
         } catch (TelegramApiException e) {
             log.error("Error editing message: {}", e.getMessage());
         }
