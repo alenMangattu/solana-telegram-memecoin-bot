@@ -118,7 +118,7 @@ public class MemecoinCreationService {
         newMemecoin.setTotalSupply(supply);
         newMemecoin.setTokenAddress(tokenAddress);
         
-        memecoinRepo.save(newMemecoin);
+        // memecoinRepo.save(newMemecoin);
 
         String successMessage = String.format(
                 "✅ Memecoin created successfully!\n\n" +

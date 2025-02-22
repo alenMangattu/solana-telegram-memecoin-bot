@@ -22,7 +22,9 @@ if (!clusterUrl.startsWith('http://') && !clusterUrl.startsWith('https://')) {
     throw new Error('SOLANA_CLUSTER_URL must start with http:// or https://');
 }
 
-const solanaUtils = new SolanaUtils(clusterUrl);
+// Initialize SolanaUtils with Helius API key from environment variables
+const heliusApiKey = process.env.HELIUS_API_KEY || '';
+const solanaUtils = new SolanaUtils(clusterUrl, heliusApiKey);
 
 // Rate limiting
 const limiter = rateLimit({

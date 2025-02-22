@@ -8,11 +8,16 @@ import path from 'path';
 import os from 'os';
 import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
-import { 
+import {
     createCreateMetadataAccountV3Instruction,
     PROGRAM_ID as METADATA_PROGRAM_ID,
     type DataV2
 } from '@metaplex-foundation/mpl-token-metadata';
+import { HeliusRpcInterface } from './heliusRpcInterface';
+import dotenv from 'dotenv';
+import { Helius } from 'helius-sdk';
+
+dotenv.config(); // Load environment variables
 
 interface WalletData {
     publicKey: string;
@@ -38,17 +43,31 @@ export class SolanaUtils {
     private tokenListCache: Map<string, any>;
     private lastCacheUpdate: number;
     private readonly CACHE_DURATION = 3600000; // 1 hour
+    private heliusRpc: HeliusRpcInterface | null = null;
+    private heliusSdk: Helius | null = null;
 
-    constructor(clusterUrl: string) {
+    constructor(clusterUrl: string, heliusApiKey?: string) {
         logger.info(`Initializing SolanaUtils with cluster URL: ${clusterUrl}`);
         this.connection = new Connection(clusterUrl, {
             commitment: 'confirmed',
-            wsEndpoint: clusterUrl.replace('https', 'wss'),  // Correct WebSocket URL
-            disableRetryOnRateLimit: false,
+            wsEndpoint: clusterUrl.replace('https', 'wss'),
         });
         logger.info('Connection initialized');
         this.tokenListCache = new Map();
         this.lastCacheUpdate = 0;
+
+        // Initialize both Helius RPC and SDK if API key is provided
+        if (heliusApiKey) {
+            // Use devnet URL if clusterUrl contains 'devnet'
+            const isDevnet = clusterUrl.includes('devnet');
+            const heliusUrl = isDevnet
+                ? 'https://devnet.helius-rpc.com/'
+                : 'https://mainnet.helius-rpc.com/';
+
+            this.heliusRpc = new HeliusRpcInterface(heliusApiKey, heliusUrl);
+            this.heliusSdk = new Helius(heliusApiKey);
+            logger.info(`Helius RPC and SDK initialized for ${isDevnet ? 'devnet' : 'mainnet'}`);
+        }
     }
 
     async createWallet(): Promise<WalletInfo> {
@@ -88,10 +107,10 @@ export class SolanaUtils {
     ): Promise<string> {
         try {
             logger.info(`Creating memecoin: ${name} (${symbol}) with supply ${supply}`);
-            
+
             // Check RPC connection before proceeding
             await this.checkRpcConnection();
-            
+
             const keypairPath = await this.saveWalletKeypair(walletPrivateKey);
             logger.info(`Keypair saved at: ${keypairPath}`);
 
@@ -101,7 +120,7 @@ export class SolanaUtils {
             while (retries > 0 && !tokenAddress) {
                 try {
                     logger.info(`Attempting to create token (${retries} retries left)...`);
-                    
+
                     tokenAddress = await this.createTokenWithCli(
                         keypairPath,
                         name,
@@ -148,26 +167,26 @@ export class SolanaUtils {
             // Create temporary directory if it doesn't exist
             const tempDir = path.join(os.homedir(), '.config', 'solana', 'temp');
             await fs.promises.mkdir(tempDir, { recursive: true });
-            
+
             // Create temporary file for keypair
             const filename = `${uuidv4()}.json`;
             const keypairPath = path.join(tempDir, filename);
-            
+
             // Convert Base58 to byte array
             const secretKey = bs58.decode(privateKey);
-            
+
             if (secretKey.length !== 64) {
                 throw new Error(`Invalid secret key length: ${secretKey.length} (expected 64)`);
             }
-            
+
             // Convert bytes to unsigned values and create JSON array
             const jsonArray = Array.from(secretKey);
             const jsonContent = JSON.stringify(jsonArray);
-            
+
             // Write keypair to file
             await fs.promises.writeFile(keypairPath, jsonContent);
             await fs.promises.chmod(keypairPath, 0o600);
-            
+
             logger.info(`Created keypair file at: ${keypairPath}`);
             return keypairPath;
         } catch (error) {
@@ -325,11 +344,11 @@ export class SolanaUtils {
                     reject(new Error(stderr || error.message));
                     return;
                 }
-                
+
                 // Even if there's no error, log the output for debugging
                 if (stdout) logger.debug(`Command stdout: ${stdout}`);
                 if (stderr) logger.debug(`Command stderr: ${stderr}`);
-                
+
                 resolve({ stdout, stderr });
             });
         });
@@ -392,11 +411,11 @@ export class SolanaUtils {
         maxRetries: number = 5
     ): Promise<void> {
         let lastError: Error | null = null;
-        
+
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
             try {
                 logger.info(`Creating metadata attempt ${attempt}/${maxRetries}`);
-                
+
                 if (updateCallback) {
                     await updateCallback(`Creating metadata attempt ${attempt}/${maxRetries}`);
                 }
@@ -438,12 +457,12 @@ export class SolanaUtils {
                 );
 
                 const metadataTx = new Transaction().add(instruction);
-                
+
                 logger.info('Getting latest blockhash...');
                 const { blockhash, lastValidBlockHeight } = await this.connection.getLatestBlockhash();
                 metadataTx.recentBlockhash = blockhash;
                 metadataTx.feePayer = wallet.publicKey;
-                
+
                 // Send and confirm transaction
                 const signature = await this.sendAndConfirmTransaction(metadataTx, [wallet], {
                     commitment: 'confirmed',
@@ -464,129 +483,238 @@ export class SolanaUtils {
                     error: lastError.message,
                     stack: lastError.stack
                 });
-                
+
                 if (attempt < maxRetries) {
-                    const delay = Math.min(attempt * 5000, 30000);
-                    logger.info(`Waiting ${delay}ms before retry ${attempt + 1}/${maxRetries}...`);
-                    await new Promise(resolve => setTimeout(resolve, delay));
+                    // const delay = Math.min(attempt * 5000, 30000);
+                    // logger.info(`Waiting ${delay}ms before retry ${attempt + 1}/${maxRetries}...`);
+                    // await new Promise(resolve => setTimeout(resolve, delay));
                 }
             }
         }
-        
+
         throw lastError || new Error('Failed to create metadata after all retries');
-    }
-
-    private async pollForSignatureStatus(signature: string, maxRetries: number = 10): Promise<void> {
-        logger.info(`Confirming transaction ${signature}`);
-        
-        for (let attempt = 0; attempt < maxRetries; attempt++) {
-            try {
-                // Get status using getSignatureStatus
-                const status = await this.connection.getSignatureStatus(signature);
-                
-                if (!status || !status.value) {
-                    logger.info(`Attempt ${attempt + 1}: No status yet, waiting...`);
-                    await new Promise(resolve => setTimeout(resolve, 2000));
-                    continue;
-                }
-
-                if (status.value.err) {
-                    const errorDetails = JSON.stringify(status.value.err);
-                    logger.error(`Transaction failed with error: ${errorDetails}`);
-                    throw new Error(`Transaction failed: ${errorDetails}`);
-                }
-
-                if (status.value.confirmationStatus === 'confirmed' || 
-                    status.value.confirmationStatus === 'finalized') {
-                    logger.info(`Transaction ${signature} confirmed with status: ${status.value.confirmationStatus}`);
-                    return;
-                }
-
-                logger.info(`Attempt ${attempt + 1}: Status: ${status.value.confirmationStatus}`);
-                // Increase delay for subsequent attempts
-                const delay = Math.min(2000 * (attempt + 1), 10000); // Max 10 second delay
-                await new Promise(resolve => setTimeout(resolve, delay));
-            } catch (error) {
-                const errorMessage = error instanceof Error ? error.message : String(error);
-                logger.error(`Error confirming transaction (attempt ${attempt + 1}/${maxRetries}):`, errorMessage);
-                
-                if (attempt === maxRetries - 1) {
-                    throw new Error(`Failed to confirm transaction after ${maxRetries} attempts: ${errorMessage}`);
-                }
-                
-                // Exponential backoff for retries
-                const delay = Math.min(2000 * Math.pow(2, attempt), 15000); // Max 15 second delay
-                await new Promise(resolve => setTimeout(resolve, delay));
-            }
-        }
-        
-        throw new TransactionTimeoutError(signature, 10);
     }
 
     private async confirmTransaction(signature: string, timeout: number = 60000): Promise<void> {
         logger.info(`Confirming transaction ${signature}`);
-        
-        try {
-            const latestBlockhash = await this.connection.getLatestBlockhash();
-            
-            const response = await this.connection.confirmTransaction({
-                signature,
-                blockhash: latestBlockhash.blockhash,
-                lastValidBlockHeight: latestBlockhash.lastValidBlockHeight
-            }, 'confirmed');
+        const maxRetries = 10;
+        const startTime = Date.now();
 
-            if (response.value.err) {
-                throw new Error(`Transaction failed: ${JSON.stringify(response.value.err)}`);
+        for (let attempt = 0; attempt < maxRetries; attempt++) {
+            try {
+                // Check if we've exceeded timeout
+                if (Date.now() - startTime > timeout) {
+                    throw new TransactionTimeoutError(signature, timeout / 1000);
+                }
+
+                // Try Helius RPC first if available
+                if (this.heliusRpc) {
+                    const response = await this.heliusRpc.getSignatureStatuses([signature], true);
+                    logger.info(`Helius response: ${JSON.stringify(response)}`);
+                    const status = response.value[0];
+
+                    if (status === null) {
+                        logger.info(`Attempt ${attempt + 1}: No status yet from Helius, waiting...`);
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        continue;
+                    }
+
+                    // Check for error in status
+                    if (status.err) {
+                        const errorDetails = JSON.stringify(status.err);
+                        logger.error(`Transaction failed with error (Helius): ${errorDetails}`);
+                        throw new Error(`Transaction failed: ${errorDetails}`);
+                    }
+
+                    // Check for confirmation status
+                    if (status.confirmationStatus === 'confirmed' || 
+                        status.confirmationStatus === 'finalized' ||
+                        (status.status && status.status.Ok === null)) {
+                        logger.info(`Transaction ${signature} confirmed with status: ${status.confirmationStatus || 'finalized'} (via Helius)`);
+                        return;
+                    }
+
+                    logger.info(`Attempt ${attempt + 1}: Helius Status: ${JSON.stringify(status)}`);
+                } else {
+                    // Fallback to regular Solana RPC
+                    const status = await this.connection.getSignatureStatus(signature);
+
+                    if (!status || !status.value) {
+                        logger.info(`Attempt ${attempt + 1}: No status yet from Solana RPC, waiting...`);
+                        await new Promise(resolve => setTimeout(resolve, 2000)); // Wait before retrying
+                        continue;
+                    }
+
+                    if (status.value.err) {
+                        const errorDetails = JSON.stringify(status.value.err);
+                        logger.error(`Transaction failed with error (Solana RPC): ${errorDetails}`);
+                        throw new Error(`Transaction failed: ${errorDetails}`);
+                    }
+
+                    if (status.value.confirmationStatus === 'confirmed' ||
+                        status.value.confirmationStatus === 'finalized') {
+                        logger.info(`Transaction ${signature} confirmed with status: ${status.value.confirmationStatus} (via Solana RPC)`);
+                        return;
+                    }
+
+                    logger.info(`Attempt ${attempt + 1}: Solana RPC Status: ${status.value.confirmationStatus}`);
+                }
+
+                // Calculate delay with exponential backoff
+                const delay = Math.min(1000 * Math.pow(2, attempt), 10000); // Max 10 second delay
+                // await new Promise(resolve => setTimeout(resolve, delay));
+
+            } catch (error) {
+                const errorMessage = error instanceof Error ? error.message : String(error);
+                logger.error(`Error confirming transaction (attempt ${attempt + 1}/${maxRetries}):`, errorMessage);
+
+                if (attempt === maxRetries - 1) {
+                    throw new Error(`Failed to confirm transaction after ${maxRetries} attempts: ${errorMessage}`);
+                }
+
+                // await new Promise(resolve => setTimeout(resolve, 1000));
             }
-
-            logger.info(`Transaction ${signature} confirmed successfully`);
-        } catch (error) {
-            logger.error(`Error confirming transaction: ${error}`);
-            throw error;
         }
+
+        throw new TransactionTimeoutError(signature, timeout / 1000);
     }
 
     async sendAndConfirmTransaction(
         transaction: Transaction,
         signers: Array<Keypair>,
-        options?: ConfirmOptions,
+        options?: ConfirmOptions & {
+            validatorAcls?: string[];
+            skipPreflight?: boolean;
+        },
         updateCallback?: (message: string) => Promise<void>
     ): Promise<string> {
-        const commitment = options?.commitment ?? 'confirmed';
-        const { blockhash, lastValidBlockHeight } = await this.connection.getLatestBlockhash(commitment);
-        
-        transaction.recentBlockhash = blockhash;
-        transaction.sign(...signers);
-    
-        const signature = await this.connection.sendRawTransaction(transaction.serialize(), {
-            skipPreflight: options?.skipPreflight,
-            preflightCommitment: options?.preflightCommitment || commitment,
-            maxRetries: options?.maxRetries
-        });
-    
-        logger.info(`Transaction sent with signature: ${signature}`);
-    
-        // if (updateCallback) {
-        //     await updateCallback(`Transaction sent with signature: ${signature}`);
-        // }
-    
-        try {
-            await this.confirmTransaction(signature);
-            // if (updateCallback) {
-            //     // await updateCallback(`Transaction ${signature} confirmed successfully`);
-            // }
-            return signature;
-        } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : String(error);
-            logger.error(`Transaction confirmation failed: ${errorMessage}`);
-            if (updateCallback) {
-                await updateCallback(`Transaction failed: ${errorMessage}`);
+        const maxRetries = 3;
+        let lastError: Error | null = null;
+
+        for (let attempt = 0; attempt < maxRetries; attempt++) {
+            try {
+                // Get fresh blockhash for each attempt
+                const { blockhash, lastValidBlockHeight } = await this.connection.getLatestBlockhash('confirmed');
+                transaction.recentBlockhash = blockhash;
+                transaction.feePayer = signers[0].publicKey;
+                transaction.signatures = [];
+                transaction.sign(...signers);
+
+                // Try Helius first if available
+                if (this.heliusSdk && attempt === 0) { // Only try Helius on first attempt
+                    try {
+                        logger.info('Attempting to use Helius SDK for transaction');
+                        const signature = await this.heliusSdk.rpc.sendTransaction(
+                            transaction,
+                            {
+                                skipPreflight: options?.skipPreflight ?? false,
+                                maxRetries: 1, // Let our outer retry handle retries
+                            }
+                        );
+
+                        logger.info(`Transaction sent with signature: ${signature} (via Helius)`);
+                        if (updateCallback) {
+                            await updateCallback(`Transaction sent with signature: ${signature}`);
+                        }
+
+                        await this.confirmTransaction(signature);
+                        return signature;
+                    } catch (heliusError) {
+                        const errorMessage = heliusError instanceof Error ? heliusError.message : String(heliusError);
+                        if (!errorMessage.includes('429') && !errorMessage.includes('BlockhashNotFound')) {
+                            throw heliusError;
+                        }
+                        logger.warn('Helius error, falling back to Solana RPC:', errorMessage);
+                    }
+                }
+
+                // Fallback to regular Solana Web3.js
+                logger.info('Using Solana Web3.js for transaction');
+                const commitment = options?.commitment ?? 'confirmed';
+                
+                const rawTransaction = transaction.serialize();
+                const signature = await this.connection.sendRawTransaction(
+                    rawTransaction,
+                    {
+                        skipPreflight: options?.skipPreflight,
+                        preflightCommitment: commitment,
+                        maxRetries: 1, // We handle retries here
+                    }
+                );
+
+                logger.info(`Transaction sent with signature: ${signature} (via Solana RPC)`);
+                if (updateCallback) {
+                    await updateCallback(`Transaction sent with signature: ${signature}`);
+                }
+
+                await this.confirmTransaction(signature);
+                return signature;
+
+            } catch (error) {
+                lastError = error instanceof Error ? error : new Error(String(error));
+                const errorMessage = lastError.message;
+
+                logger.error(`Transaction attempt ${attempt + 1} failed:`, errorMessage);
+                if (updateCallback) {
+                    await updateCallback(`Transaction attempt ${attempt + 1} failed: ${errorMessage}`);
+                }
+
+                // If it's not a blockhash error, throw immediately
+                if (!errorMessage.includes('BlockhashNotFound') && 
+                    !errorMessage.includes('blockhash')) {
+                    throw lastError;
+                }
+
+                // Wait before retry
+                if (attempt < maxRetries - 1) {
+                    const delay = Math.min(1000 * Math.pow(2, attempt), 4000);
+                    logger.info(`Waiting ${delay}ms before retry...`);
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
             }
-            throw error;
         }
+
+        throw lastError || new Error('Transaction failed after all retries');
     }
 
     public async confirmTransactionWrapper(signature: string, timeout: number = 60000): Promise<void> {
         return this.confirmTransaction(signature, timeout);
+    }
+
+    /**
+     * Gets transaction status using Helius RPC
+     * @param signature Transaction signature
+     * @returns Transaction status or null if not found
+     */
+    async getTransactionStatus(signature: string): Promise<SignatureStatus | null> {
+        try {
+            if (!this.heliusRpc) {
+                throw new Error('Helius RPC not initialized - API key required');
+            }
+
+            const response = await this.heliusRpc.getSignatureStatuses([signature], true);
+            return response.value[0];
+        } catch (error) {
+            logger.error('Error getting transaction status:', error);
+            throw new Error(`Failed to get transaction status: ${error instanceof Error ? error.message : String(error)}`);
+        }
+    }
+
+    /**
+     * Gets all tokens owned by an address using Helius RPC
+     * @param ownerAddress Owner's wallet address
+     * @returns Array of token accounts
+     */
+    async getAllTokensByOwner(ownerAddress: string) {
+        try {
+            if (!this.heliusRpc) {
+                throw new Error('Helius RPC not initialized - API key required');
+            }
+
+            return await this.heliusRpc.getAllTokensByOwner(ownerAddress);
+        } catch (error) {
+            logger.error('Error getting tokens by owner:', error);
+            throw new Error(`Failed to get tokens: ${error instanceof Error ? error.message : String(error)}`);
+        }
     }
 } 
