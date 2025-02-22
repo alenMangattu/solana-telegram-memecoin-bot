@@ -13,6 +13,12 @@ if (!process.env.SOLANA_CLUSTER_URL) {
   process.exit(1);
 }
 
+// Check if HELIUS_API_KEY is set
+if (!process.env.HELIUS_API_KEY) {
+  console.error('Error: HELIUS_API_KEY is not defined in the environment variables.');
+  process.exit(1);
+}
+
 let httpServer: Server;
 
 // Start the server
