@@ -8,8 +8,7 @@ import { PublicKey, Keypair, Connection } from '@solana/web3.js'
 import BN from 'bn.js'
 import bs58 from 'bs58'
 import logger from '../logger'
-import { sendUnconfirmedTransaction, confirmLater } from './utils'
-
+import { sendUnconfirmedTransaction, confirmLater, createTransaction, sendAndConfirmTransaction } from './utils'
 // CPMM Program ID for Standard AMM
 const CPMM_PROGRAM_ID = new PublicKey('CPMDWBwJDtYax9qW7AyRuVC19Cc4L4Vcy4n2BHAbHkCW')
 

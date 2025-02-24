@@ -27,9 +27,11 @@ interface SignatureStatusResponse {
 export class HeliusRpcInterface {
     private readonly rpcClient: AxiosInstance;
     private readonly apiKey: string;
+    private readonly baseUrl: string;
 
-    constructor(apiKey: string, baseUrl: string = 'https://mainnet.helius-rpc.com/') {
+    constructor(apiKey: string, baseUrl: string) {
         this.apiKey = apiKey;
+        this.baseUrl = baseUrl;
         this.rpcClient = axios.create({
             baseURL: `${baseUrl}?api-key=${this.apiKey}`,
             headers: {
@@ -266,6 +268,24 @@ export class HeliusRpcInterface {
      */
     public async getRecentPerformanceSamples() {
         return this.callRpcMethod('getRecentPerformanceSamples', []);
+    }
+
+    async getAssetsByGroup(params: { groupKey: string; groupValue: string }): Promise<any> {
+        try {
+            const response = await axios.post(
+                `${this.baseUrl}?api-key=${this.apiKey}`,
+                {
+                    jsonrpc: '2.0',
+                    id: 'helius-test',
+                    method: 'getAssetsByGroup',
+                    params
+                }
+            );
+            return response.data.result;
+        } catch (error) {
+            logger.error('Error fetching assets by group:', error);
+            throw error;
+        }
     }
 }
 

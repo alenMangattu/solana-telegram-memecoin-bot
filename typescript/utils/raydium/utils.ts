@@ -1,46 +1,58 @@
-import { Connection, VersionedTransaction } from '@solana/web3.js';
+import { Connection, Transaction, Keypair, TransactionInstruction } from '@solana/web3.js';
 import logger from '../logger';
-import { SolanaUtils } from '../solanaUtils';
 
 export const isValidAmm = (programId: string): boolean => {
     // Your logic to validate the AMM
     return programId === 'expectedProgramId'; // Example condition
 };
 
-export async function sendUnconfirmedTransaction(connection: Connection, tx: VersionedTransaction) {
+export async function sendUnconfirmedTransaction(
+    connection: Connection,
+    transaction: Transaction,
+    signers: Keypair[]
+): Promise<string> {
     try {
-        const rawTx = tx.serialize();
-        const txId = await connection.sendRawTransaction(rawTx, {
-            skipPreflight: true,
-            preflightCommitment: 'processed'
+        const signature = await connection.sendTransaction(transaction, signers, {
+            skipPreflight: true
         });
-        
-        logger.info(`Transaction sent: ${txId}`);
-        return txId;
-        
+        return signature;
     } catch (error) {
-        logger.error('Error sending transaction:', error);
+        logger.error('Error sending unconfirmed transaction:', error);
         throw error;
     }
 }
 
-export async function confirmLater(connection: Connection, txId: string, retries = 5) {
-    const solanaUtils = new SolanaUtils(connection.rpcEndpoint);
-
-    for (let i = 0; i < retries; i++) {
-        try {
-            logger.info(`Confirming transaction ${txId}`);
-            await solanaUtils.confirmTransactionWrapper(txId);
-            
-            logger.info(`Transaction ${txId} confirmed`);
-            return true;
-            
-        } catch (error) {
-            logger.warn(`Confirmation attempt ${i + 1} failed:`, error);
-            await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5s
+export async function confirmLater(connection: Connection, signature: string): Promise<void> {
+    try {
+        const result = await connection.confirmTransaction(signature, 'confirmed');
+        if (result.value.err) {
+            throw new Error(`Transaction failed: ${JSON.stringify(result.value.err)}`);
         }
+    } catch (error) {
+        logger.error('Error confirming transaction:', error);
+        throw error;
     }
-    
-    logger.error(`Transaction ${txId} not confirmed after ${retries} attempts`);
-    return false;
+}
+
+export async function createTransaction(
+    connection: Connection,
+    instructions: TransactionInstruction[],
+    signers: Keypair[]
+): Promise<Transaction> {
+    const transaction = new Transaction();
+    transaction.add(...instructions);
+    const { blockhash } = await connection.getLatestBlockhash();
+    transaction.recentBlockhash = blockhash;
+    transaction.feePayer = signers[0].publicKey;
+    return transaction;
+}
+
+export async function sendAndConfirmTransaction(
+    connection: Connection,
+    transaction: Transaction,
+    signers: Keypair[]
+): Promise<string> {
+    const signature = await connection.sendTransaction(transaction, signers);
+    await confirmLater(connection, signature);
+    return signature;
 }
