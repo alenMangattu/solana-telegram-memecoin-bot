@@ -152,35 +152,68 @@ const createMemecoinSchema = z.object({
 });
 
 // Add the memecoin creation endpoint
+// app.post('/api/memecoin/create', async (req, res) => {
+//     try {
+//         const data = createMemecoinSchema.parse(req.body);
+        
+//         const tokenAddress = await memecoinService.createMemecoin(
+//             data.walletPrivateKey,
+//             data.name,
+//             data.symbol,
+//             data.decimals,
+//             data.supply,
+//             data.metadataUri,
+//             data.revokeMintAuthority,
+//             data.revokeFreezeAuthority,
+//             data.chatId
+//         );
+        
+//         res.json({ 
+//             success: true,
+//             tokenAddress 
+//         });
+//     } catch (error) {
+//         logger.error('Memecoin creation error:', error);
+//         res.status(500).json({ 
+//             success: false,
+//             error: 'Failed to create memecoin',
+//             details: error instanceof Error ? error.message : String(error)
+//         });
+//     }
+// });
+
 app.post('/api/memecoin/create', async (req, res) => {
     try {
-        const data = createMemecoinSchema.parse(req.body);
-        
-        const tokenAddress = await memecoinService.createMemecoin(
-            data.walletPrivateKey,
-            data.name,
-            data.symbol,
-            data.decimals,
-            data.supply,
-            data.metadataUri,
-            data.revokeMintAuthority,
-            data.revokeFreezeAuthority,
-            data.chatId
-        );
-        
-        res.json({ 
-            success: true,
-            tokenAddress 
-        });
+      const {
+        walletPrivateKey,
+        name,
+        symbol,
+        decimals,
+        supply,
+        metadataUri,
+        revokeMintAuthority,
+        revokeFreezeAuthority,
+        chatId,
+      } = req.body;
+  
+      const tokenAddress = await memecoinService.createMemecoin(
+        walletPrivateKey,
+        name,
+        symbol,
+        decimals,
+        supply,
+        metadataUri,
+        revokeMintAuthority,
+        revokeFreezeAuthority,
+        chatId
+      );
+  
+      res.json({ success: true, tokenAddress });
     } catch (error) {
-        logger.error('Memecoin creation error:', error);
-        res.status(500).json({ 
-            success: false,
-            error: 'Failed to create memecoin',
-            details: error instanceof Error ? error.message : String(error)
-        });
+      logger.error('Error in creating memecoin', error);
+      res.status(500).json({ success: false, error: error instanceof Error ? error.message : String(error) });
     }
-});
+  });
 
 app.listen(port, () => {
     logger.info(`Server running on port ${port}`);
