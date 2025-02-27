@@ -1,11 +1,11 @@
 import express from 'express';
 import rateLimit from 'express-rate-limit';
 import { z } from 'zod';
-import { SolanaUtils } from './solanaUtils';
-import { MemecoinService } from './trading/memecoinService';
-import { LiquidityService } from './trading/liquidityService';
-import { HeliusRpcInterface } from './heliusRpcInterface';
-import logger from './logger';
+import { SolanaUtils } from './utils/solanaUtils';
+import { MemecoinService } from './utils/trading/memecoinService';
+import { LiquidityService } from './utils/trading/liquidityService';
+import { HeliusRpcInterface } from './utils/heliusRpcInterface';
+import logger from './utils/logger';
 import dotenv from 'dotenv';
 
 dotenv.config();

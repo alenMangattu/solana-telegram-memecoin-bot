@@ -245,7 +245,7 @@ public class MemecoinList implements StateHandler {
                     log.info("Cache Value: {}", value);
                 });
             }
-            log.info("===========================");
+            log.info("==========================");
         }
     }
 
