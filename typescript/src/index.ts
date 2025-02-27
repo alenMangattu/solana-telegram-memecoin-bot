@@ -1,6 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import { server } from './utils/server';
+import { server } from './server';
 import type { Server } from 'http';
 
 dotenv.config();
