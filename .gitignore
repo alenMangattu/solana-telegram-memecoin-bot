@@ -66,3 +66,6 @@ typescript/combined.log
 typescript/error.log
 chart/__pycache__/
 chart/venv/
+
+# Local changes
+.env
