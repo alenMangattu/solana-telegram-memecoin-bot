@@ -14,57 +14,35 @@ import org.p2p.solanaj.rpc.RpcClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.objects.Update;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.lunax.telegramBot.model.db.Memecoin;
-import com.lunax.telegramBot.model.db.User;
-import com.lunax.telegramBot.model.db.Wallet;
-import com.lunax.telegramBot.model.repository.WalletRepository;
-import com.lunax.telegramBot.service.UserService;
-import com.lunax.telegramBot.utils.components.MessageUtils;
-import com.lunax.telegramBot.service.MemecoinDbService;
 
 import lombok.extern.slf4j.Slf4j;
 
-import java.math.BigDecimal;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.*;
-import java.util.Collections;
-import java.io.IOException;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.Data;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import java.time.Duration;
 import org.apache.http.client.config.RequestConfig;
-import org.apache.http.impl.client.HttpClients;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.web.client.RestClientException;
 
 @Slf4j
 @Component
 public class SolanaUtils {
     private final RpcClient client;
-    private final RestTemplate restTemplate;
     private final String apiBaseUrl;
     private final ObjectMapper objectMapper;
     
     @Autowired
     private WalletKeyManager walletKeyManager;
-    
-    @Autowired
-    private WalletRepository walletRepository;
-    
     @Autowired
     private SolanaCliUtils solanaCliUtils;
     
-    @Autowired
-    private UserService userService;
-    
-    @Autowired
-    private MemecoinDbService memecoinDbService;
+    @Value("${helius.api.key}")
+    private  String heliusApiKey;
     
     @Autowired
     public SolanaUtils(
@@ -80,11 +58,6 @@ public class SolanaUtils {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(60000);  // 60 seconds connection timeout
         factory.setReadTimeout(60000);     // 60 seconds read timeout
-        
-        this.restTemplate = new RestTemplateBuilder()
-            .setConnectTimeout(Duration.ofSeconds(60))
-            .setReadTimeout(Duration.ofSeconds(60))
-            .build();
     }
    
     @Value("${solana.cluster.url}")
@@ -568,5 +541,65 @@ public class SolanaUtils {
             log.error("Failed to fetch token accounts for wallet {}: {}", walletAddress, e.getMessage());
             return Collections.emptyList();
         }
+    }
+
+    /**
+     * Fetches token information from the Helius API.
+     * @param tokenAddress The token address to fetch information for.
+     * @return A map containing token information.
+     */
+    public  Map<String, Object> getTokenInformation(String tokenAddress) {
+        Map<String, Object> tokenInfo = new HashMap<>();
+        String heliusApiUrl = "https://mainnet.helius-rpc.com/?api-key=" + heliusApiKey;
+
+        try {
+            // Create the payload for the request
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("jsonrpc", "2.0");
+            payload.put("id", 1);
+            payload.put("method", "getAsset");
+            Map<String, String> params = new HashMap<>();
+            params.put("id", tokenAddress);
+            payload.put("params", params);
+
+            // Make the request
+            ResponseEntity<JsonNode> response = new RestTemplate().postForEntity(
+                heliusApiUrl,
+                new HttpEntity<>(payload, createHeaders()),
+                JsonNode.class
+            );
+
+            // Log the response for debugging
+            log.info("Token information response: {}", response.getBody());
+
+            // Check if the response is successful
+            if (response.getStatusCode() == HttpStatus.OK) {
+                JsonNode result = response.getBody().get("result");
+                if (result != null) {
+                    // Extract relevant fields
+                    tokenInfo.put("name", result.get("content").get("metadata").get("name").asText());
+                    tokenInfo.put("symbol", result.get("content").get("metadata").get("symbol").asText());
+                    tokenInfo.put("decimals", result.get("token_info").get("decimals").asInt());
+                    tokenInfo.put("totalSupply", result.get("token_info").get("supply").asLong());
+                    tokenInfo.put("priceUSD", result.get("token_info").get("price_info").get("price_per_token").asDouble());
+                    // Add more fields as needed
+                }
+            } else {
+                log.error("Failed to fetch token information: {}", response.getStatusCode());
+            }
+        } catch (RestClientException e) {
+            log.error("Error making request to Helius API: {}", e.getMessage());
+        } catch (Exception e) {
+            log.error("Error processing token information: {}", e.getMessage());
+        }
+
+        return tokenInfo;
+    }
+
+    // Helper method to create headers for the request
+    private  HttpHeaders createHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        return headers; // No need to set the API key in headers
     }
 }

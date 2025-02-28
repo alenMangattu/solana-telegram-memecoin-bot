@@ -19,6 +19,7 @@ import com.lunax.telegramBot.utils.IpfsUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import com.lunax.telegramBot.component.navigation.components.token.TokenInfo;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -49,6 +50,9 @@ public class BotController extends TelegramLongPollingBot {
 
     @Autowired
     private AskMemeCoinData askMemeCoinData;
+
+    @Autowired
+    private TokenInfo tokenInfo;
 
     @Autowired
     private AddLiquidity addLiquidity;
@@ -137,13 +141,8 @@ public class BotController extends TelegramLongPollingBot {
                     } else if (currentState.isLiquidityAddition()) {
                         addLiquidity.handleMessage(update);
                     } else if (currentState == ChatState.AWAITING_TOKEN_SELECTION) {
-
-                        // Add handler for token selection
-                        if (currentState == ChatState.AWAITING_TOKEN_SELECTION) {
-                            MessageUtils.sendMessage(update, "Selected token: " + messageText);
-                            return;
-                        }
-
+                        tokenInfo.executeVoid(update);
+                        stateService.setState(telegramId, null);
                     } else if (message.hasText()) {
                         log.info("Received: {}", messageText);
                     }
