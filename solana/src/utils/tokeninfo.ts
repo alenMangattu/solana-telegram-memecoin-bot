@@ -2,6 +2,7 @@ import { Connection, PublicKey, type ParsedAccountData } from '@solana/web3.js';
 import { Liquidity } from '@raydium-io/raydium-sdk';
 import axios from 'axios';
 import dotenv from 'dotenv';
+import { SolanaUtils } from './solanaUtils';
 
 dotenv.config();
 
@@ -31,17 +32,22 @@ export class TokenInfoService {
     private birdeyeApiUrl: string;
     private birdeyeApiKey: string;
     private connection: Connection;
+    private solanaUtils: SolanaUtils;
 
-    constructor() {
+    constructor(solanaUtils: SolanaUtils) {
         this.jupiterApiUrl = 'https://price.jup.ag/v4';
         this.birdeyeApiUrl = 'https://public-api.birdeye.so';
         this.birdeyeApiKey = process.env.BIRDEYE_API_KEY || '';
-        this.connection = new Connection(process.env.SOLANA_RPC_URL || '');
+        this.connection = new Connection(process.env.SOLANA_CLUSTER_URL || '');
+        this.solanaUtils = solanaUtils;
     }
 
     async getTokenInformation(tokenAddress: string): Promise<TokenInfo> {
         try {
-            const [marketData, poolInfo, holderStats] = await Promise.all([
+            const heliusApiUrl = this.solanaUtils.getHeliusApiUrl();
+            const [heliusData, basicInfo, marketData, poolInfo, holderStats] = await Promise.all([
+                this.getHeliusTokenInfo(tokenAddress, heliusApiUrl),
+                this.getBasicTokenInfo(tokenAddress),
                 this.getTokenMarketData(tokenAddress),
                 this.getLiquidityPoolInfo(tokenAddress),
                 this.getTokenHolderStats(tokenAddress)
@@ -49,7 +55,7 @@ export class TokenInfoService {
 
             return {
                 address: tokenAddress,
-                ...(await this.getBasicTokenInfo(tokenAddress)),
+                ...basicInfo,
                 ...marketData,
                 ...poolInfo,
                 holderStats
@@ -60,24 +66,72 @@ export class TokenInfoService {
         }
     }
 
-    private async getBasicTokenInfo(tokenAddress: string) {
-        const tokenPublicKey = new PublicKey(tokenAddress);
-        const tokenInfo = await this.connection.getParsedAccountInfo(tokenPublicKey);
-        const parsedData = tokenInfo.value?.data as { info?: { name?: string; symbol?: string; decimals?: number; supply?: number; } }; // Adjusted type to match expected structure
-        return {
-            name: parsedData.info?.name || '',
-            symbol: parsedData.info?.symbol || '',
-            decimals: parsedData.info?.decimals || 0,
-            totalSupply: parsedData.info?.supply || 0,
-        };
+    private async getHeliusTokenInfo(tokenAddress: string, heliusApiUrl: string | undefined) {
+        if (!heliusApiUrl) {
+            throw new Error('Helius API URL is not defined');
+        }
+
+        try {
+            const payload = {
+                jsonrpc: "2.0",
+                id: 1,
+                method: "getAsset",
+                params: {
+                    id: tokenAddress // Use the token address as the ID
+                }
+            };
+
+            const response = await axios.post(heliusApiUrl, payload, {
+                headers: {
+                    'X-API-KEY': process.env.HELIUS_API_KEY || '',
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const tokenData = response.data.result;
+
+            return {
+                name: tokenData.content.metadata.name,
+                symbol: tokenData.content.metadata.symbol,
+                decimals: tokenData.token_info.decimals,
+                totalSupply: tokenData.token_info.supply,
+                priceUSD: tokenData.token_info.price_info?.price_per_token,
+                marketCap: tokenData.marketCap,
+                volume24h: tokenData.volume24h,
+                priceChange24h: tokenData.priceChange24h,
+                liquidityUSD: tokenData.liquidityUSD,
+                poolAddress: tokenData.poolAddress,
+                poolTokens: tokenData.poolTokens,
+                poolSOL: tokenData.poolSOL,
+            };
+        } catch (error) {
+            console.error('Error fetching token info from Helius:', error);
+            throw new Error('Failed to fetch token info from Helius');
+        }
+    }
+
+    async getBasicTokenInfo(tokenAddress: string) {
+        try {
+            const tokenPublicKey = new PublicKey(tokenAddress);
+            const tokenInfo = await this.connection.getParsedAccountInfo(tokenPublicKey);
+            const parsedData = tokenInfo.value?.data as { info?: { name?: string; symbol?: string; decimals?: number; supply?: number; } };
+            return {
+                name: parsedData.info?.name || '',
+                symbol: parsedData.info?.symbol || '',
+                decimals: parsedData.info?.decimals || 0,
+                totalSupply: parsedData.info?.supply || 0,
+            };
+        } catch (error) {
+            console.error('Error getting basic token info:', error);
+            throw new Error('Invalid token address or unable to fetch token info');
+        }
     }
 
     private async getTokenMarketData(tokenAddress: string) {
         try {
             // Get price from Jupiter
             const jupiterResponse = await axios.get(
-                `${this.jupiterApiUrl}/price?ids=${tokenAddress}`
-            );
+                `${this.jupiterApiUrl}/price?ids=${tokenAddress}`            );
 
             // Get market data from Birdeye
             const birdeyeResponse = await axios.get(

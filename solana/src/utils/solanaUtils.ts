@@ -22,8 +22,11 @@ import {
     setAuthority,
     AuthorityType,
 } from '@solana/spl-token';
-
+import { TokenListProvider } from '@solana/spl-token-registry';
 const execAsync = promisify(exec);
+
+// Load environment variables from .env file
+dotenv.config();
 
 const TOKEN_PROGRAM_ID = new PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');
 
@@ -177,5 +180,29 @@ export class SolanaUtils {
             blockhash: latestBlockhash.blockhash,
             lastValidBlockHeight: latestBlockhash.lastValidBlockHeight
         }, commitment);
+    }
+
+    async getTokenMetadata(tokenAddress: string) {
+        const mintAddress = new PublicKey(tokenAddress);
+    
+        let tokenName: string;
+        let tokenSymbol: string;
+        let tokenLogo: string;
+    
+        const provider = await new TokenListProvider().resolve();
+        const tokenList = provider.filterByChainId(Number(process.env.SOLANA_CHAIN_ID)).getList();
+        const tokenMap = tokenList.reduce((map, item) => {
+            map.set(item.address, item);
+            return map;
+        }, new Map());
+    
+        const tokenData = tokenMap.get(mintAddress.toBase58());
+        tokenName = tokenData.name;
+        tokenSymbol = tokenData.symbol;
+        tokenLogo = tokenData.logoURI;
+    }
+
+    getHeliusApiUrl(): string | undefined {
+        return this.heliusApiKey ? `https://api.helius.xyz/v0/assets` : undefined;
     }
 }

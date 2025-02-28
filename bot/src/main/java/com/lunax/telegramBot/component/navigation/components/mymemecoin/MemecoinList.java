@@ -2,8 +2,6 @@ package com.lunax.telegramBot.component.navigation.components.mymemecoin;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
@@ -16,17 +14,13 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
-import org.springframework.context.ApplicationEventPublisher;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.lunax.telegramBot.component.navigation.components.StateHandler;
-import com.lunax.telegramBot.model.db.Memecoin;
 import com.lunax.telegramBot.model.db.User;
-import com.lunax.telegramBot.model.repository.MemecoinRepo;
 import com.lunax.telegramBot.service.UserService;
 import com.lunax.telegramBot.utils.SolanaUtils;
 import com.lunax.telegramBot.utils.components.MessageUtils;
@@ -40,9 +34,6 @@ import lombok.extern.slf4j.Slf4j;
 public class MemecoinList implements StateHandler {
 
     @Autowired
-    private MemecoinRepo memecoinRepo;
-
-    @Autowired
     private SolanaUtils solanaUtils;
 
     @Autowired
@@ -52,13 +43,13 @@ public class MemecoinList implements StateHandler {
     private CacheManager cacheManager;
 
     @Autowired
-    private ApplicationEventPublisher eventPublisher;
-
-    @Autowired
     private StateService stateService;
 
-    private Map<Long, Memecoin> memecoinCache = new ConcurrentHashMap<>();
+    @Autowired
+    private ObjectMapper objectMapper;
+
     private static final int PAGE_SIZE = 5; // Number of memecoins per page
+    private boolean messageSent = false;
 
     @Override
     public void executeVoid(Update update) {
@@ -82,11 +73,46 @@ public class MemecoinList implements StateHandler {
 
         // Fetch the user based on the Telegram ID
         Long telegramId = update.getCallbackQuery().getFrom().getId();
-        User user = userService.findByTelegramId(telegramId).orElse(null);
+        
+        // First set the state to ensure current_page is not null
+        stateService.setState(telegramId, ChatState.IDLE);
+        
+        // Get and check the current user state
+        ObjectNode stateData = stateService.getStateData(telegramId);
+        
+        // Clean up previous token selection message if exists
+        if (stateData != null && stateData.has("tokenReplyMessageId")) {
+            try {
+                int previousMessageId = stateData.get("tokenReplyMessageId").asInt();
+                DeleteMessage deleteMessage = new DeleteMessage();
+                deleteMessage.setChatId(originalMessage.getChatId().toString());
+                deleteMessage.setMessageId(previousMessageId);
+                MessageUtils.getBotInstance().execute(deleteMessage);
+                log.info("Deleted previous token selection message: {}", previousMessageId);
+            } catch (Exception e) {
+                log.warn("Could not delete previous token selection message: {}", e.getMessage());
+            }
+        }
+        
+        // Reset state and create fresh state data
+        // Make sure we set the state before setting state data
+        stateService.setState(telegramId, ChatState.IDLE);
+        stateData = objectMapper.createObjectNode();
+        stateService.setStateData(telegramId, stateData);
+        messageSent = false;
+        
+        User user = getUserFromCacheOrDatabase(telegramId);
 
         if (user == null) {
             log.error("User not found for Telegram ID: {}", telegramId);
             return; // Exit if user is not found
+        }
+        
+        // Initialize state data for this user if it doesn't exist
+        if (stateData == null) {
+            stateData = objectMapper.createObjectNode();
+            stateService.setStateData(telegramId, stateData);
+            log.info("Initialized new state data for user {}", telegramId);
         }
 
         // Check if data is in cache
@@ -138,7 +164,7 @@ public class MemecoinList implements StateHandler {
 
         // Prepare the formatted list of tokens
         StringBuilder formattedList = new StringBuilder();
-        formattedList.append("*Here is the list of your token holdings (Page " + (page + 1) + "):*\n\n");
+        formattedList.append("📜 *Here is the list of your token holdings (Page " + (page + 1) + "):*\n\n");
         
         int totalTokens = tokenAddresses.size();
         int totalPages = (int) Math.ceil((double) totalTokens / PAGE_SIZE);
@@ -191,23 +217,45 @@ public class MemecoinList implements StateHandler {
 
         try {
             MessageUtils.getBotInstance().execute(editMessage);
-            
-            // Send a message that the user can reply to
-            SendMessage replyMessage = SendMessage.builder()
-                .chatId(originalMessage.getChatId().toString())
-                .text("Please reply with the token address to see more information:")
-                .build();
 
-            Message sentMessage = MessageUtils.getBotInstance().execute(replyMessage);
+            // Get state data, ensuring it's never null
+            ObjectNode stateData2 = stateService.getStateData(telegramId);
+            if (stateData2 == null) {
+                stateData2 = objectMapper.createObjectNode();
+                stateService.setStateData(telegramId, stateData2);
+            }
             
-            // Set the state to await token selection
-            stateService.setState(telegramId, ChatState.AWAITING_TOKEN_SELECTION);
-            
-            // Store the message ID in state data
-            ObjectNode newStateData = stateService.getStateData(telegramId).deepCopy();
-            newStateData.put("tokenReplyMessageId", sentMessage.getMessageId());
-            stateService.setStateData(telegramId, newStateData);
-            
+            // Only send the token selection message if we haven't sent it yet
+            if (!messageSent) {
+                try {
+                    // Set state for awaiting token selection BEFORE setting state data
+                    stateService.setState(telegramId, ChatState.AWAITING_TOKEN_SELECTION);
+                    
+                    // Now get the state data and update it
+                    stateData2 = stateService.getStateData(telegramId);
+                    if (stateData2 == null) {
+                        stateData2 = objectMapper.createObjectNode();
+                    }
+                    stateData2.put("awaitingTokenAddress", true);
+                    
+                    SendMessage replyMessage = SendMessage.builder()
+                        .chatId(originalMessage.getChatId().toString())
+                        .text("Please enter the token address to see more information:")
+                        .parseMode("Markdown")
+                        .build();
+
+                    Message sentMessage = MessageUtils.getBotInstance().execute(replyMessage);
+                    // Store the message ID in state data
+                    stateData2.put("tokenReplyMessageId", sentMessage.getMessageId());
+                    stateService.setStateData(telegramId, stateData2);
+                    log.info("Sent token selection message to user {} with message ID {}", telegramId, sentMessage.getMessageId());
+                    
+                    // Set flag to avoid sending the message again
+                    messageSent = true;
+                } catch (Exception e) {
+                    log.error("Error sending token selection message: {}", e.getMessage());
+                }
+            }
         } catch (TelegramApiException e) {
             log.error("Error editing message: {}", e.getMessage());
         }
@@ -249,16 +297,39 @@ public class MemecoinList implements StateHandler {
         }
     }
 
-    // Add method to handle token selection
-    public void handleTokenSelection(Update update) {
-        String selectedToken = update.getMessage().getText();
-        Long telegramId = update.getMessage().getFrom().getId();
+    // Method to get user from cache or database
+    private User getUserFromCacheOrDatabase(Long telegramId) {
+        // Check if user data is cached
+        User user = userService.findByTelegramId(telegramId).orElse(null);
+        if (user != null) {
+            // Cache the user data if not already cached
+            // Implement caching logic here if needed
+        }
+        return user;
+    }
+
+    // You can call this method from your controller or handler for /start command
+    public void resetUserState(Long telegramId, Long chatId) {
+        ObjectNode stateData = stateService.getStateData(telegramId);
+        if (stateData != null && stateData.has("tokenReplyMessageId")) {
+            try {
+                int previousMessageId = stateData.get("tokenReplyMessageId").asInt();
+                DeleteMessage deleteMessage = new DeleteMessage();
+                deleteMessage.setChatId(chatId.toString());
+                deleteMessage.setMessageId(previousMessageId);
+                MessageUtils.getBotInstance().execute(deleteMessage);
+                log.info("Deleted token selection message during state reset: {}", previousMessageId);
+            } catch (Exception e) {
+                log.warn("Could not delete token selection message during state reset: {}", e.getMessage());
+            }
+        }
         
-        // Here you can add logic to show token information
-        MessageUtils.sendMessage(update, "Selected token: " + selectedToken);
-        
-        // Reset state
+        // First set the state to IDLE to ensure current_page is not null
         stateService.setState(telegramId, ChatState.IDLE);
-        stateService.clearStateData(telegramId);
+        
+        // Then create and set the clean state data
+        ObjectNode newStateData = objectMapper.createObjectNode();
+        stateService.setStateData(telegramId, newStateData);
+        messageSent = false;
     }
 }

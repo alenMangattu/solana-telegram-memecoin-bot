@@ -1,8 +1,5 @@
 package com.lunax.telegramBot.component.Buttons.HomePageButtons.MemeCoinCreations;
 
-import java.io.File;
-import java.nio.charset.StandardCharsets;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -15,9 +12,6 @@ import com.lunax.telegramBot.model.session.ChatState;
 import com.lunax.telegramBot.service.StateService;
 import com.lunax.telegramBot.service.UserService;
 import com.lunax.telegramBot.service.MemecoinCreationService;
-import com.lunax.telegramBot.utils.IpfsUtils;
-import com.lunax.telegramBot.utils.SolanaUtils;
-import com.lunax.telegramBot.utils.WalletKeyManager;
 import com.lunax.telegramBot.utils.components.ButtonHandler;
 import com.lunax.telegramBot.utils.components.MessageUtils;
 
@@ -35,12 +29,6 @@ public class CreateMemeCoin implements ButtonHandler {
 
     @Autowired
     private StateService stateService;
-
-    @Autowired
-    private SolanaUtils solanaUtils;
-
-    @Autowired
-    private WalletKeyManager walletKeyManager;
 
     @Autowired
     private MemecoinCreationService memecoinService;
@@ -96,18 +84,18 @@ public class CreateMemeCoin implements ButtonHandler {
         }
     }
 
-    private static String createImageUri(String filename) {
-        // Upload the image file to IPFS
-        String ipfsHash = IpfsUtils.addFile(filename);
+    // private static String createImageUri(String filename) {
+    //     // Upload the image file to IPFS
+    //     String ipfsHash = IpfsUtils.addFile(filename);
 
-        // Check if the upload was successful
-        if (ipfsHash != null) {
-            // Return the HTTP URL for the uploaded image
-            return IpfsUtils.getIpfsUrl(ipfsHash);
-        } else {
-            // Handle the case where the upload failed
-            log.error("Failed to upload image to IPFS: {}", filename);
-            return null; // or throw an exception based on your error handling strategy
-        }
-    }
+    //     // Check if the upload was successful
+    //     if (ipfsHash != null) {
+    //         // Return the HTTP URL for the uploaded image
+    //         return IpfsUtils.getIpfsUrl(ipfsHash);
+    //     } else {
+    //         // Handle the case where the upload failed
+    //         log.error("Failed to upload image to IPFS: {}", filename);
+    //         return null; // or throw an exception based on your error handling strategy
+    //     }
+    // }
 }

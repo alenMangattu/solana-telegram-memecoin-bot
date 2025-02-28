@@ -7,6 +7,7 @@ import { LiquidityService } from './utils/trading/liquidityService';
 import { HeliusRpcInterface } from './utils/heliusRpcInterface';
 import logger from './utils/logger';
 import dotenv from 'dotenv';
+import { TokenInfoService } from './utils/tokeninfo';
 
 dotenv.config();
 
@@ -214,6 +215,9 @@ app.post('/api/memecoin/create', async (req, res) => {
       res.status(500).json({ success: false, error: error instanceof Error ? error.message : String(error) });
     }
   });
+
+// Example of instantiation
+const tokenInfoService = new TokenInfoService(solanaUtils);
 
 app.listen(port, () => {
     logger.info(`Server running on port ${port}`);
