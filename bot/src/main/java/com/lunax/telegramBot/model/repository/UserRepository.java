@@ -6,6 +6,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.lunax.telegramBot.model.db.User;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -24,4 +25,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     
     @Query("SELECT u FROM User u LEFT JOIN FETCH u.wallets WHERE u.telegramId = :telegramId")
     Optional<User> findByTelegramIdWithWallets(@Param("telegramId") Long telegramId);
+
+    @Query("SELECT u FROM User u WHERE u.telegramId IN :telegramIds")
+    List<User> findAllByTelegramIdIn(@Param("telegramIds") List<Long> telegramIds);
 }

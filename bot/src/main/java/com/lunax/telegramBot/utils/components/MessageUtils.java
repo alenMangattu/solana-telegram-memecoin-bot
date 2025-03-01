@@ -38,6 +38,8 @@ import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
+import org.springframework.core.io.InputStreamResource;
+import java.io.FileOutputStream;
 
 public class MessageUtils {
 
@@ -327,17 +329,21 @@ public class MessageUtils {
         }
     }
 
-    public static void sendImageMessageInlineKeyboard(Update update, String imagePath, String text,
-            ButtonHandler[][] buttonHandlers) {
+    public static void sendImageMessageInlineKeyboard(Update update, String imagePath, String caption, ButtonHandler[][] buttonHandlers) {
         Message message = getMessage(update);
-        if (message == null)
-            return;
+        if (message == null) return;
 
-        // Create keyboard markup if button handlers are provided
-        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
+        SendPhoto sendPhoto = new SendPhoto();
+        sendPhoto.setChatId(message.getChatId().toString());
+        sendPhoto.setPhoto(new InputFile(new File(imagePath)));
+        sendPhoto.setCaption(caption);
+        sendPhoto.setParseMode("Markdown");
 
+        // Set reply markup if buttons are provided
         if (buttonHandlers != null) {
+            InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+            List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
+
             for (ButtonHandler[] buttonRow : buttonHandlers) {
                 List<InlineKeyboardButton> row = new ArrayList<>();
                 for (ButtonHandler handler : buttonRow) {
@@ -349,42 +355,11 @@ public class MessageUtils {
                 buttons.add(row);
             }
             markup.setKeyboard(buttons);
+            sendPhoto.setReplyMarkup(markup);
         }
 
         try {
-            // Check if the path is a URL
-            if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
-                // Use the existing method to download the image
-                String downloadedImagePath = downloadImageFromUrl(imagePath, "image/jpeg");
-                if (downloadedImagePath == null) {
-                    log.error("Failed to download image from URL: {}", imagePath);
-                    return;
-                }
-
-                SendPhoto sendPhoto = new SendPhoto();
-                sendPhoto.setChatId(message.getChatId().toString());
-                sendPhoto.setPhoto(new InputFile(new File(downloadedImagePath)));
-                sendPhoto.setCaption(text);
-                sendPhoto.setParseMode("Markdown");
-                if (buttonHandlers != null) {
-                    sendPhoto.setReplyMarkup(markup);
-                }
-                botInstance.execute(sendPhoto);
-
-                // Delete the downloaded image after sending
-                new File(downloadedImagePath).delete();
-            } else {
-                // For local files
-                SendPhoto sendPhoto = new SendPhoto();
-                sendPhoto.setChatId(message.getChatId().toString());
-                sendPhoto.setPhoto(new InputFile(new File(imagePath)));
-                sendPhoto.setCaption(text);
-                sendPhoto.setParseMode("Markdown");
-                if (buttonHandlers != null) {
-                    sendPhoto.setReplyMarkup(markup);
-                }
-                botInstance.execute(sendPhoto);
-            }
+            botInstance.execute(sendPhoto);
         } catch (TelegramApiException e) {
             log.error("Error sending image message: {}", e.getMessage());
         }

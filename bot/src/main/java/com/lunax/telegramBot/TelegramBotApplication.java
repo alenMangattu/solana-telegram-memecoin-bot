@@ -19,6 +19,6 @@ public class TelegramBotApplication {
 
 	@GetMapping("/")
 	public String hello() {
-		return "World";
+		return "Hello World";
 	}
 }

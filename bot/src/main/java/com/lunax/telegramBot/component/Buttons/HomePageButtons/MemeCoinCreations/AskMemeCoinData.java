@@ -337,8 +337,7 @@ public class AskMemeCoinData implements ButtonHandler {
 
     private void handleMemecoinImage(Update update, Long telegramId, Message message, ObjectNode stateData) {
         if (message == null || !message.hasPhoto()) {
-            MessageUtils.sendMessage(update,
-                    "❌ Provide a valid image.");
+            MessageUtils.sendMessage(update, "❌ Provide a valid image.");
             return;
         }
 
@@ -357,8 +356,7 @@ public class AskMemeCoinData implements ButtonHandler {
         }
 
         if (imagePath == null || !isImageFile(imagePath) || !isFileSizeValid(imagePath, 2 * 1024 * 1024)) {
-            MessageUtils.sendMessage(update,
-                    "❌ Invalid image format or size. Please send a valid image (JPG or PNG) under 2MB:");
+            MessageUtils.sendMessage(update, "❌ Invalid image format or size. Please send a valid image (JPG or PNG) under 2MB:");
             if (imagePath != null) {
                 new File(imagePath).delete(); // Delete the image path if not null
             }
