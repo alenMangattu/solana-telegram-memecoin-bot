@@ -28,6 +28,7 @@ import com.lunax.telegramBot.model.session.ChatState;
 import com.lunax.telegramBot.service.StateService;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 
 @Slf4j
 @Component
@@ -153,7 +154,7 @@ public class MemecoinList implements StateHandler {
             tokenAddresses = cachedValue instanceof List<?> ? new ArrayList<>((List<String>) cachedValue) : new ArrayList<>();
             log.info("Retrieved token addresses from cache for wallet: {}", walletAddress);
         } else {
-            // Fetch from Solana
+            // Fetch from Solana and cache the result
             tokenAddresses = solanaUtils.getTokenAccounts(walletAddress);
             // Save to cache
             if (userTokenAccountsCache != null) {
@@ -298,13 +299,10 @@ public class MemecoinList implements StateHandler {
     }
 
     // Method to get user from cache or database
+    @Cacheable(value = "userInfo", key = "#telegramId")
     private User getUserFromCacheOrDatabase(Long telegramId) {
         // Check if user data is cached
         User user = userService.findByTelegramId(telegramId).orElse(null);
-        if (user != null) {
-            // Cache the user data if not already cached
-            // Implement caching logic here if needed
-        }
         return user;
     }
 

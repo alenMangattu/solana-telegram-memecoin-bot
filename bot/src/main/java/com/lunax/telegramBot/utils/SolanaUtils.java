@@ -1,33 +1,37 @@
 package com.lunax.telegramBot.utils;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-import java.util.List;
+import java.io.ByteArrayInputStream;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
+import org.apache.http.client.config.RequestConfig;
 import org.bitcoinj.core.Base58;
 import org.p2p.solanaj.core.Account;
 import org.p2p.solanaj.core.PublicKey;
 import org.p2p.solanaj.rpc.RpcClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import lombok.extern.slf4j.Slf4j;
-
-import org.springframework.web.client.RestTemplate;
-import org.springframework.http.*;
 import lombok.Data;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import java.time.Duration;
-import org.apache.http.client.config.RequestConfig;
-import org.springframework.web.client.RestClientException;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
@@ -44,10 +48,13 @@ public class SolanaUtils {
     @Value("${helius.api.key}")
     private  String heliusApiKey;
     
+    @Value("${birdeye.api.key}")
+    private String birdEyeApiKey;
+    
     @Autowired
     public SolanaUtils(
         RpcClient rpcClient,
-        @Value("${solana.api.base-url:http://localhost:3000}") String apiBaseUrl,
+        @Value("${solana.api.base-url:https://api.mainnet-beta.solana.com}") String apiBaseUrl,
         ObjectMapper objectMapper
     ) {
         this.client = rpcClient;
@@ -548,9 +555,9 @@ public class SolanaUtils {
      * @param tokenAddress The token address to fetch information for.
      * @return A map containing token information.
      */
-    public  Map<String, Object> getTokenInformation(String tokenAddress) {
+    public Map<String, Object> getTokenInformation(String tokenAddress) {
+        String heliusApiUrl = "https://mainnet.helius-rpc.com/?api-key=" + heliusApiKey; // Adjust the URL as needed
         Map<String, Object> tokenInfo = new HashMap<>();
-        String heliusApiUrl = "https://mainnet.helius-rpc.com/?api-key=" + heliusApiKey;
 
         try {
             // Create the payload for the request
@@ -570,22 +577,32 @@ public class SolanaUtils {
             );
 
             // Log the response for debugging
-            log.info("Token information response: {}", response.getBody());
+            log.info("Helius API response for token {}: {}", tokenAddress, response.getBody());
 
-            // Check if the response is successful
-            if (response.getStatusCode() == HttpStatus.OK) {
+            if (response.getStatusCode().is2xxSuccessful()) {
                 JsonNode result = response.getBody().get("result");
                 if (result != null) {
                     // Extract relevant fields
                     tokenInfo.put("name", result.get("content").get("metadata").get("name").asText());
-                    tokenInfo.put("symbol", result.get("content").get("metadata").get("symbol").asText());
+                    tokenInfo.put("symbol", result.get("content").get("metadata").get("symbol").asText()); // Extract symbol
                     tokenInfo.put("decimals", result.get("token_info").get("decimals").asInt());
                     tokenInfo.put("totalSupply", result.get("token_info").get("supply").asLong());
                     tokenInfo.put("priceUSD", result.get("token_info").get("price_info").get("price_per_token").asDouble());
-                    // Add more fields as needed
+                } else {
+                    // Handle case where result is null
+                    log.error("No result found for token: {}", tokenAddress);
+                    throw new RuntimeException("Token not found.");
                 }
             } else {
-                log.error("Failed to fetch token information: {}", response.getStatusCode());
+                // Handle error response
+                JsonNode errorNode = response.getBody().get("error");
+                if (errorNode != null) {
+                    String errorMessage = errorNode.get("message").asText();
+                    log.error("Failed to fetch token information: {}", errorMessage);
+                    if (errorMessage.contains("RecordNotFound")) {
+                        throw new RuntimeException("Token not found.");
+                    }
+                }
             }
         } catch (RestClientException e) {
             log.error("Error making request to Helius API: {}", e.getMessage());
@@ -601,5 +618,138 @@ public class SolanaUtils {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         return headers; // No need to set the API key in headers
+    }
+
+    // Add a new method to get historical data
+    public JsonNode getHistoricalData(String tokenAddress, String timeFrequency, String timeBefore) {
+        String birdEyeApiUrl = "https://public-api.birdeye.so/defi/history_price";
+        
+        // Calculate the time range based on the timeBefore parameter
+        long currentTime = System.currentTimeMillis() / 1000; // Current time in seconds
+        long timeFrom = calculateTimeFrom(timeBefore); // Convert timeBefore to a timestamp
+
+        // Construct the full URL with query parameters
+        String url = String.format("%s?address=%s&address_type=token&type=%s&time_from=%d&time_to=%d",
+                birdEyeApiUrl, tokenAddress, timeFrequency, timeFrom, currentTime);
+
+        // Set up headers
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-API-KEY", birdEyeApiKey);
+        headers.set("X-CHAIN", "solana");
+
+        // Log the request parameters and headers
+        log.info("Request URL: {}", url);
+        log.info("Request Headers: {}", headers);
+
+        try {
+            ResponseEntity<JsonNode> response = new RestTemplate().exchange(
+                url,
+                HttpMethod.GET,
+                new HttpEntity<>(headers),
+                JsonNode.class
+            );
+
+            if (response.getStatusCode().is2xxSuccessful()) {
+                log.info("Successfully retrieved historical data for token: {}", tokenAddress);
+                return response.getBody();
+            } else {
+                log.error("Failed to retrieve historical data: {}", response.getStatusCode());
+                throw new RuntimeException("Failed to retrieve historical data");
+            }
+        } catch (RestClientException e) {
+            log.error("Error making request to BirdEye API: {}", e.getMessage());
+            throw new RuntimeException("Error fetching historical data: " + e.getMessage(), e);
+        }
+    }
+
+    // Method to send historical data to the chart endpoint
+    public InputStreamResource sendHistoricalDataToChart(String tokenAddress, JsonNode historicalData, String timeFrequency, String tokenTicker) {
+        String chartUrl = "http://localhost:7000/chart";
+        
+        // Construct the payload
+        Map<String, Object> payload = new HashMap<>();
+        Map<String, Object> data = new HashMap<>();
+        List<Map<String, Object>> items = new ArrayList<>();
+
+        // Extract items from historicalData and format them
+        if (historicalData != null && historicalData.has("data")) {
+            JsonNode itemsNode = historicalData.get("data").get("items");
+            for (JsonNode item : itemsNode) {
+                Map<String, Object> itemData = new HashMap<>();
+                itemData.put("address", tokenAddress);
+                itemData.put("unixTime", item.get("unixTime").asLong());
+                itemData.put("value", item.get("value").asDouble());
+                items.add(itemData);
+            }
+        }
+
+        // Construct the data object
+        data.put("items", items);
+        
+        // Ensure token_ticker is never null
+        if (tokenTicker == null || tokenTicker.isEmpty()) {
+            // If no token ticker is provided, use a meaningful default or the token address
+            String shortAddress = tokenAddress.length() > 6 ? 
+                tokenAddress.substring(0, 4) + "..." + tokenAddress.substring(tokenAddress.length() - 4) : 
+                tokenAddress;
+            tokenTicker = "Token-" + shortAddress;
+        }
+        
+        // Set top-level fields
+        payload.put("token_ticker", tokenTicker); // Now guaranteed to be non-null
+        payload.put("ema_slow_period", 69); 
+        payload.put("ema_fast_period", 12);
+        payload.put("rsi_period", 14);
+        payload.put("frequency", timeFrequency);
+        payload.put("success", true);
+        
+        payload.put("data", data); // Add the data object to the payload
+
+        log.info("Sending chart request with payload: token_ticker={}, frequency={}", tokenTicker, timeFrequency);
+
+        // Create RestTemplate with proper message converters for handling binary data
+        RestTemplate restTemplate = new RestTemplate();
+        
+        try {
+            // Use ResponseEntity<byte[]> to get the binary data directly
+            ResponseEntity<byte[]> response = restTemplate.exchange(
+                chartUrl,
+                HttpMethod.POST,
+                new HttpEntity<>(payload, createHeaders()),
+                byte[].class
+            );
+
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                log.info("Successfully received image data from chart endpoint. Size: {} bytes", response.getBody().length);
+                
+                // Convert the byte array to an InputStreamResource
+                return new InputStreamResource(new ByteArrayInputStream(response.getBody()));
+            } else {
+                log.error("Failed to retrieve image from chart endpoint: {}", response.getStatusCode());
+                return null; // Return null if there was an error
+            }
+        } catch (RestClientException e) {
+            log.error("Error sending data to chart endpoint: {}", e.getMessage());
+            return null; // Return null if there was an error
+        }
+    }
+
+    // Helper method to calculate the timestamp based on the timeBefore parameter
+    private long calculateTimeFrom(String timeBefore) {
+        long seconds = 0;
+        switch (timeBefore.charAt(timeBefore.length() - 1)) {
+            case 'D': // Days
+                seconds = Integer.parseInt(timeBefore.substring(0, timeBefore.length() - 1)) * 24 * 60 * 60;
+                break;
+            case 'M': // Months
+                seconds = Integer.parseInt(timeBefore.substring(0, timeBefore.length() - 1)) * 30L * 24 * 60 * 60;
+                break;
+            case 'Y': // Years
+                seconds = Integer.parseInt(timeBefore.substring(0, timeBefore.length() - 1)) * 365L * 24 * 60 * 60;
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported timeBefore value: " + timeBefore);
+        }
+        return (System.currentTimeMillis() / 1000) - seconds; // Return the timestamp for the calculated time
     }
 }

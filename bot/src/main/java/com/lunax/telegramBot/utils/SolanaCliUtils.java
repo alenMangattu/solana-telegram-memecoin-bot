@@ -792,7 +792,6 @@ public class SolanaCliUtils {
         return objectMapper.readTree(output);
     }
 
-    // Add this method to automatically evict cache entries every 30 seconds
     @Scheduled(fixedRate = 30000) // 30000 milliseconds = 30 seconds
     @CacheEvict(value = "userTokenAccounts", allEntries = true)
     public void evictUserTokenAccountCache() {
