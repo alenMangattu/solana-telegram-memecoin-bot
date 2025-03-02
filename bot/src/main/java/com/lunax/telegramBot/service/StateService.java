@@ -57,6 +57,7 @@ public class StateService {
 
     @CacheEvict(value = "userStates", key = "#telegramId")
     public void setState(Long telegramId, ChatState state) {
+        log.info("Setting state for user {}: {}", telegramId, state);
         User user = userRepository.findByTelegramId(telegramId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
                 
@@ -90,6 +91,7 @@ public class StateService {
 
     @CacheEvict(value = "stateData", key = "#telegramId")
     public void setStateData(Long telegramId, ObjectNode stateData) {
+        log.info("Setting state data for user {}: {}", telegramId, stateData);
         User user = userRepository.findByTelegramId(telegramId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
                 

@@ -49,7 +49,8 @@ public enum ChatState {
     ERROR_STATE,        // Error occurred during processing
     
     // Add new state for token selection
-    AWAITING_TOKEN_SELECTION;    // Waiting for token selection from keyboard
+    AWAITING_TOKEN_SELECTION,    // Waiting for token selection from keyboard
+    TOKEN_INFO_PAGE;             // New state for token information page
 
     /**
      * Check if the current state is a terminal state

@@ -4,8 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+import com.lunax.telegramBot.component.Buttons.Token.TopHoldersButton;
 import com.lunax.telegramBot.component.navigation.components.token.TokenInfo;
-import com.lunax.telegramBot.component.navigation.components.token.TopHoldersButton;
 import com.lunax.telegramBot.event.NavigationEvent;
 import com.lunax.telegramBot.service.StateService;
 import com.lunax.telegramBot.utils.components.ButtonHandler;
