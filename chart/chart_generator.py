@@ -148,7 +148,7 @@ def generate_chart(token_name, json_data, frequency, ema_fast_period=14, ema_slo
     price_ax.add_patch(rect)
     
     # --- Price row with multiple values ---
-    y_pos = 0.96  # Lowered slightly to avoid overlap
+    y_pos = 0.95  # Lowered slightly to avoid overlap
     x_start = 0.01
 
     # Current price (O H L C values)
@@ -488,9 +488,9 @@ def generate_chart(token_name, json_data, frequency, ema_fast_period=14, ema_slo
     plt.subplots_adjust(left=0, right=0.92, top=0.99, bottom=0.05)
 
     # Add watermark with improved styling
-    fig.text(0.5, 0.5, 'LUNAX TELEGRAM BOT', 
-             fontsize=50, color='blue', ha='center', va='center', alpha=0.06,
-             rotation=30, transform=fig.transFigure, zorder=5)
+    # fig.text(0.5, 0.5, 'LUNAX TELEGRAM BOT', 
+    #          fontsize=50, color='blue', ha='center', va='center', alpha=0.06,
+    #          rotation=30, transform=fig.transFigure, zorder=5)
 
     # Ensure x-axis labels only appear at the bottom
     price_ax.tick_params(axis='x', which='both', labelbottom=False)  # No labels on price chart

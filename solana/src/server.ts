@@ -219,6 +219,21 @@ app.post('/api/memecoin/create', async (req, res) => {
 // Example of instantiation
 const tokenInfoService = new TokenInfoService(solanaUtils);
 
+// Add the new endpoint for fetching token information
+app.get('/api/token/info/:id', async (req, res) => {
+    const tokenId = req.params.id; // Extract token ID from the request parameters
+    try {
+        const tokenInfo = await tokenInfoService.getTokenInformation(tokenId); // Fetch token information
+        res.json(tokenInfo); // Return the token information as JSON
+    } catch (error) {
+        logger.error('Error fetching token information:', error);
+        res.status(500).json({ 
+            error: 'Failed to fetch token information',
+            details: error instanceof Error ? error.message : String(error)
+        });
+    }
+});
+
 app.listen(port, () => {
     logger.info(`Server running on port ${port}`);
 }).on('error', (error: any) => {

@@ -1,6 +1,7 @@
 package com.lunax.telegramBot.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,5 +54,9 @@ public class UserService {
         user.setCreatedAt(LocalDateTime.now());
         user.setAcceptedTos(false);
         userRepository.save(user);
+    }
+
+    public List<User> findByTelegramIds(List<Long> telegramIds) {
+        return userRepository.findAllByTelegramIdIn(telegramIds);
     }
 }

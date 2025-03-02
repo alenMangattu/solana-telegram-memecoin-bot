@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Date;
 import java.util.Optional;
 
 @Service
@@ -109,6 +110,25 @@ public class StateService {
         userState.setUser(user);
         userState.setStateData(null);
         userState.setCurrentPage("");
+        userStateRepository.save(userState);
+    }
+
+    public void initState(Long telegramId) {
+        // Get the user entity
+        User user = userRepository.findByTelegramId(telegramId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        // Create empty JSON state data
+        ObjectNode stateData = objectMapper.createObjectNode();
+        
+        // Create a new UserState entity
+        UserState userState = new UserState();
+        userState.setUser(user);                     // Set User entity, not ID
+        userState.setStateData(stateData);           // Pass ObjectNode directly, not toString()
+        userState.setCurrentPage(ChatState.IDLE.name()); // Set initial state
+        // updatedAt will be set by @PrePersist/@PreUpdate
+        
+        // Save to database
         userStateRepository.save(userState);
     }
 }
