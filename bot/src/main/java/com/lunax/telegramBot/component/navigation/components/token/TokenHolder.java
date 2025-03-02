@@ -80,7 +80,7 @@ public class TokenHolder implements StateHandler {
                 Double percentage = (Double) holder.get("percentage");
                 
                 // Calculate the value in USD
-                Double valueInUSD = (amount / 1000000) * priceUSD;
+                Double valueInUSD = (amount / 1000000.0) * priceUSD;
                 String formattedValue = NumberUtils.formatUSD(valueInUSD);
                 
                 // Debug logging
