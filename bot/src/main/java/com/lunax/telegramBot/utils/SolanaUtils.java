@@ -29,6 +29,7 @@ import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.cache.annotation.Cacheable;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -865,10 +866,12 @@ public class SolanaUtils {
 
     /**
      * Fetches the top token holders for a given token address using the native Solana RPC method.
+     * Results are cached for 2 minutes to reduce API calls.
      * @param tokenAddress The mint address of the token
      * @param limit The number of top holders to fetch (max 20 as per Solana RPC limitation)
      * @return List of maps containing holder information (address, amount, percentage)
      */
+    @Cacheable(value = "topTokenHolders", key = "#tokenAddress + '-' + #limit", unless = "#result.isEmpty()")
     public List<Map<String, Object>> getTopTokenHolders(String tokenAddress, int limit) {
         List<Map<String, Object>> holdersList = new ArrayList<>();
         
@@ -880,10 +883,11 @@ public class SolanaUtils {
                 return holdersList;
             }
             
+            log.info("Fetching top {} token holders for token: {} (not from cache)", Math.min(limit, 20), tokenAddress);
+            
             // Ensure limit doesn't exceed the maximum of 20 returned by the API
             int effectiveLimit = Math.min(limit, 20);
-            log.info("Fetching top {} token holders for token: {}", effectiveLimit, tokenAddress);
-
+            
             // Prepare the RPC request payload
             Map<String, Object> requestBody = new HashMap<>();
             requestBody.put("jsonrpc", "2.0");

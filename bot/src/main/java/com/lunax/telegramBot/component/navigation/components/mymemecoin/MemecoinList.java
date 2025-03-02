@@ -50,14 +50,13 @@ public class MemecoinList implements StateHandler {
     private ObjectMapper objectMapper;
 
     private static final int PAGE_SIZE = 5; // Number of memecoins per page
-    private boolean messageSent = false;
 
     @Override
     public void executeVoid(Update update) {
         executeVoid(update, 0); // Default to the first page if no page is specified
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "null" })
     @Override
     public void executeVoid(Update update, int page) {
         // Print cache contents at the start of each request
@@ -74,46 +73,34 @@ public class MemecoinList implements StateHandler {
 
         // Fetch the user based on the Telegram ID
         Long telegramId = update.getCallbackQuery().getFrom().getId();
-        
-        // First set the state to ensure current_page is not null
-        stateService.setState(telegramId, ChatState.IDLE);
-        
-        // Get and check the current user state
+
+        // Get current state data first
         ObjectNode stateData = stateService.getStateData(telegramId);
-        
+
+        boolean tokenReplyMessageIdExists = stateData != null && stateData.has("tokenReplyMessageId");
+
         // Clean up previous token selection message if exists
-        if (stateData != null && stateData.has("tokenReplyMessageId")) {
-            try {
-                int previousMessageId = stateData.get("tokenReplyMessageId").asInt();
-                DeleteMessage deleteMessage = new DeleteMessage();
-                deleteMessage.setChatId(originalMessage.getChatId().toString());
-                deleteMessage.setMessageId(previousMessageId);
-                MessageUtils.getBotInstance().execute(deleteMessage);
-                log.info("Deleted previous token selection message: {}", previousMessageId);
-            } catch (Exception e) {
-                log.warn("Could not delete previous token selection message: {}", e.getMessage());
-            }
+        int previousMessageId = 0;
+        if (tokenReplyMessageIdExists) {
+            previousMessageId = stateData.get("tokenReplyMessageId").asInt();
         }
-        
-        // Reset state and create fresh state data
-        // Make sure we set the state before setting state data
-        stateService.setState(telegramId, ChatState.IDLE);
+
+        // Now set the state
+        stateService.setState(telegramId, ChatState.AWAITING_TOKEN_SELECTION);
+
+        // Create fresh state data but preserve the tokenReplyMessageId if it exists
         stateData = objectMapper.createObjectNode();
+        if (tokenReplyMessageIdExists) {
+            // Keep track of messages already sent to prevent duplicates
+            stateData.put("tokenReplyMessageId", previousMessageId);
+        }
         stateService.setStateData(telegramId, stateData);
-        messageSent = false;
-        
+
         User user = getUserFromCacheOrDatabase(telegramId);
 
         if (user == null) {
             log.error("User not found for Telegram ID: {}", telegramId);
             return; // Exit if user is not found
-        }
-        
-        // Initialize state data for this user if it doesn't exist
-        if (stateData == null) {
-            stateData = objectMapper.createObjectNode();
-            stateService.setStateData(telegramId, stateData);
-            log.info("Initialized new state data for user {}", telegramId);
         }
 
         // Check if data is in cache
@@ -151,7 +138,8 @@ public class MemecoinList implements StateHandler {
         if (isDataCached && userTokenAccountsCache != null) {
             // Get from cache
             Object cachedValue = userTokenAccountsCache.get(walletAddress).get();
-            tokenAddresses = cachedValue instanceof List<?> ? new ArrayList<>((List<String>) cachedValue) : new ArrayList<>();
+            tokenAddresses = cachedValue instanceof List<?> ? new ArrayList<>((List<String>) cachedValue)
+                    : new ArrayList<>();
             log.info("Retrieved token addresses from cache for wallet: {}", walletAddress);
         } else {
             // Fetch from Solana and cache the result
@@ -165,8 +153,8 @@ public class MemecoinList implements StateHandler {
 
         // Prepare the formatted list of tokens
         StringBuilder formattedList = new StringBuilder();
-        formattedList.append("📜 *Here is the list of your token holdings (Page " + (page + 1) + "):*\n\n");
-        
+        formattedList.append("📜 *Here is the list of your token you own (Page " + (page + 1) + "):*\n\n");
+
         int totalTokens = tokenAddresses.size();
         int totalPages = (int) Math.ceil((double) totalTokens / PAGE_SIZE);
         int start = page * PAGE_SIZE;
@@ -225,34 +213,44 @@ public class MemecoinList implements StateHandler {
                 stateData2 = objectMapper.createObjectNode();
                 stateService.setStateData(telegramId, stateData2);
             }
-            
-            // Only send the token selection message if we haven't sent it yet
-            if (!messageSent) {
+
+            // Only send token selection message if we haven't sent one already
+            boolean messageSent = stateData2.has("tokenReplyMessageIdSent") &&
+                    stateData2.get("tokenReplyMessageIdSent").asBoolean();
+
+            if (!messageSent && !stateData2.has("tokenReplyMessageId")) {
                 try {
                     // Set state for awaiting token selection BEFORE setting state data
                     stateService.setState(telegramId, ChatState.AWAITING_TOKEN_SELECTION);
-                    
+
                     // Now get the state data and update it
                     stateData2 = stateService.getStateData(telegramId);
                     if (stateData2 == null) {
                         stateData2 = objectMapper.createObjectNode();
                     }
-                    stateData2.put("awaitingTokenAddress", true);
-                    
-                    SendMessage replyMessage = SendMessage.builder()
-                        .chatId(originalMessage.getChatId().toString())
-                        .text("Please enter the token address to see more information:")
-                        .parseMode("Markdown")
-                        .build();
 
-                    Message sentMessage = MessageUtils.getBotInstance().execute(replyMessage);
-                    // Store the message ID in state data
-                    stateData2.put("tokenReplyMessageId", sentMessage.getMessageId());
+                    stateData2.put("awaitingTokenAddress", true);
+
+                    if (!tokenReplyMessageIdExists) {
+                        SendMessage replyMessage = SendMessage.builder()
+                                .chatId(originalMessage.getChatId().toString())
+                                .text("Please enter the token address to see more information:")
+                                .parseMode("Markdown")
+                                .build();
+
+                        Message sentMessage = MessageUtils.getBotInstance().execute(replyMessage);
+
+                        // Store the message ID in state data
+                        stateData2.put("tokenReplyMessageId", sentMessage.getMessageId());
+                        // Mark that we've sent a message to prevent duplicates
+                        stateData2.put("tokenReplyMessageIdSent", true);
+
+                        log.info("Sent token selection message to user {} with message ID {}", telegramId,
+                                sentMessage.getMessageId());
+
+                    }
+
                     stateService.setStateData(telegramId, stateData2);
-                    log.info("Sent token selection message to user {} with message ID {}", telegramId, sentMessage.getMessageId());
-                    
-                    // Set flag to avoid sending the message again
-                    messageSent = true;
                 } catch (Exception e) {
                     log.error("Error sending token selection message: {}", e.getMessage());
                 }
@@ -274,13 +272,13 @@ public class MemecoinList implements StateHandler {
     }
 
     // private List<Memecoin> getMemecoins() {
-    //     if (memecoinCache.isEmpty()) {
-    //         List<Memecoin> memecoins = memecoinRepo.findAll();
-    //         for (Memecoin memecoin : memecoins) {
-    //             memecoinCache.put(memecoin.getId(), memecoin);
-    //         }
-    //     }
-    //     return new ArrayList<>(memecoinCache.values());
+    // if (memecoinCache.isEmpty()) {
+    // List<Memecoin> memecoins = memecoinRepo.findAll();
+    // for (Memecoin memecoin : memecoins) {
+    // memecoinCache.put(memecoin.getId(), memecoin);
+    // }
+    // }
+    // return new ArrayList<>(memecoinCache.values());
     // }
 
     private void printCacheContents() {
@@ -321,13 +319,12 @@ public class MemecoinList implements StateHandler {
                 log.warn("Could not delete token selection message during state reset: {}", e.getMessage());
             }
         }
-        
+
         // First set the state to IDLE to ensure current_page is not null
         stateService.setState(telegramId, ChatState.IDLE);
-        
+
         // Then create and set the clean state data
         ObjectNode newStateData = objectMapper.createObjectNode();
         stateService.setStateData(telegramId, newStateData);
-        messageSent = false;
     }
 }
