@@ -570,4 +570,26 @@ public class MessageUtils {
             return null;
         }
     }
+
+    public static void editImageOnlyTextInlineKeyboard(Update update, String text) {
+        Message message = getMessage(update);
+        if (message == null) return;
+
+        EditMessageText editMessage = new EditMessageText();
+        editMessage.setChatId(message.getChatId().toString());
+        editMessage.setMessageId(message.getMessageId());
+        editMessage.setText(text);
+        editMessage.setParseMode("Markdown");
+
+        // Preserve the existing reply markup (inline keyboard)
+        if (message.getReplyMarkup() != null) {
+            editMessage.setReplyMarkup(message.getReplyMarkup());
+        }
+
+        try {
+            botInstance.execute(editMessage);
+        } catch (TelegramApiException e) {
+            log.error("Error editing message: {}", e.getMessage());
+        }
+    }
 }

@@ -142,7 +142,10 @@ public class BotController extends TelegramLongPollingBot {
                         addLiquidity.handleMessage(update);
                     } else if (currentState == ChatState.AWAITING_TOKEN_SELECTION) {
                         tokenInfo.executeVoid(update);
-                        stateService.setState(telegramId, null);
+                    } else if (currentState == ChatState.TOKEN_INFO_PAGE) {
+                        // Handle any specific actions for the TOKEN_INFO_PAGE state if needed
+                        // For now, we assume the tokenInfo.executeVoid already handles the necessary actions
+                        log.info("User is viewing token information.");
                     } else if (message.hasText()) {
                         log.info("Received: {}", messageText);
                     }

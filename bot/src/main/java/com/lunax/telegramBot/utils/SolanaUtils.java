@@ -2,6 +2,7 @@ package com.lunax.telegramBot.utils;
 import java.io.ByteArrayInputStream;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -861,7 +862,7 @@ public class SolanaUtils {
     }
 
     /**
-     * Fetches the top token holders for a given token address
+     * Fetches the top token holders for a given token address with safeguards for tokens with very large holder bases
      * @param tokenAddress The mint address of the token
      * @param limit The number of top holders to fetch (default 10)
      * @return List of maps containing holder information (address, amount, percentage)
@@ -883,68 +884,236 @@ public class SolanaUtils {
             Map<String, Long> holderBalances = new HashMap<>();
             long totalSupply = 0;
             
-            // Paginate through token accounts
-            while (hasMoreData) {
-                // Create request body for Helius getTokenAccounts RPC call
-                Map<String, Object> requestBody = new HashMap<>();
-                requestBody.put("jsonrpc", "2.0");
-                requestBody.put("id", "helius-getTokenAccounts");
-                requestBody.put("method", "getTokenAccounts");
+            // Set a higher page size to reduce number of requests
+            int pageSize = Math.min(100, limit * 5); // Get more data per request, but no more than API limit of 100
+            
+            // Set strict API call limits
+            int maxApiCalls = 5; // Absolute maximum number of API calls to make
+            int apiCalls = 0;
+            
+            // Sample approach for potential high-holder tokens
+            boolean useSamplingMode = false;
+            List<Integer> samplePages = Arrays.asList(1, 2, 5, 10, 25); // Pages to sample if in sampling mode
+            
+            // First, test the first page to gauge holder count
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("jsonrpc", "2.0");
+            requestBody.put("id", "helius-getTokenAccounts");
+            requestBody.put("method", "getTokenAccounts");
+            
+            Map<String, Object> params = new HashMap<>();
+            params.put("mint", tokenAddress);
+            params.put("page", 1);
+            params.put("limit", pageSize);
+            requestBody.put("params", params);
+            
+            // Make initial HTTP request
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+            ResponseEntity<JsonNode> initialResponse = new RestTemplate().postForEntity(apiUrl, entity, JsonNode.class);
+            apiCalls++;
+            
+            if (initialResponse.getStatusCode().is2xxSuccessful() && initialResponse.getBody() != null) {
+                JsonNode result = initialResponse.getBody().get("result");
                 
-                Map<String, Object> params = new HashMap<>();
-                params.put("mint", tokenAddress);
-                params.put("page", page);
-                params.put("limit", 1000); // Max per page
-                requestBody.put("params", params);
+                // Check if there's metadata about total holders or pages
+                int totalPages = 1;
+                if (result != null && result.has("total_pages")) {
+                    totalPages = result.get("total_pages").asInt();
+                } else if (result != null && result.has("token_accounts") && result.get("token_accounts").size() == pageSize) {
+                    // If we got a full page, assume there may be many holders
+                    // This is a heuristic since the API might not return total count
+                    totalPages = 999; // Set a high number to indicate many potential pages
+                }
                 
-                // Make HTTP request
-                HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
-                ResponseEntity<JsonNode> response = new RestTemplate().postForEntity(apiUrl, entity, JsonNode.class);
+                log.info("Token {} estimated to have approximately {} pages of holders", 
+                        tokenAddress, totalPages);
                 
-                if (response.getStatusCode().is2xxSuccessful()) {
-                    JsonNode result = response.getBody().get("result");
+                // If more than 20 pages (which means potentially 2000+ holders with pageSize=100),
+                // switch to sampling mode to avoid excessive API calls
+                if (totalPages > 20) {
+                    log.info("Token has many holders ({}+ pages). Switching to sampling mode.", totalPages);
+                    useSamplingMode = true;
+                }
+                
+                // Process the first page of results
+                if (result != null && result.has("token_accounts")) {
+                    JsonNode tokenAccounts = result.get("token_accounts");
                     
-                    // Check if we have token accounts in the response
-                    if (result != null && result.has("token_accounts")) {
-                        JsonNode tokenAccounts = result.get("token_accounts");
+                    for (JsonNode account : tokenAccounts) {
+                        String owner = account.get("owner").asText();
+                        long amount = account.get("amount").asLong();
                         
-                        // If no accounts or empty, we're done
-                        if (tokenAccounts.size() == 0) {
-                            hasMoreData = false;
-                            continue;
+                        // Skip accounts with 0 balance
+                        if (amount <= 0) continue;
+                        
+                        // Add to total supply
+                        totalSupply += amount;
+                        
+                        // Update holder balance (combine if same owner)
+                        holderBalances.put(owner, holderBalances.getOrDefault(owner, 0L) + amount);
+                    }
+                }
+            } else {
+                log.error("Error on initial token account request: {}", initialResponse.getStatusCode());
+                return holdersList; // Return empty list on error
+            }
+            
+            // If we're using sampling mode, fetch selected pages instead of sequential pages
+            if (useSamplingMode) {
+                log.info("Using sampling mode for large token holder base");
+                
+                // Skip the first page as we've already processed it
+                for (Integer samplePage : samplePages) {
+                    // Skip page 1 since we already processed it
+                    if (samplePage == 1) continue;
+                    
+                    // Break if we've reached our API call limit
+                    if (apiCalls >= maxApiCalls) {
+                        log.warn("Reached API call limit ({}) for token {}. Results may be incomplete.", 
+                                maxApiCalls, tokenAddress);
+                        break;
+                    }
+                    
+                    log.info("Sampling token holders page {} with page size {}", samplePage, pageSize);
+                    
+                    // Prepare request for this sample page
+                    requestBody = new HashMap<>();
+                    requestBody.put("jsonrpc", "2.0");
+                    requestBody.put("id", "helius-getTokenAccounts");
+                    requestBody.put("method", "getTokenAccounts");
+                    
+                    params = new HashMap<>();
+                    params.put("mint", tokenAddress);
+                    params.put("page", samplePage);
+                    params.put("limit", pageSize);
+                    requestBody.put("params", params);
+                    
+                    // Make HTTP request
+                    entity = new HttpEntity<>(requestBody, headers);
+                    ResponseEntity<JsonNode> response = new RestTemplate().postForEntity(apiUrl, entity, JsonNode.class);
+                    apiCalls++;
+                    
+                    if (response.getStatusCode().is2xxSuccessful()) {
+                        JsonNode result = response.getBody().get("result");
+                        
+                        // Process this sample page
+                        if (result != null && result.has("token_accounts")) {
+                            JsonNode tokenAccounts = result.get("token_accounts");
+                            
+                            // If this page has no accounts, just continue to the next sample
+                            if (tokenAccounts.size() == 0) continue;
+                            
+                            for (JsonNode account : tokenAccounts) {
+                                String owner = account.get("owner").asText();
+                                long amount = account.get("amount").asLong();
+                                
+                                // Skip accounts with 0 balance
+                                if (amount <= 0) continue;
+                                
+                                // Add to total supply
+                                totalSupply += amount;
+                                
+                                // Update holder balance (combine if same owner)
+                                holderBalances.put(owner, holderBalances.getOrDefault(owner, 0L) + amount);
+                            }
                         }
-                        
-                        // Process token accounts in this page
-                        for (JsonNode account : tokenAccounts) {
-                            String owner = account.get("owner").asText();
-                            long amount = account.get("amount").asLong();
-                            
-                            // Skip accounts with 0 balance
-                            if (amount <= 0) continue;
-                            
-                            // Add to total supply
-                            totalSupply += amount;
-                            
-                            // Update holder balance (combine if same owner)
-                            holderBalances.put(owner, holderBalances.getOrDefault(owner, 0L) + amount);
-                        }
-                        
-                        // Move to next page
-                        page++;
                     } else {
-                        // No more token accounts
+                        log.error("Error fetching sample page {}: {}", samplePage, response.getStatusCode());
+                    }
+                }
+                
+                // Add a disclaimer to the first holder for tokens with sampling
+                Map<String, Object> disclaimerHolder = new HashMap<>();
+                disclaimerHolder.put("address", "NOTE: This token has many holders.");
+                disclaimerHolder.put("amount", 0L);
+                disclaimerHolder.put("percentage", 0.0);
+                disclaimerHolder.put("isDisclaimer", true);
+                holdersList.add(disclaimerHolder);
+            } else {
+                // Standard sequential pagination for tokens with fewer holders
+                page = 2; // Start from page 2 since we already processed page 1
+                
+                while (hasMoreData && apiCalls < maxApiCalls) {
+                    log.info("Fetching token holders page {} with page size {}", page, pageSize);
+                    
+                    // Create request body for next page
+                    requestBody = new HashMap<>();
+                    requestBody.put("jsonrpc", "2.0");
+                    requestBody.put("id", "helius-getTokenAccounts");
+                    requestBody.put("method", "getTokenAccounts");
+                    
+                    params = new HashMap<>();
+                    params.put("mint", tokenAddress);
+                    params.put("page", page);
+                    params.put("limit", pageSize);
+                    requestBody.put("params", params);
+                    
+                    // Make HTTP request
+                    entity = new HttpEntity<>(requestBody, headers);
+                    ResponseEntity<JsonNode> response = new RestTemplate().postForEntity(apiUrl, entity, JsonNode.class);
+                    apiCalls++;
+                    
+                    if (response.getStatusCode().is2xxSuccessful()) {
+                        JsonNode result = response.getBody().get("result");
+                        
+                        // Process accounts on this page
+                        if (result != null && result.has("token_accounts")) {
+                            JsonNode tokenAccounts = result.get("token_accounts");
+                            
+                            // If no accounts or empty, we're done
+                            if (tokenAccounts.size() == 0) {
+                                hasMoreData = false;
+                                continue;
+                            }
+                            
+                            for (JsonNode account : tokenAccounts) {
+                                String owner = account.get("owner").asText();
+                                long amount = account.get("amount").asLong();
+                                
+                                // Skip accounts with 0 balance
+                                if (amount <= 0) continue;
+                                
+                                // Add to total supply
+                                totalSupply += amount;
+                                
+                                // Update holder balance (combine if same owner)
+                                holderBalances.put(owner, holderBalances.getOrDefault(owner, 0L) + amount);
+                            }
+                            
+                            // Move to next page
+                            page++;
+                            
+                            // Early termination if we have enough data
+                            if (holderBalances.size() > limit * 3) {
+                                log.info("Found {} unique holders, sufficient for finding top {}. Stopping pagination.", 
+                                        holderBalances.size(), limit);
+                                hasMoreData = false;
+                            }
+                        } else {
+                            // No more token accounts
+                            hasMoreData = false;
+                        }
+                    } else {
+                        // API error
+                        log.error("Error fetching token accounts page {}: {}", page, response.getStatusCode());
                         hasMoreData = false;
                     }
-                } else {
-                    // API error
-                    log.error("Error fetching token accounts: {}", response.getStatusCode());
-                    hasMoreData = false;
                 }
+            }
+            
+            // Add a message if we hit API limits
+            if (apiCalls >= maxApiCalls) {
+                log.warn("API call limit reached ({}) for token {}. Results may be approximate.", 
+                        maxApiCalls, tokenAddress);
             }
             
             // Convert map to list and sort by amount (descending)
             List<Map.Entry<String, Long>> sortedHolders = new ArrayList<>(holderBalances.entrySet());
             sortedHolders.sort((a, b) -> b.getValue().compareTo(a.getValue()));
+            
+            // If we already added a disclaimer as the first element, start from index 0,
+            // otherwise start from index 0
+            int startIdx = holdersList.isEmpty() ? 0 : 1;
             
             // Take top N holders and calculate percentages
             for (int i = 0; i < Math.min(limit, sortedHolders.size()); i++) {
@@ -961,6 +1130,14 @@ public class SolanaUtils {
                 holderInfo.put("amount", amount);
                 holderInfo.put("percentage", percentage);
                 holdersList.add(holderInfo);
+            }
+            
+            log.info("Successfully fetched approximate top {} holders from {} total accounts using {} API calls", 
+                    holdersList.size(), holderBalances.size(), apiCalls);
+                
+            // Add a warning if we used sampling mode
+            if (useSamplingMode) {
+                log.info("Note: Results are based on sampling and may not reflect the exact top holders");
             }
         } catch (Exception e) {
             log.error("Error fetching top token holders: {}", e.getMessage(), e);

@@ -1,9 +1,11 @@
 package com.lunax.telegramBot.component.navigation.components.token;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+import com.lunax.telegramBot.component.Buttons.Token.TopHoldersButton;
 import com.lunax.telegramBot.component.navigation.components.StateHandler;
 import com.lunax.telegramBot.utils.SolanaUtils;
 import com.lunax.telegramBot.utils.components.MessageUtils;
@@ -28,6 +30,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.lunax.telegramBot.utils.components.ButtonHandler;
+import com.lunax.telegramBot.model.session.ChatState;
 
 @Slf4j
 @Component
@@ -40,6 +43,7 @@ public class TokenInfo implements StateHandler {
     private StateService stateService;
 
     @Autowired
+    @Lazy
     private TopHoldersButton topHoldersButton;
 
     @Override
@@ -58,6 +62,11 @@ public class TokenInfo implements StateHandler {
                 stateService.initState(userId);
             }
             
+            // Store token address in user state
+            ObjectNode stateData = stateService.getStateData(userId);
+            stateData.put("tokenAddress", tokenAddress);
+            stateService.setStateData(userId, stateData);
+            
             // Fetch token information
             Map<String, Object> tokenInfo = solanaUtils.getTokenInformation(tokenAddress);
             if (tokenInfo == null || tokenInfo.isEmpty()) {
@@ -67,6 +76,19 @@ public class TokenInfo implements StateHandler {
 
             log.info("Token Info: {}", tokenInfo);
 
+            // Create a structured JSON object for token information
+            ObjectNode tokenInfoJson = new ObjectMapper().createObjectNode();
+            tokenInfoJson.put("tokenName", tokenInfo.getOrDefault("name", "Unknown").toString());
+            tokenInfoJson.put("tokenSymbol", tokenInfo.getOrDefault("symbol", "Unknown").toString());
+            tokenInfoJson.put("tokenAddress", tokenAddress);
+            tokenInfoJson.put("tokenDecimals", (Integer) tokenInfo.getOrDefault("decimals", 0));
+            tokenInfoJson.put("tokenTotalSupply", (Long) tokenInfo.getOrDefault("totalSupply", 0L));
+            tokenInfoJson.put("priceUSD", (Double) tokenInfo.getOrDefault("priceUSD", 0.0));
+
+            // Store the structured JSON object in the state
+            stateData.set("tokenInfo", tokenInfoJson);
+            stateService.setStateData(userId, stateData);
+            
             // Handle all possible values with type checking and defaults
             String name = tokenInfo.getOrDefault("name", "Unknown").toString();
             String symbol = tokenInfo.getOrDefault("symbol", "Unknown").toString();
@@ -116,6 +138,10 @@ public class TokenInfo implements StateHandler {
             String timeFrequency = "15m"; // Example: 15 minutes
             String timeBefore = "1D"; // Example: 1 day
 
+            // Store in state data
+            stateData.put("timeFrequency", timeFrequency);
+            stateData.put("timeBefore", timeBefore);
+
             // Fetch historical data
             JsonNode historicalData = solanaUtils.getHistoricalData(tokenAddress, timeFrequency, timeBefore);
             if (historicalData == null) {
@@ -148,6 +174,9 @@ public class TokenInfo implements StateHandler {
                 MessageUtils.sendMessage(update, "Failed to save the chart image.");
                 return;
             }
+
+            // After saving the image to a temp file, store its path in the state
+            stateData.put("tokenChartImagePath", tempFile.getAbsolutePath());
 
             // Send the image to the user with all token information - comprehensive version
             String messageWithTokenInfo = String.format("""
@@ -189,17 +218,8 @@ public class TokenInfo implements StateHandler {
                     priceMin24h,
                     priceMax24h);
 
-            // Store token info in user state
-            ObjectMapper objectMapper = new ObjectMapper();
-            ObjectNode stateData = objectMapper.createObjectNode();
-            stateData.put("tokenAddress", tokenAddress);
-            stateData.put("tokenName", name);
-            stateData.put("tokenSymbol", symbol);
-            stateData.put("tokenDecimals", decimals);
-            stateData.put("tokenTotalSupply", totalSupply);
+            // Store token info message in user state
             stateData.put("tokenInfoMessage", messageWithTokenInfo);
-            stateData.put("viewingTopHolders", false);
-            stateService.setStateData(userId, stateData);
             
             // Create keyboard with Top Holders button
             ButtonHandler[][] keyboard = {
@@ -208,6 +228,10 @@ public class TokenInfo implements StateHandler {
 
             MessageUtils.sendImageMessageInlineKeyboard(update, tempFile.getAbsolutePath(), messageWithTokenInfo, keyboard);
 
+            // Set the state to TOKEN_INFO_PAGE after sending the message
+            stateService.setState(userId, ChatState.TOKEN_INFO_PAGE);
+            stateService.setStateData(userId, stateData);
+            
             // Delete the temp file after sending
             tempFile.deleteOnExit();
         } catch (RuntimeException e) {
