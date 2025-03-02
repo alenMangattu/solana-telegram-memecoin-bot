@@ -1,7 +1,10 @@
 package com.lunax.telegramBot.utils;
 import java.io.ByteArrayInputStream;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -861,111 +864,118 @@ public class SolanaUtils {
     }
 
     /**
-     * Fetches the top token holders for a given token address
+     * Fetches the top token holders for a given token address using the native Solana RPC method.
      * @param tokenAddress The mint address of the token
-     * @param limit The number of top holders to fetch (default 10)
+     * @param limit The number of top holders to fetch (max 20 as per Solana RPC limitation)
      * @return List of maps containing holder information (address, amount, percentage)
      */
     public List<Map<String, Object>> getTopTokenHolders(String tokenAddress, int limit) {
         List<Map<String, Object>> holdersList = new ArrayList<>();
         
+        String heliusUrl = "https://mainnet.helius-rpc.com/?api-key=" + heliusApiKey;
         try {
-            // Prepare request URL with API key
-            String apiUrl = "https://mainnet.helius-rpc.com/?api-key=" + heliusApiKey;
+            // Validate input
+            if (tokenAddress == null || tokenAddress.isEmpty()) {
+                log.error("Invalid token address provided");
+                return holdersList;
+            }
             
-            // Create HTTP headers
+            // Ensure limit doesn't exceed the maximum of 20 returned by the API
+            int effectiveLimit = Math.min(limit, 20);
+            log.info("Fetching top {} token holders for token: {}", effectiveLimit, tokenAddress);
+
+            // Prepare the RPC request payload
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("jsonrpc", "2.0");
+            requestBody.put("id", 1);
+            requestBody.put("method", "getTokenLargestAccounts");
+            requestBody.put("params", Collections.singletonList(tokenAddress));
+            
+            // Configure headers
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             
-            // Page variables for pagination
-            int page = 1;
-            boolean hasMoreData = true;
-            Map<String, Long> holderBalances = new HashMap<>();
-            long totalSupply = 0;
+            // Make the RPC request to the Solana API
+            ResponseEntity<JsonNode> response = new RestTemplate().postForEntity(
+                heliusUrl,
+                new HttpEntity<>(requestBody, headers),
+                JsonNode.class
+            );
             
-            // Paginate through token accounts
-            while (hasMoreData) {
-                // Create request body for Helius getTokenAccounts RPC call
-                Map<String, Object> requestBody = new HashMap<>();
-                requestBody.put("jsonrpc", "2.0");
-                requestBody.put("id", "helius-getTokenAccounts");
-                requestBody.put("method", "getTokenAccounts");
+            // Process the response
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                JsonNode result = response.getBody().get("result");
                 
-                Map<String, Object> params = new HashMap<>();
-                params.put("mint", tokenAddress);
-                params.put("page", page);
-                params.put("limit", 1000); // Max per page
-                requestBody.put("params", params);
-                
-                // Make HTTP request
-                HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
-                ResponseEntity<JsonNode> response = new RestTemplate().postForEntity(apiUrl, entity, JsonNode.class);
-                
-                if (response.getStatusCode().is2xxSuccessful()) {
-                    JsonNode result = response.getBody().get("result");
+                if (result != null && result.has("value") && result.get("value").isArray()) {
+                    JsonNode accounts = result.get("value");
                     
-                    // Check if we have token accounts in the response
-                    if (result != null && result.has("token_accounts")) {
-                        JsonNode tokenAccounts = result.get("token_accounts");
-                        
-                        // If no accounts or empty, we're done
-                        if (tokenAccounts.size() == 0) {
-                            hasMoreData = false;
-                            continue;
-                        }
-                        
-                        // Process token accounts in this page
-                        for (JsonNode account : tokenAccounts) {
-                            String owner = account.get("owner").asText();
-                            long amount = account.get("amount").asLong();
-                            
-                            // Skip accounts with 0 balance
-                            if (amount <= 0) continue;
-                            
-                            // Add to total supply
-                            totalSupply += amount;
-                            
-                            // Update holder balance (combine if same owner)
-                            holderBalances.put(owner, holderBalances.getOrDefault(owner, 0L) + amount);
-                        }
-                        
-                        // Move to next page
-                        page++;
-                    } else {
-                        // No more token accounts
-                        hasMoreData = false;
+                    // Calculate total supply from the accounts using BigDecimal for precision
+                    BigDecimal totalSupply = BigDecimal.ZERO;
+                    for (JsonNode account : accounts) {
+                        String amount = account.get("amount").asText();
+                        totalSupply = totalSupply.add(new BigDecimal(amount));
                     }
+                    
+                    // Process each account
+                    int count = 0;
+                    for (JsonNode account : accounts) {
+                        if (count >= effectiveLimit) break;
+                        
+                        String address = account.get("address").asText();
+                        String amountStr = account.get("amount").asText();
+                        BigDecimal amountBD = new BigDecimal(amountStr);
+                        int decimals = account.get("decimals").asInt();
+                        
+                        // Parse the amount as a Long (converting from string)
+                        Long amountLong = Long.parseLong(amountStr);
+                        
+                        // Calculate percentage of total supply using BigDecimal
+                        BigDecimal percentage = totalSupply.compareTo(BigDecimal.ZERO) > 0 
+                            ? amountBD.multiply(BigDecimal.valueOf(100)).divide(totalSupply, 4, RoundingMode.HALF_UP)
+                            : BigDecimal.ZERO;
+                        
+                        // Get UI amount (formatted with proper decimals)
+                        String uiAmountString = account.has("uiAmountString") 
+                            ? account.get("uiAmountString").asText() 
+                            : formatAmount(amountBD, decimals);
+                        
+                        // Create holder info map with proper numeric types
+                        Map<String, Object> holderInfo = new HashMap<>();
+                        holderInfo.put("address", address);
+                        holderInfo.put("amount", amountLong); // Store as Long as expected by consumer code
+                        holderInfo.put("uiAmount", uiAmountString);
+                        holderInfo.put("decimals", decimals);
+                        holderInfo.put("percentage", percentage.doubleValue());
+                        
+                        holdersList.add(holderInfo);
+                        count++;
+                    }
+                    
+                    log.info("Successfully fetched {} token holders", holdersList.size());
                 } else {
-                    // API error
-                    log.error("Error fetching token accounts: {}", response.getStatusCode());
-                    hasMoreData = false;
+                    log.error("Invalid response format from Solana RPC");
                 }
-            }
-            
-            // Convert map to list and sort by amount (descending)
-            List<Map.Entry<String, Long>> sortedHolders = new ArrayList<>(holderBalances.entrySet());
-            sortedHolders.sort((a, b) -> b.getValue().compareTo(a.getValue()));
-            
-            // Take top N holders and calculate percentages
-            for (int i = 0; i < Math.min(limit, sortedHolders.size()); i++) {
-                Map.Entry<String, Long> entry = sortedHolders.get(i);
-                String address = entry.getKey();
-                Long amount = entry.getValue();
-                
-                // Calculate percentage of total supply
-                double percentage = totalSupply > 0 ? (amount * 100.0) / totalSupply : 0.0;
-                
-                // Add to result list
-                Map<String, Object> holderInfo = new HashMap<>();
-                holderInfo.put("address", address);
-                holderInfo.put("amount", amount);
-                holderInfo.put("percentage", percentage);
-                holdersList.add(holderInfo);
+            } else {
+                log.error("Error response from Solana RPC: {}", response.getStatusCode());
             }
         } catch (Exception e) {
             log.error("Error fetching top token holders: {}", e.getMessage(), e);
         }
         
         return holdersList;
+    }
+
+    /**
+     * Helper method to format token amounts with proper decimal places
+     */
+    private String formatAmount(BigDecimal rawAmount, int decimals) {
+        if (decimals == 0) return rawAmount.toString();
+        
+        BigDecimal divisor = BigDecimal.TEN.pow(decimals);
+        BigDecimal formattedAmount = rawAmount.divide(divisor, decimals, RoundingMode.HALF_UP);
+        
+        // Remove trailing zeros after decimal point
+        String result = formattedAmount.stripTrailingZeros().toPlainString();
+        return result;
     }
 }

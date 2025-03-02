@@ -1,14 +1,14 @@
-package com.lunax.telegramBot.component.navigation.components.token;
+package com.lunax.telegramBot.component.Buttons.Token;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.lunax.telegramBot.event.NavigationEvent;
 import com.lunax.telegramBot.service.StateService;
 import com.lunax.telegramBot.utils.components.ButtonHandler;
 import com.lunax.telegramBot.utils.components.MessageUtils;
+import com.lunax.telegramBot.component.navigation.components.token.TokenInfo;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -20,11 +20,12 @@ public class ReturnToTokenInfoButton implements ButtonHandler {
     private StateService stateService;
     
     @Autowired
-    private ApplicationEventPublisher eventPublisher;
+    @Lazy
+    private TokenInfo tokenInfo;
 
     @Override
     public String getButtonText() {
-        return "Back to Token Info";
+        return "🔙 Return to Token Info";
     }
 
     @Override
@@ -34,8 +35,6 @@ public class ReturnToTokenInfoButton implements ButtonHandler {
 
     @Override
     public void handleCallback(Update update) {
-        Long chatId = update.getCallbackQuery().getMessage().getChatId();
-        Integer messageId = update.getCallbackQuery().getMessage().getMessageId();
         Long userId = update.getCallbackQuery().getFrom().getId();
         
         try {
@@ -47,15 +46,28 @@ public class ReturnToTokenInfoButton implements ButtonHandler {
                 return;
             }
             
-            // Get the original token info message
-            String tokenInfoMessage = stateData.get("tokenInfoMessage").asText();
+            // Delete the current message
+            MessageUtils.deleteMessage(update);
             
-            // Update state to indicate we're viewing token info
+            // Re-send the original token info message
+            if (stateData.has("tokenChartImagePath")) {
+                String imagePath = stateData.get("tokenChartImagePath").asText();
+                String tokenInfoMessage = stateData.get("tokenInfoMessage").asText();
+                
+                // Create keyboard with Top Holders button
+                ButtonHandler[][] keyboard = {
+                    { new TopHoldersButton() }
+                };
+                
+                MessageUtils.sendImageMessageInlineKeyboard(update, imagePath, tokenInfoMessage, keyboard);
+            } else {
+                // If no image path, fall back to text message
+                MessageUtils.sendMessage(update, stateData.get("tokenInfoMessage").asText());
+            }
+            
+            // Update state
             stateData.put("viewingTopHolders", false);
             stateService.setStateData(userId, stateData);
-            
-            // Publish navigation event
-            eventPublisher.publishEvent(new NavigationEvent(this, update, "token_info"));
             
         } catch (Exception e) {
             log.error("Error returning to token info: {}", e.getMessage());
