@@ -551,16 +551,18 @@ public class SolanaUtils {
     }
 
     /**
-     * Fetches token information from the Helius API.
+     * Fetches comprehensive token information by combining Helius API data with Raydium liquidity pool data.
      * @param tokenAddress The token address to fetch information for.
-     * @return A map containing token information.
+     * @return A map containing token information including price, liquidity, volume and other metrics.
      */
     public Map<String, Object> getTokenInformation(String tokenAddress) {
-        String heliusApiUrl = "https://mainnet.helius-rpc.com/?api-key=" + heliusApiKey; // Adjust the URL as needed
         Map<String, Object> tokenInfo = new HashMap<>();
 
         try {
-            // Create the payload for the request
+            // Step 1: Get basic token information from Helius API
+            String heliusApiUrl = "https://mainnet.helius-rpc.com/?api-key=" + heliusApiKey;
+            
+            // Create the payload for the Helius request
             Map<String, Object> payload = new HashMap<>();
             payload.put("jsonrpc", "2.0");
             payload.put("id", 1);
@@ -569,45 +571,150 @@ public class SolanaUtils {
             params.put("id", tokenAddress);
             payload.put("params", params);
 
-            // Make the request
-            ResponseEntity<JsonNode> response = new RestTemplate().postForEntity(
+            // Make the request to Helius API
+            ResponseEntity<JsonNode> heliusResponse = new RestTemplate().postForEntity(
                 heliusApiUrl,
                 new HttpEntity<>(payload, createHeaders()),
                 JsonNode.class
             );
 
-            // Log the response for debugging
-            log.info("Helius API response for token {}: {}", tokenAddress, response.getBody());
+            log.info("Helius API response for token {}: {}", tokenAddress, heliusResponse.getBody());
 
-            if (response.getStatusCode().is2xxSuccessful()) {
-                JsonNode result = response.getBody().get("result");
+            if (heliusResponse.getStatusCode().is2xxSuccessful() && heliusResponse.getBody() != null) {
+                JsonNode result = heliusResponse.getBody().get("result");
                 if (result != null) {
-                    // Extract relevant fields
-                    tokenInfo.put("name", result.get("content").get("metadata").get("name").asText());
-                    tokenInfo.put("symbol", result.get("content").get("metadata").get("symbol").asText()); // Extract symbol
-                    tokenInfo.put("decimals", result.get("token_info").get("decimals").asInt());
-                    tokenInfo.put("totalSupply", result.get("token_info").get("supply").asLong());
-                    tokenInfo.put("priceUSD", result.get("token_info").get("price_info").get("price_per_token").asDouble());
-                } else {
-                    // Handle case where result is null
-                    log.error("No result found for token: {}", tokenAddress);
-                    throw new RuntimeException("Token not found.");
-                }
-            } else {
-                // Handle error response
-                JsonNode errorNode = response.getBody().get("error");
-                if (errorNode != null) {
-                    String errorMessage = errorNode.get("message").asText();
-                    log.error("Failed to fetch token information: {}", errorMessage);
-                    if (errorMessage.contains("RecordNotFound")) {
-                        throw new RuntimeException("Token not found.");
+                    // Extract relevant fields from Helius
+                    if (result.has("content") && result.get("content").has("metadata")) {
+                        tokenInfo.put("name", result.get("content").get("metadata").get("name").asText());
+                        tokenInfo.put("symbol", result.get("content").get("metadata").get("symbol").asText());
                     }
+                    
+                    if (result.has("token_info")) {
+                        JsonNode tokenInfoNode = result.get("token_info");
+                        tokenInfo.put("decimals", tokenInfoNode.get("decimals").asInt());
+                        tokenInfo.put("totalSupply", tokenInfoNode.get("supply").asLong());
+                        
+                        if (tokenInfoNode.has("price_info") && tokenInfoNode.get("price_info").has("price_per_token")) {
+                            tokenInfo.put("priceUSD", tokenInfoNode.get("price_info").get("price_per_token").asDouble());
+                        }
+                    }
+                } else {
+                    log.error("No result found for token in Helius: {}", tokenAddress);
                 }
             }
+            
+            // Step 2: Get pool information from Raydium API
+            String raydiumPoolsUrl = String.format(
+                "https://api-v3.raydium.io/pools/info/mint?mint1=%s&poolType=all&poolSortField=default&sortType=desc&pageSize=100&page=1",
+                tokenAddress
+            );
+            
+            // Make request to get pools for this token
+            ResponseEntity<JsonNode> poolsResponse = new RestTemplate().getForEntity(
+                raydiumPoolsUrl,
+                JsonNode.class
+            );
+            
+            log.info("Raydium pools response for token {}: {}", tokenAddress, poolsResponse.getBody());
+            
+            if (poolsResponse.getStatusCode().is2xxSuccessful() && poolsResponse.getBody() != null) {
+                JsonNode data = poolsResponse.getBody().get("data");
+                if (data != null && data.has("data") && data.get("data").isArray() && data.get("data").size() > 0) {
+                    // Get the first pool (highest liquidity typically)
+                    JsonNode firstPool = data.get("data").get(0);
+                    String poolId = firstPool.get("id").asText();
+                    
+                    // Store basic pool info
+                    tokenInfo.put("poolId", poolId);
+                    tokenInfo.put("price", firstPool.get("price").asDouble());
+                    tokenInfo.put("tvl", firstPool.get("tvl").asDouble());
+                    tokenInfo.put("feeRate", firstPool.get("feeRate").asDouble());
+                    
+                    // Add day/week/month metrics if present
+                    if (firstPool.has("day")) {
+                        JsonNode dayData = firstPool.get("day");
+                        tokenInfo.put("24hVolume", dayData.get("volume").asDouble());
+                        tokenInfo.put("24hVolumeQuote", dayData.get("volumeQuote").asDouble());
+                        tokenInfo.put("24hFee", dayData.get("volumeFee").asDouble());
+                        tokenInfo.put("24hApr", dayData.get("apr").asDouble());
+                        tokenInfo.put("24hPriceMin", dayData.get("priceMin").asDouble());
+                        tokenInfo.put("24hPriceMax", dayData.get("priceMax").asDouble());
+                    }
+                    
+                    if (firstPool.has("week")) {
+                        JsonNode weekData = firstPool.get("week");
+                        tokenInfo.put("7dVolume", weekData.get("volume").asDouble());
+                        tokenInfo.put("7dApr", weekData.get("apr").asDouble());
+                    }
+                    
+                    if (firstPool.has("month")) {
+                        JsonNode monthData = firstPool.get("month");
+                        tokenInfo.put("30dVolume", monthData.get("volume").asDouble());
+                        tokenInfo.put("30dApr", monthData.get("apr").asDouble());
+                    }
+                    
+                    // Get mint information
+                    if (firstPool.has("mintA") && firstPool.has("mintB")) {
+                        JsonNode mintA = firstPool.get("mintA");
+                        JsonNode mintB = firstPool.get("mintB");
+                        
+                        // Determine which mint is the token we're looking for
+                        if (mintB.get("address").asText().equals(tokenAddress)) {
+                            tokenInfo.put("pairedWithSymbol", mintA.get("symbol").asText());
+                            tokenInfo.put("pairedWithAddress", mintA.get("address").asText());
+                        } else {
+                            tokenInfo.put("pairedWithSymbol", mintB.get("symbol").asText());
+                            tokenInfo.put("pairedWithAddress", mintB.get("address").asText());
+                        }
+                    }
+                    
+                    // Get LP mint info
+                    if (firstPool.has("lpMint")) {
+                        tokenInfo.put("lpMintAddress", firstPool.get("lpMint").get("address").asText());
+                        tokenInfo.put("lpPrice", firstPool.get("lpPrice").asDouble());
+                        tokenInfo.put("lpAmount", firstPool.get("lpAmount").asDouble());
+                        tokenInfo.put("burnPercent", firstPool.get("burnPercent").asDouble());
+                    }
+                    
+                    // Step 3: Get detailed pool information
+                    String poolDetailUrl = String.format(
+                        "https://api-v3.raydium.io/pools/info/ids?ids=%s",
+                        poolId
+                    );
+                    
+                    ResponseEntity<JsonNode> poolDetailResponse = new RestTemplate().getForEntity(
+                        poolDetailUrl,
+                        JsonNode.class
+                    );
+                    
+                    log.info("Raydium pool detail response: {}", poolDetailResponse.getBody());
+                    
+                    if (poolDetailResponse.getStatusCode().is2xxSuccessful() && 
+                        poolDetailResponse.getBody() != null && 
+                        poolDetailResponse.getBody().has("data") && 
+                        poolDetailResponse.getBody().get("data").isArray() && 
+                        poolDetailResponse.getBody().get("data").size() > 0) {
+                        
+                        JsonNode poolDetail = poolDetailResponse.getBody().get("data").get(0);
+                        
+                        // Add any additional details not already captured above
+                        tokenInfo.put("mintAmountA", poolDetail.get("mintAmountA").asDouble());
+                        tokenInfo.put("mintAmountB", poolDetail.get("mintAmountB").asDouble());
+                        tokenInfo.put("openTime", poolDetail.get("openTime").asLong());
+                    }
+                } else {
+                    log.warn("No pools found for token: {}", tokenAddress);
+                }
+            } else {
+                log.error("Failed to get pool information for token: {}", tokenAddress);
+            }
+            
         } catch (RestClientException e) {
-            log.error("Error making request to Helius API: {}", e.getMessage());
+            log.error("Error making request to API: {}", e.getMessage());
+            tokenInfo.put("error", "Failed to fetch token information: " + e.getMessage());
         } catch (Exception e) {
             log.error("Error processing token information: {}", e.getMessage());
+            tokenInfo.put("error", "Error processing token information: " + e.getMessage());
         }
 
         return tokenInfo;
@@ -751,5 +858,114 @@ public class SolanaUtils {
                 throw new IllegalArgumentException("Unsupported timeBefore value: " + timeBefore);
         }
         return (System.currentTimeMillis() / 1000) - seconds; // Return the timestamp for the calculated time
+    }
+
+    /**
+     * Fetches the top token holders for a given token address
+     * @param tokenAddress The mint address of the token
+     * @param limit The number of top holders to fetch (default 10)
+     * @return List of maps containing holder information (address, amount, percentage)
+     */
+    public List<Map<String, Object>> getTopTokenHolders(String tokenAddress, int limit) {
+        List<Map<String, Object>> holdersList = new ArrayList<>();
+        
+        try {
+            // Prepare request URL with API key
+            String apiUrl = "https://mainnet.helius-rpc.com/?api-key=" + heliusApiKey;
+            
+            // Create HTTP headers
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            
+            // Page variables for pagination
+            int page = 1;
+            boolean hasMoreData = true;
+            Map<String, Long> holderBalances = new HashMap<>();
+            long totalSupply = 0;
+            
+            // Paginate through token accounts
+            while (hasMoreData) {
+                // Create request body for Helius getTokenAccounts RPC call
+                Map<String, Object> requestBody = new HashMap<>();
+                requestBody.put("jsonrpc", "2.0");
+                requestBody.put("id", "helius-getTokenAccounts");
+                requestBody.put("method", "getTokenAccounts");
+                
+                Map<String, Object> params = new HashMap<>();
+                params.put("mint", tokenAddress);
+                params.put("page", page);
+                params.put("limit", 1000); // Max per page
+                requestBody.put("params", params);
+                
+                // Make HTTP request
+                HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+                ResponseEntity<JsonNode> response = new RestTemplate().postForEntity(apiUrl, entity, JsonNode.class);
+                
+                if (response.getStatusCode().is2xxSuccessful()) {
+                    JsonNode result = response.getBody().get("result");
+                    
+                    // Check if we have token accounts in the response
+                    if (result != null && result.has("token_accounts")) {
+                        JsonNode tokenAccounts = result.get("token_accounts");
+                        
+                        // If no accounts or empty, we're done
+                        if (tokenAccounts.size() == 0) {
+                            hasMoreData = false;
+                            continue;
+                        }
+                        
+                        // Process token accounts in this page
+                        for (JsonNode account : tokenAccounts) {
+                            String owner = account.get("owner").asText();
+                            long amount = account.get("amount").asLong();
+                            
+                            // Skip accounts with 0 balance
+                            if (amount <= 0) continue;
+                            
+                            // Add to total supply
+                            totalSupply += amount;
+                            
+                            // Update holder balance (combine if same owner)
+                            holderBalances.put(owner, holderBalances.getOrDefault(owner, 0L) + amount);
+                        }
+                        
+                        // Move to next page
+                        page++;
+                    } else {
+                        // No more token accounts
+                        hasMoreData = false;
+                    }
+                } else {
+                    // API error
+                    log.error("Error fetching token accounts: {}", response.getStatusCode());
+                    hasMoreData = false;
+                }
+            }
+            
+            // Convert map to list and sort by amount (descending)
+            List<Map.Entry<String, Long>> sortedHolders = new ArrayList<>(holderBalances.entrySet());
+            sortedHolders.sort((a, b) -> b.getValue().compareTo(a.getValue()));
+            
+            // Take top N holders and calculate percentages
+            for (int i = 0; i < Math.min(limit, sortedHolders.size()); i++) {
+                Map.Entry<String, Long> entry = sortedHolders.get(i);
+                String address = entry.getKey();
+                Long amount = entry.getValue();
+                
+                // Calculate percentage of total supply
+                double percentage = totalSupply > 0 ? (amount * 100.0) / totalSupply : 0.0;
+                
+                // Add to result list
+                Map<String, Object> holderInfo = new HashMap<>();
+                holderInfo.put("address", address);
+                holderInfo.put("amount", amount);
+                holderInfo.put("percentage", percentage);
+                holdersList.add(holderInfo);
+            }
+        } catch (Exception e) {
+            log.error("Error fetching top token holders: {}", e.getMessage(), e);
+        }
+        
+        return holdersList;
     }
 }

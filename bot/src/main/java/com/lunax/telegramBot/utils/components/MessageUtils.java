@@ -2,6 +2,7 @@ package com.lunax.telegramBot.utils.components;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -329,6 +330,9 @@ public class MessageUtils {
         }
     }
 
+    /**
+     * Sends an image message with inline keyboard built from a ButtonHandler[][] format
+     */
     public static void sendImageMessageInlineKeyboard(Update update, String imagePath, String caption, ButtonHandler[][] buttonHandlers) {
         Message message = getMessage(update);
         if (message == null) return;
@@ -339,7 +343,7 @@ public class MessageUtils {
         sendPhoto.setCaption(caption);
         sendPhoto.setParseMode("Markdown");
 
-        // Set reply markup if buttons are provided
+        // Set reply markup if button handlers are provided
         if (buttonHandlers != null) {
             InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
             List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
@@ -397,6 +401,42 @@ public class MessageUtils {
             } else {
                 log.warn("Edit skipped: new text is the same as the current message text/caption.");
             }
+        }
+    }
+
+    /**
+     * Edit message text with inline keyboard built from ButtonHandler[][] format
+     */
+    public static void editMessageText(Long chatId, Integer messageId, String text, ButtonHandler[][] buttonHandlers) {
+        EditMessageText editMessage = new EditMessageText();
+        editMessage.setChatId(chatId.toString());
+        editMessage.setMessageId(messageId);
+        editMessage.setText(text);
+        editMessage.setParseMode("Markdown");
+
+        // Set reply markup if buttons are provided
+        if (buttonHandlers != null) {
+            InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+            List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
+
+            for (ButtonHandler[] buttonRow : buttonHandlers) {
+                List<InlineKeyboardButton> row = new ArrayList<>();
+                for (ButtonHandler handler : buttonRow) {
+                    InlineKeyboardButton button = new InlineKeyboardButton();
+                    button.setText(handler.getButtonText());
+                    button.setCallbackData(handler.getCallbackData());
+                    row.add(button);
+                }
+                buttons.add(row);
+            }
+            markup.setKeyboard(buttons);
+            editMessage.setReplyMarkup(markup);
+        }
+
+        try {
+            botInstance.execute(editMessage);
+        } catch (TelegramApiException e) {
+            log.error("Error editing message: {}", e.getMessage());
         }
     }
 
