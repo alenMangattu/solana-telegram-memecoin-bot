@@ -54,3 +54,4 @@
 {"level":"warn","message":"No liquidity pool found for token 9eXC6W3ZKnkNnCr9iENExRLJDYfPGLbc4m6qfJzJpump","timestamp":"2025-03-02T11:20:33.177Z"}
 {"level":"info","message":"Successfully fetched data for token: 9eXC6W3ZKnkNnCr9iENExRLJDYfPGLbc4m6qfJzJpump","timestamp":"2025-03-02T11:20:33.178Z"}
 {"level":"info","message":"Server running on port 3000","timestamp":"2025-03-02T13:44:58.169Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-03-02T18:43:36.879Z"}
