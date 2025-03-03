@@ -7,7 +7,6 @@ import java.nio.file.attribute.PosixFilePermissions;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.Arrays;
-import java.util.Optional;
 import java.nio.charset.StandardCharsets;
 
 import org.bitcoinj.core.Base58;
@@ -26,7 +25,6 @@ import com.mmorrell.metaplex.manager.MetaplexManager;
 import com.mmorrell.metaplex.model.Metadata;
 import org.p2p.solanaj.core.PublicKey;
 import org.p2p.solanaj.rpc.RpcClient;
-import org.p2p.solanaj.core.Account;
 import org.p2p.solanaj.core.Transaction;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.CacheEvict;
@@ -202,22 +200,22 @@ public class SolanaCliUtils {
     /**
      * Helper method to create metadata JSON for Metaplex
      */
-    private String createMetadataJson(String name, String symbol, String uri) {
-        try {
-            ObjectNode metadata = objectMapper.createObjectNode();
-            metadata.put("name", name);
-            metadata.put("symbol", symbol);
-            metadata.put("uri", uri);
-            metadata.put("sellerFeeBasisPoints", 0);
-            metadata.put("creators", objectMapper.createArrayNode()); // Changed null to an empty array
-            metadata.put("collection", objectMapper.createObjectNode()); // Changed null to an empty object
-            metadata.put("uses", objectMapper.createObjectNode()); // Changed null to an empty object
+    // private String createMetadataJson(String name, String symbol, String uri) {
+    //     try {
+    //         ObjectNode metadata = objectMapper.createObjectNode();
+    //         metadata.put("name", name);
+    //         metadata.put("symbol", symbol);
+    //         metadata.put("uri", uri);
+    //         metadata.put("sellerFeeBasisPoints", 0);
+    //         metadata.put("creators", objectMapper.createArrayNode()); // Changed null to an empty array
+    //         metadata.put("collection", objectMapper.createObjectNode()); // Changed null to an empty object
+    //         metadata.put("uses", objectMapper.createObjectNode()); // Changed null to an empty object
             
-            return metadata.toString();
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to create metadata JSON: " + e.getMessage());
-        }
-    }
+    //         return metadata.toString();
+    //     } catch (Exception e) {
+    //         throw new RuntimeException("Failed to create metadata JSON: " + e.getMessage());
+    //     }
+    // }
     
     /**
      * Creates an associated token account for a wallet
@@ -278,9 +276,6 @@ public class SolanaCliUtils {
         System.out.println("DEBUG: Associated token account obtained: " + tokenAccount);
         
         Thread.sleep(2000);
-
-        // Get the wallet's public key
-        String walletPublicKey = getWalletPublicKey(walletKeyPath);
 
         ProcessBuilder mintTokens = new ProcessBuilder(
             "spl-token",

@@ -16,10 +16,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.telegram.telegrambots.meta.api.objects.Update;
+import com.lunax.telegramBot.model.session.ChatState;
+import com.lunax.telegramBot.component.navigation.components.StateHandler;
 
 @Component
 public class HandlerRegistry {
     private final Map<String, ButtonHandler> handlers = new HashMap<>();
+    private final Map<String, StateHandler> stateHandlers = new HashMap<>();
     
     @Autowired
     private ApplicationContext applicationContext;
@@ -68,6 +71,26 @@ public class HandlerRegistry {
         handlerBeans.values().forEach(handler -> 
             handlers.put(handler.getCallbackData(), handler)
         );
+        
+        // Get all beans that implement StateHandler
+        Map<String, StateHandler> stateHandlerBeans = applicationContext.getBeansOfType(StateHandler.class);
+        
+        // Register each state handler by its state name
+        stateHandlerBeans.values().forEach(handler -> {
+            if (handler.getClass().getSimpleName() != null) {
+                String stateName = handler.getClass().getSimpleName().toUpperCase();
+                if (stateName.equals("TOKENINFO")) {
+                    registerStateHandler(ChatState.TOKEN_INFO_PAGE.toString(), handler);
+                } else {
+                    try {
+                        ChatState state = ChatState.valueOf(stateName);
+                        registerStateHandler(state.toString(), handler);
+                    } catch (IllegalArgumentException e) {
+                        // Not a standard state name, ignore
+                    }
+                }
+            }
+        });
     }
     
     public ButtonHandler getHandler(String callbackData) {
@@ -87,5 +110,17 @@ public class HandlerRegistry {
     
     public Map<String, ButtonHandler> getAllHandlers() {
         return handlers;
+    }
+
+    public StateHandler getHandler(ChatState state) {
+        return getStateHandler(state.toString());
+    }
+
+    public void registerStateHandler(String stateName, StateHandler handler) {
+        stateHandlers.put(stateName, handler);
+    }
+
+    public StateHandler getStateHandler(String stateName) {
+        return stateHandlers.get(stateName);
     }
 }

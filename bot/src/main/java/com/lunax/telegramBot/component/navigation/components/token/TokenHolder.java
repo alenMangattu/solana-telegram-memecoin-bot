@@ -4,12 +4,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+import com.lunax.telegramBot.component.Buttons.Token.ReturnToTokenInfoButton;
 import com.lunax.telegramBot.component.navigation.components.StateHandler;
 import com.lunax.telegramBot.service.StateService;
 import com.lunax.telegramBot.utils.SolanaUtils;
 import com.lunax.telegramBot.utils.components.MessageUtils;
 import com.lunax.telegramBot.utils.components.ButtonHandler;
-import com.lunax.telegramBot.component.Buttons.Token.ReturnToTokenInfoButton;
 import com.lunax.telegramBot.utils.NumberUtils;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -30,8 +30,10 @@ public class TokenHolder implements StateHandler {
     @Autowired
     private StateService stateService;
     
-    @Autowired
-    private ReturnToTokenInfoButton returnToTokenInfoButton;
+    // Create a factory method for buttons instead of autowiring them
+    private ButtonHandler createReturnButton() {
+        return new ReturnToTokenInfoButton();
+    }
 
     @Override
     public void executeVoid(Update update) {
@@ -105,9 +107,9 @@ public class TokenHolder implements StateHandler {
                 // Delete the old message
                 MessageUtils.deleteMessage(update);
                 
-                // Create keyboard with Return button
+                // Create keyboard with Return button - using factory method to avoid circular dependency
                 ButtonHandler[][] keyboard = {
-                    { returnToTokenInfoButton }
+                    { createReturnButton() }
                 };
                 
                 // Send a new message with the same image
