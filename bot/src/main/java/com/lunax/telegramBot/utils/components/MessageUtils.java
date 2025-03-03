@@ -2,7 +2,6 @@ package com.lunax.telegramBot.utils.components;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -39,8 +38,7 @@ import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
-import org.springframework.core.io.InputStreamResource;
-import java.io.FileOutputStream;
+import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 
 public class MessageUtils {
 
@@ -333,21 +331,21 @@ public class MessageUtils {
     /**
      * Sends an image message with inline keyboard built from a ButtonHandler[][] format
      */
-    public static void sendImageMessageInlineKeyboard(Update update, String imagePath, String caption, ButtonHandler[][] buttonHandlers) {
+    public static Message sendImageMessageInlineKeyboard(Update update, String imagePath, String text, ButtonHandler[][] buttonHandlers) {
         Message message = getMessage(update);
-        if (message == null) return;
+        if (message == null) return null;
 
+        // Create the SendPhoto object
         SendPhoto sendPhoto = new SendPhoto();
         sendPhoto.setChatId(message.getChatId().toString());
         sendPhoto.setPhoto(new InputFile(new File(imagePath)));
-        sendPhoto.setCaption(caption);
-        sendPhoto.setParseMode("Markdown");
+        sendPhoto.setCaption(text);
+        
+        // Create the inline keyboard markup
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
 
-        // Set reply markup if button handlers are provided
         if (buttonHandlers != null) {
-            InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
-            List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
-
             for (ButtonHandler[] buttonRow : buttonHandlers) {
                 List<InlineKeyboardButton> row = new ArrayList<>();
                 for (ButtonHandler handler : buttonRow) {
@@ -358,26 +356,34 @@ public class MessageUtils {
                 }
                 buttons.add(row);
             }
-            markup.setKeyboard(buttons);
-            sendPhoto.setReplyMarkup(markup);
         }
 
+        markup.setKeyboard(buttons);
+        sendPhoto.setReplyMarkup(markup);
+
         try {
-            botInstance.execute(sendPhoto);
+            return botInstance.execute(sendPhoto); // Return the sent message
         } catch (TelegramApiException e) {
-            log.error("Error sending image message: {}", e.getMessage());
+            log.error("Error sending image message with inline keyboard: {}", e.getMessage());
+            return null;
         }
     }
 
-    public static void sendMessage(Update update, String text) {
-        Long chatId = null;
-        if (update.hasMessage()) {
-            chatId = update.getMessage().getChatId();
-        } else if (update.hasCallbackQuery()) {
-            chatId = update.getCallbackQuery().getMessage().getChatId();
-        }
-        if (chatId != null) {
-            sendMessage(chatId, text);
+    public static Message sendMessage(Update update, String text) {
+        Message message = getMessage(update);
+        if (message == null) return null;
+
+        SendMessage sendMessage = SendMessage.builder()
+                .chatId(message.getChatId().toString())
+                .text(text)
+                .parseMode(ParseMode.MARKDOWN) // Optional: set parse mode if needed
+                .build();
+
+        try {
+            return botInstance.execute(sendMessage); // Return the sent message
+        } catch (TelegramApiException e) {
+            log.error("Error sending message: {}", e.getMessage());
+            return null;
         }
     }
 
@@ -560,7 +566,7 @@ public class MessageUtils {
 
         SendMessage sendMessage = SendMessage.builder()
                 .chatId(message.getChatId().toString())
-                .text("Loading...")
+                .text("⟳ Loading...")
                 .build();
 
         try {
@@ -590,6 +596,95 @@ public class MessageUtils {
             botInstance.execute(editMessage);
         } catch (TelegramApiException e) {
             log.error("Error editing message: {}", e.getMessage());
+        }
+    }
+
+    public static void sendAnswerCallbackQuery(Update update, String text, boolean showAlert) {
+        try {
+            if (update.hasCallbackQuery()) {
+                AnswerCallbackQuery answer = new AnswerCallbackQuery();
+                answer.setCallbackQueryId(update.getCallbackQuery().getId());
+                answer.setText(text);
+                answer.setShowAlert(showAlert);
+                botInstance.execute(answer);
+            }
+        } catch (Exception e) {
+            log.error("Error sending callback query answer: {}", e.getMessage());
+        }
+    }
+
+    public static void deleteMessage(Update update, Long messageId) {
+        if (update.hasCallbackQuery()) {
+            Long chatId = update.getCallbackQuery().getMessage().getChatId();
+            DeleteMessage deleteMessage = new DeleteMessage();
+            deleteMessage.setChatId(chatId.toString());
+            deleteMessage.setMessageId(messageId.intValue());
+            try {
+                botInstance.execute(deleteMessage);
+            } catch (TelegramApiException e) {
+                log.error("Error deleting message: {}", e.getMessage());
+            }
+        }
+    }
+
+    public static void deleteMessage(Long chatId, Integer messageId) {
+        DeleteMessage deleteMessage = new DeleteMessage();
+        deleteMessage.setChatId(chatId.toString());
+        deleteMessage.setMessageId(messageId);
+        
+        try {
+            botInstance.execute(deleteMessage);
+            log.info("Message with ID {} deleted successfully from chat {}", messageId, chatId);
+        } catch (TelegramApiException e) {
+            log.error("Error deleting message: {}", e.getMessage());
+        }
+    }
+
+    /**
+     * Edits a message by deleting it and sending a new message with an image and inline keyboard.
+     * Since Telegram doesn't directly support editing a message to include an image,
+     * this method deletes the original message and sends a new one.
+     * 
+     * @param update The update containing the message to edit
+     * @param imagePath The path to the image file to be sent
+     * @param text The text to include with the image
+     * @param buttonHandlers The button handlers to create the inline keyboard
+     * @return The newly sent message
+     */
+    public static Message editMessageWithImage(Update update, String imagePath, String text, ButtonHandler[][] buttonHandlers) {
+        // First, delete the existing message
+        Message message = getMessage(update);
+        if (message == null) return null;
+        
+        deleteMessage(message.getChatId(), message.getMessageId());
+        
+        // Then send a new message with the image and keyboard
+        return sendImageMessageInlineKeyboard(update, imagePath, text, buttonHandlers);
+    }
+
+    /**
+     * Deletes a message based on the provided Message object.
+     * 
+     * @param message The Message object to delete.
+     */
+    public static void deleteMessage(Message message) {
+        if (message == null) {
+            log.warn("Attempted to delete a null message.");
+            return;
+        }
+        
+        Long chatId = message.getChatId();
+        Integer messageId = message.getMessageId();
+        
+        DeleteMessage deleteMessage = new DeleteMessage();
+        deleteMessage.setChatId(chatId.toString());
+        deleteMessage.setMessageId(messageId);
+        
+        try {
+            botInstance.execute(deleteMessage);
+            log.info("Message with ID {} deleted successfully from chat {}", messageId, chatId);
+        } catch (TelegramApiException e) {
+            log.error("Error deleting message: {}", e.getMessage());
         }
     }
 }
