@@ -170,6 +170,6 @@ dist
 
 # IntelliJ based IDEs
 .idea
-
+tokeninfo.log
 # Finder (MacOS) folder config
 .DS_Store

@@ -4,14 +4,12 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.apache.http.client.config.RequestConfig;
 import org.bitcoinj.core.Base58;
 import org.p2p.solanaj.core.Account;
 import org.p2p.solanaj.core.PublicKey;
@@ -97,10 +95,6 @@ public class SolanaUtils {
             }
 
             // Set a timeout for the request
-            RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectTimeout(60000)  // 60 seconds connection timeout
-                .setSocketTimeout(60000)    // 60 seconds read timeout
-                .build();
             RestTemplate restTemplateWithTimeout = new RestTemplateBuilder()
                 .setConnectTimeout(Duration.ofSeconds(60))
                 .setReadTimeout(Duration.ofSeconds(60))
@@ -704,7 +698,6 @@ public class SolanaUtils {
                         // Add any additional details not already captured above
                         tokenInfo.put("mintAmountA", poolDetail.get("mintAmountA").asDouble());
                         tokenInfo.put("mintAmountB", poolDetail.get("mintAmountB").asDouble());
-                        tokenInfo.put("openTime", poolDetail.get("openTime").asLong());
                     }
                 } else {
                     log.warn("No pools found for token: {}", tokenAddress);
