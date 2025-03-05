@@ -1,16 +1,18 @@
 package com.lunax.telegramBot.component.Buttons.Token;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import com.lunax.telegramBot.utils.components.ButtonHandler;
-import com.lunax.telegramBot.utils.components.MessageUtils;
+import com.lunax.telegramBot.component.navigation.components.token.Buy;
 import com.lunax.telegramBot.model.session.ChatState;
 
 @Component
 public class BuyButton implements ButtonHandler {
+
+    @Autowired
+    private Buy buy;
 
     @Override
     public String getButtonText() {
@@ -29,7 +31,6 @@ public class BuyButton implements ButtonHandler {
 
     @Override
     public void handleCallback(Update update) {
-        // Implementation can be added later
-        MessageUtils.sendMessage(update, "Buy functionality will be implemented soon!");
+        buy.executeVoid(update);
     }
-} 
+}

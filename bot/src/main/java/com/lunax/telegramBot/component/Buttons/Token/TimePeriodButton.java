@@ -67,28 +67,32 @@ public class TimePeriodButton implements ButtonHandler {
         ObjectNode stateData = stateService.getStateData(userId);
         
         if (stateData != null && stateData.has("tokenAddress")) {
-            // Format the period to uppercase
-            String formattedPeriod = period.toUpperCase(); // Ensure the period is in uppercase
-            
-            // Get the current frequency (if any)
             String currentFrequency = stateData.has("timeFrequency") ? 
-                stateData.get("timeFrequency").asText() : "15M";
-            
+                stateData.get("timeFrequency").asText() : "15M"; // Default
+
+            // Validate period against the current frequency
+            String validatedPeriod = TimeUtils.validateTimeFrequency(currentFrequency, period);
+            if (validatedPeriod == null) {
+                MessageUtils.sendAnswerCallbackQuery(update, 
+                    "You cant change the time period to " + period + " with the current frequency: " + currentFrequency, true);
+                return; // Stop further processing
+            }
+
             // Validate and possibly adjust the frequency based on the new period
-            String adjustedFrequency = TimeUtils.validateTimeFrequency(currentFrequency, formattedPeriod);
+            String adjustedFrequency = TimeUtils.validateTimeFrequency(currentFrequency, period);
             
             // Check if frequency was adjusted
             boolean frequencyAdjusted = !adjustedFrequency.equals(currentFrequency);
             
             // Acknowledge the callback to remove the loading spinner
-            String message = "Updating chart with time period: " + formattedPeriod;
+            String message = "Updating chart with time period: " + period;
             if (frequencyAdjusted) {
                 message += " (frequency adjusted to " + adjustedFrequency + ")";
             }
             MessageUtils.sendAnswerCallbackQuery(update, message, false);
             
             // Update the time period and possibly the frequency
-            stateData.put("timeBefore", formattedPeriod);
+            stateData.put("timeBefore", period);
             if (frequencyAdjusted) {
                 stateData.put("timeFrequency", adjustedFrequency);
             }

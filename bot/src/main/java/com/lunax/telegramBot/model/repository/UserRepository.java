@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import com.lunax.telegramBot.model.db.User;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
@@ -28,4 +29,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("SELECT u FROM User u WHERE u.telegramId IN :telegramIds")
     List<User> findAllByTelegramIdIn(@Param("telegramIds") List<Long> telegramIds);
+
+    @Query("SELECT w.walletId FROM Wallet w WHERE w.user.telegramId = :telegramId ORDER BY w.createdAt ASC")
+    UUID getCurrentWalletIdByTelegramId(@Param("telegramId") Long telegramId);
+
+    @Query("SELECT w.walletId FROM Wallet w WHERE w.user.telegramId = :telegramId")
+    List<UUID> getCurrentWalletIdsByTelegramId(@Param("telegramId") Long telegramId);
 }

@@ -1,33 +1,28 @@
 package com.lunax.telegramBot.model.db;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-import java.time.LocalDateTime;
-import java.math.BigDecimal;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
-@Getter
-@Setter
+import java.time.LocalDateTime;
+
+@Data
 @Entity
-@Table(name = "token_holdings")
+@Table(name = "user_settings")
 @NoArgsConstructor
-@AllArgsConstructor
-public class TokenHolding {
+public class UserSettings {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "wallet_id", nullable = false)
-    private Wallet wallet;
+    @Column(name = "user_id", nullable = false, unique = true)
+    private Long userId;
 
-    @Column(name = "token_symbol", nullable = false)
-    private String tokenSymbol;
-
-    @Column(name = "balance", nullable = false, precision = 18, scale = 8)
-    private BigDecimal balance;
+    @Column(name = "settings", columnDefinition = "jsonb", nullable = false)
+    @JdbcTypeCode(SqlTypes.JSON)
+    private com.fasterxml.jackson.databind.JsonNode settings;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -45,4 +40,4 @@ public class TokenHolding {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
-}
+} 
