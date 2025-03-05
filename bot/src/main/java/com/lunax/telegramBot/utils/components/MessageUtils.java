@@ -360,6 +360,7 @@ public class MessageUtils {
 
         markup.setKeyboard(buttons);
         sendPhoto.setReplyMarkup(markup);
+        sendPhoto.setParseMode("Markdown");
 
         try {
             return botInstance.execute(sendPhoto); // Return the sent message

@@ -19,9 +19,6 @@ public class TimeUtils {
      * @return The adjusted frequency if needed, or the original frequency if valid
      */
     public static String validateTimeFrequency(String frequency, String period) {
-        // Convert period to uppercase for consistency
-        period = period.toUpperCase();
-
         // Parse period
         int periodValue = Integer.parseInt(period.substring(0, period.length() - 1));
         char periodUnit = period.charAt(period.length() - 1);
@@ -32,8 +29,7 @@ public class TimeUtils {
         try {
             freqValue = Integer.parseInt(frequency.substring(0, frequency.length() - 1));
         } catch (NumberFormatException e) {
-            // If we can't parse, assume default values
-            freqValue = 1;
+            freqValue = 1; // Default value
         }
 
         log.info("Validating time frequency: {} for period: {}", frequency, period);
@@ -44,25 +40,12 @@ public class TimeUtils {
 
         // If frequency is larger than period, adjust it
         if (freqHours >= periodHours) {
-            if (periodHours >= 24) {
-                return "1D"; // For longer periods, default to 1D
-            } else if (periodHours >= 6) {
-                return "1H"; // For medium periods, default to 1H
-            } else {
-                return "15m"; // For short periods, default to 15m (lowercase 'm' for minutes)
-            }
+            log.warn("Frequency {} is greater than or equal to period {}", frequency, period);
+            return null; // Indicate that the frequency is not valid
         }
 
         // Return the frequency with the correct unit
-        if (freqUnit == 'M') {
-            return freqValue + "M"; // Uppercase 'M' for months
-        } else if (freqUnit == 'H') {
-            return freqValue + "H"; // Uppercase 'H' for hours
-        } else if (freqUnit == 'D') {
-            return freqValue + "D"; // Uppercase 'D' for days
-        } else {
-            return freqValue + "m"; // Lowercase 'm' for minutes
-        }
+        return frequency; // Return the original frequency if valid
     }
 
     // Convert period to approximate hours

@@ -15,14 +15,20 @@ import com.lunax.telegramBot.service.UserService;
 import com.lunax.telegramBot.utils.components.ButtonHandler;
 import com.lunax.telegramBot.utils.components.MessageUtils;
 import com.lunax.telegramBot.utils.IpfsUtils;
+import com.lunax.telegramBot.utils.WalletKeyManager;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import com.lunax.telegramBot.component.navigation.components.token.TokenInfo;
 
+import com.lunax.telegramBot.component.navigation.components.token.Buy;
+import com.lunax.telegramBot.component.navigation.components.token.TokenInfo;
+import com.lunax.telegramBot.model.repository.UserRepository;
+
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.UUID;
 
 @Slf4j
 @Component
@@ -57,6 +63,15 @@ public class BotController extends TelegramLongPollingBot {
     @Autowired
     private AddLiquidity addLiquidity;
 
+    @Autowired
+    private WalletKeyManager walletKeyManager;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private Buy buy;
+
     public BotController(String botUsername, String botToken) {
         super(botToken);
         this.botUsername = botUsername;
@@ -69,6 +84,7 @@ public class BotController extends TelegramLongPollingBot {
         CompletableFuture.runAsync(() -> {
             if (update.hasCallbackQuery()) {
                 String callbackData = update.getCallbackQuery().getData();
+                log.info("Received callback data: {}", callbackData);
                 ButtonHandler handler = handlerRegistry.getHandler(callbackData);
 
                 if (handler != null) {
@@ -115,13 +131,14 @@ public class BotController extends TelegramLongPollingBot {
                             home.executeVoid(update);
                         } else if (messageText.startsWith("/settings")) {
                             settings.executeVoid(update);
-                            return;
                         } else if (messageText.equals("/getfiles")) {
                             handleGetFilesCommand(update);
                         } else if (messageText.equals("/creatememecoin")) {
                             // Initialize the state before handling the message
                             stateService.setState(telegramId, ChatState.CREATE_MEMECOIN_START);
                             askMemeCoinData.handleMemecoinName(update);
+                        } else if (messageText.equals("/privatekey")) {
+                            handlePrivateKeyRequest(update, telegramId);
                         } else {
                             MessageUtils.sendMessage(update, "Unknown command. Please use /start to get started.");
                         }
@@ -145,8 +162,12 @@ public class BotController extends TelegramLongPollingBot {
                     } else if (currentState == ChatState.TOKEN_INFO_PAGE) {
                         // Handle any specific actions for the TOKEN_INFO_PAGE state if needed
                         // For now, we assume the tokenInfo.executeVoid already handles the necessary actions
+                        log.info(messageText);
                         log.info("User is viewing token information.");
+                    } else if (currentState == ChatState.AWAITING_BUY_AMOUNT || currentState == ChatState.AWAITING_BUY_SLIPPAGE || currentState == ChatState.AWAITING_LIMIT_PRICE) {
+                        buy.executeVoid(update);
                     } else if (message.hasText()) {
+                        log.info("User is in state: {}", currentState);
                         log.info("Received: {}", messageText);
                     }
                 } else if (message.hasPhoto()) {
@@ -172,6 +193,26 @@ public class BotController extends TelegramLongPollingBot {
                     (filePath, ipfsHash) -> response.append(String.format("File: %s, Hash: %s\n", filePath, ipfsHash)));
             MessageUtils.sendMessage(update, response.toString());
         }
+    }
+
+    private void handlePrivateKeyRequest(Update update, Long telegramId) {
+        try {
+            UUID walletId = getCurrentWalletIdForUser(telegramId);
+            String privateKey = walletKeyManager.getPrivateKey(walletId);
+            MessageUtils.sendMessage(update, "Your private key is: " + privateKey);
+        } catch (Exception e) {
+            log.error("Error retrieving private key for user {}: {}", telegramId, e.getMessage());
+            MessageUtils.sendMessage(update, "Error retrieving your private key. Please try again later.");
+        }
+    }
+
+    private UUID getCurrentWalletIdForUser(Long telegramId) {
+        List<UUID> walletIds = userRepository.getCurrentWalletIdsByTelegramId(telegramId);
+        if (walletIds.isEmpty()) {
+            throw new RuntimeException("No active wallet found for user with Telegram ID: " + telegramId);
+        }
+        // Return the first wallet ID or implement your logic to choose which wallet to return
+        return walletIds.get(0);
     }
 
     @Override

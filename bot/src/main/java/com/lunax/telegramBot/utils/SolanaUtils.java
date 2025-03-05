@@ -799,6 +799,9 @@ public class SolanaUtils {
             tokenTicker = "Token-" + shortAddress;
         }
         
+        // Remove the $ sign from the token ticker if it exists
+        tokenTicker = tokenTicker.replace("$", "");
+        
         // Set top-level fields
         payload.put("token_ticker", tokenTicker); // Now guaranteed to be non-null
         payload.put("ema_slow_period", 69); 
@@ -974,5 +977,17 @@ public class SolanaUtils {
         // Remove trailing zeros after decimal point
         String result = formattedAmount.stripTrailingZeros().toPlainString();
         return result;
+    }
+
+    /**
+     * Gets the current price of SOL in USD
+     * @return The current SOL price in USD
+     */
+    public double getSolanaPrice() {
+        // Implement your logic to fetch SOL price
+        // This could be from an API, cache, or other source
+        
+        // For now, return a reasonable default value
+        return 150.0; // Example value - replace with actual implementation
     }
 }

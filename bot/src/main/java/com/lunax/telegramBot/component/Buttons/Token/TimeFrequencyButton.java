@@ -28,10 +28,14 @@ public class TimeFrequencyButton implements ButtonHandler {
     // Use constructor injection to create different instances
     public TimeFrequencyButton(String frequency, String buttonText) {
         // Store frequency in the correct format - lowercase 'm' for minutes
-        if (frequency.endsWith("m") || frequency.endsWith("M")) {
+        if (frequency.endsWith("m")) {
             // For minutes
             this.frequency = frequency.substring(0, frequency.length()-1) + "m";
-        } else if (frequency.endsWith("h") || frequency.endsWith("H")) {
+        } else if (frequency.endsWith("M")) {
+            // For minutes
+            this.frequency = frequency.substring(0, frequency.length()-1) + "M";
+        }
+         else if (frequency.endsWith("h") || frequency.endsWith("H")) {
             // For hours
             this.frequency = frequency.substring(0, frequency.length()-1) + "H";
         } else if (frequency.endsWith("d") || frequency.endsWith("D")) {
@@ -67,20 +71,26 @@ public class TimeFrequencyButton implements ButtonHandler {
         ObjectNode stateData = stateService.getStateData(userId);
         
         if (stateData != null && stateData.has("tokenAddress")) {
-            // Check if we already have time parameters stored
-            String currentFrequency = stateData.has("timeFrequency") ? 
-                stateData.get("timeFrequency").asText() : "15M"; // Default
             String currentPeriod = stateData.has("timeBefore") ? 
                 stateData.get("timeBefore").asText() : "1D"; // Default
+
+            // Validate frequency against the current period
+            String validatedFrequency = TimeUtils.validateTimeFrequency(frequency, currentPeriod);
+            if (validatedFrequency == null) {
+                MessageUtils.sendAnswerCallbackQuery(update, 
+                    "You cant change the frequency to " + frequency + " with the current period: " + currentPeriod, true);
+                return; // Stop further processing
+            }
+
+            // Check if we already have time parameters stored
+            String currentFrequency = stateData.has("timeFrequency") ? 
+                stateData.get("timeFrequency").asText() : "15m"; // Default
             
             // Format the frequency to uppercase
-            String formattedFrequency = frequency.toUpperCase();
-            
-            // Validate if this frequency works with the current period
-            String validatedFrequency = TimeUtils.validateTimeFrequency(formattedFrequency, currentPeriod);
+            // String formattedFrequency = frequency.toUpperCase();
             
             // Check if frequency was adjusted
-            boolean frequencyAdjusted = !validatedFrequency.equals(formattedFrequency);
+            boolean frequencyAdjusted = !validatedFrequency.equals(frequency);
             boolean needsUpdate = !validatedFrequency.equals(currentFrequency);
 
             // Only update if the frequency has changed and is valid

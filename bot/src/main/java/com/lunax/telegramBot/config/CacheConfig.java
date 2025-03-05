@@ -22,6 +22,8 @@ public class CacheConfig {
                 "walletsByUser",
                 "userTokenAccounts",
                 "topTokenHolders",
-                "tokenHolders");
+                "tokenHolders",
+                "userSettings"
+        );
     }
 }

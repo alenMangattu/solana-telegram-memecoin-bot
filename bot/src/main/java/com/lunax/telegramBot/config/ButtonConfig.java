@@ -28,7 +28,7 @@ public class ButtonConfig {
 
     @Bean
     public TimeFrequencyButton timeFrequency15M() {
-        return new TimeFrequencyButton("15m", "15M");
+        return new TimeFrequencyButton("15m", "15m");
     }
 
     @Bean

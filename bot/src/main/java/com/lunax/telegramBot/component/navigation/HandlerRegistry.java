@@ -18,6 +18,8 @@ import java.util.Map;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import com.lunax.telegramBot.model.session.ChatState;
 import com.lunax.telegramBot.component.navigation.components.StateHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Component
 public class HandlerRegistry {
@@ -26,6 +28,8 @@ public class HandlerRegistry {
     
     @Autowired
     private ApplicationContext applicationContext;
+
+    private static final Logger log = LoggerFactory.getLogger(HandlerRegistry.class);
 
     @Autowired
     public HandlerRegistry(
@@ -106,6 +110,11 @@ public class HandlerRegistry {
             .findFirst()
             .map(Map.Entry::getValue)
             .orElse(null);
+    }
+    
+    public void registerHandler(String callbackData, ButtonHandler handler) {
+        handlers.put(callbackData, handler);
+        log.info("Registered handler for callback data: {}", callbackData);
     }
     
     public Map<String, ButtonHandler> getAllHandlers() {
