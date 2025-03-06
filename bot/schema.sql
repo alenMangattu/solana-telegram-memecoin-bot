@@ -117,3 +117,30 @@ CREATE TABLE user_settings (
     CONSTRAINT fk_user_settings FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+-- ================================================
+-- 13. Create the "limit_orders" table.
+-- ================================================
+DROP TABLE IF EXISTS limit_orders CASCADE;
+
+CREATE TABLE limit_orders (
+    order_id VARCHAR(255) PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    wallet_id UUID NOT NULL,
+    token_mint VARCHAR(255) NOT NULL,
+    sol_amount DECIMAL(19, 9) NOT NULL,
+    limit_price DECIMAL(19, 9) NOT NULL,
+    slippage DECIMAL(5, 2) NOT NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    executed_at TIMESTAMP,
+    transaction_signature VARCHAR(255),
+    CONSTRAINT fk_order_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_order_wallet FOREIGN KEY (wallet_id) REFERENCES wallets(wallet_id) ON DELETE CASCADE
+);
+
+-- Create index for faster querying by status
+CREATE INDEX idx_limit_orders_status ON limit_orders(status);
+-- Create index for faster querying by user
+CREATE INDEX idx_limit_orders_user ON limit_orders(user_id);
+
