@@ -16,11 +16,15 @@ import com.lunax.telegramBot.service.StateService;
 import com.lunax.telegramBot.service.UserService;
 import com.lunax.telegramBot.service.UserSettingsService;
 import com.lunax.telegramBot.utils.SolanaUtils;
+import com.lunax.telegramBot.utils.WalletKeyManager;
 import com.lunax.telegramBot.utils.components.ButtonHandler;
 import com.lunax.telegramBot.utils.components.MessageUtils;
+import com.lunax.telegramBot.service.TransactionSendingService;
+import com.lunax.telegramBot.model.db.LimitOrder;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -47,6 +51,12 @@ public class Buy implements StateHandler {
     
     @Autowired
     private HandlerRegistry handlerRegistry;
+
+    @Autowired
+    private TransactionSendingService transactionSendingService;
+    
+    @Autowired
+    private WalletKeyManager walletKeyManager;
 
     // Define callback data constants
     private static final String CONFIRM_BUY = "buy_confirm";
@@ -224,21 +234,21 @@ public class Buy implements StateHandler {
         double effectivePrice = isLimitOrder ? limitPrice : tokenPrice;
         double tokenAmount = (selectedAmount * solanaPrice) / effectivePrice;
         
-        // Create message
-        String orderType = isLimitOrder ? "LIMIT" : "MARKET";
-        String limitPriceText = isLimitOrder ? String.format("\n💹 Limit Price: $%.6f", limitPrice) : "";
-        
+        // Create message with new compact format
         String message = String.format("""
-                🚀 *%s ORDER: SOL → %s*
+                🚀 SWAP SOL → $%s
                 
-                💰 You pay: *%.3f SOL* ($%.2f)
-                📈 You receive: *%.2f %s* (estimated)
-                💱 Rate: 1 %s = $%.6f
-                🔄 Slippage: %.1f%%%s
+                ⚡ Trade Details:
+                🔒 You pay: %.4f SOL ($%.2f)
+                ✅ You receive: %.2f $%s (estimated)
+                Rate: 1 $%s = $%.6f
                 
-                ⚠️ Please confirm your transaction
+                ⚙️ Settings:
+                🔄 Max slippage: %.1f%%
+                ⏱️ Transaction deadline: 20 minutes
+                
+                ⚠️ Warning: Transactions cannot be reversed once confirmed.
                 """,
-                orderType,
                 tokenSymbol,
                 selectedAmount,
                 selectedAmount * solanaPrice,
@@ -246,8 +256,7 @@ public class Buy implements StateHandler {
                 tokenSymbol,
                 tokenSymbol,
                 effectivePrice,
-                selectedSlippage,
-                limitPriceText
+                selectedSlippage
         );
 
         log.debug("Prepared buy screen message for user {}: {}", userId, message);
@@ -606,85 +615,128 @@ public class Buy implements StateHandler {
         
         JsonNode tokenInfo = stateData.get("tokenInfo");
         String tokenSymbol = tokenInfo.get("tokenSymbol").asText();
+        String tokenAddress = tokenInfo.get("tokenAddress").asText();
         double buyAmount = stateData.has("buyAmount") ? stateData.get("buyAmount").asDouble() : 0.1;
         double slippage = stateData.has("slippage") ? stateData.get("slippage").asDouble() : 1.0;
         boolean isLimitOrder = stateData.has("isLimitOrder") ? stateData.get("isLimitOrder").asBoolean() : false;
         double limitPrice = stateData.has("limitPrice") ? stateData.get("limitPrice").asDouble() : 0.0;
-        String txId = stateData.has("buyTxId") ? stateData.get("buyTxId").asText() : 
-                     UUID.randomUUID().toString().substring(0, 8);
         
         // Delete current message 
         if (update.hasCallbackQuery()) {
             MessageUtils.deleteMessage(update);
         }
         
-        if (isLimitOrder) {
-            // Process limit order
-            String limitOrderMessage = String.format("""
-                    📋 *Limit Order Placed!*
-                    
-                    Your order to buy %s is now active:
-                    
-                    💰 Amount: %.4f SOL
-                    📊 Limit Price: $%.6f
-                    🔄 Slippage: %.1f%%
-                    🔑 Order ID: %s
-                    
-                    Your order will execute automatically when the price reaches $%.6f
-                    You will be notified when your order is filled.
-                    """,
-                    tokenSymbol,
-                    buyAmount,
-                    limitPrice,
-                    slippage,
-                    txId,
-                    limitPrice
-            );
-            
-            MessageUtils.sendMessage(update, limitOrderMessage);
-            
-        } else {
-            // Process market order
-            String processingMessage = String.format("""
-                    🔄 *Processing Your Transaction*
-                    
-                    Swapping *%.4f SOL* for *%s*
-                    Transaction ID: `%s`
-                    
-                    Please wait while we process your transaction...
-                    """, 
-                    buyAmount, 
-                    tokenSymbol,
-                    txId);
-            
-            MessageUtils.sendMessage(update, processingMessage);
-            
-            // Simulate transaction processing
-            try {
-                // Simulate a delay for transaction processing
-                Thread.sleep(3000);
+        // Retrieve user wallet information
+        Optional<User> userOpt = userService.findByTelegramId(userId);
+        if (!userOpt.isPresent()) {
+            MessageUtils.sendMessage(update, "❌ User wallet not found. Please setup your wallet first.");
+            return;
+        }
+        
+        User user = userOpt.get();
+        if (user.getCurrentWallet() == null) {
+            MessageUtils.sendMessage(update, "❌ No wallet selected. Please select a wallet first.");
+            return;
+        }
+        
+        // Get the wallet's private key using WalletKeyManager
+        UUID walletId = user.getCurrentWallet();
+        String walletPrivateKey;
+        
+        try {
+            walletPrivateKey = walletKeyManager.getPrivateKey(walletId);
+            log.debug("Retrieved private key for wallet: {}", walletId);
+        } catch (Exception e) {
+            log.error("Error retrieving wallet private key", e);
+            MessageUtils.sendMessage(update, "❌ Error accessing wallet: " + e.getMessage());
+            return;
+        }
+        
+        try {
+            String priority = "MID"; // Set a default priority or retrieve it from state if needed
+            if (isLimitOrder) {
+                // Create a limit order
+                LimitOrder order = transactionSendingService.createLimitOrder(
+                    userId,
+                    walletId,
+                    tokenAddress,
+                    BigDecimal.valueOf(buyAmount),
+                    BigDecimal.valueOf(limitPrice),
+                    BigDecimal.valueOf(slippage)
+                );
                 
-                // Send success message
-                String successMessage = String.format("""
-                        ✅ *Transaction Complete!*
+                String limitOrderMessage = String.format("""
+                        📋 *Limit Order Placed!*
                         
-                        Successfully swapped *%.4f SOL* for *%s*
-                        Transaction ID: `%s`
+                        Your order to buy %s is now active:
                         
-                        You can view this transaction on the explorer:
-                        [View on Solscan](https://solscan.io/tx/%s)
+                        💰 Amount: %.4f SOL
+                        📊 Limit Price: $%.6f
+                        🔄 Slippage: %.1f%%
+                        🔑 Order ID: %s
+                        
+                        Your order will execute automatically when the price reaches $%.6f
+                        You will be notified when your order is filled.
+                        """,
+                        tokenSymbol,
+                        buyAmount,
+                        limitPrice,
+                        slippage,
+                        order.getOrderId(),
+                        limitPrice
+                );
+                
+                MessageUtils.sendMessage(update, limitOrderMessage);
+                
+            } else {
+                // Process market order
+                String processingMessage = String.format("""
+                        🔄 *Processing Your Transaction*
+                        
+                        Swapping *%.4f SOL* for *%s*
+                        
+                        Please wait while we process your transaction...
                         """, 
                         buyAmount, 
-                        tokenSymbol,
-                        txId,
-                        txId);
+                        tokenSymbol);
                 
-                MessageUtils.sendMessage(update, successMessage);
+                MessageUtils.sendMessage(update, processingMessage);
                 
-            } catch (Exception e) {
-                log.error("Error processing transaction", e);
-                MessageUtils.sendMessage(update, "❌ Transaction failed: " + e.getMessage());
+                // Execute the actual swap with real private key
+                SolanaUtils.SwapResponse response = solanaUtils.buyToken(
+                    tokenAddress,
+                    buyAmount,
+                    slippage,
+                    walletPrivateKey,
+                    SolanaUtils.TransactionPriority.valueOf(priority)
+                );
+                
+                if (response.isSuccess()) {
+                    // Send success message
+                    String successMessage = String.format("""
+                            ✅ *Transaction Complete!*
+                            
+                            Successfully swapped *%.4f SOL* for *%.2f %s*
+                            Transaction ID: `%s`
+                            
+                            You can view this transaction on the explorer:
+                            [View on Solscan](https://solscan.io/tx/%s)
+                            """, 
+                            buyAmount, 
+                            response.getAmount(),
+                            tokenSymbol,
+                            response.getSignature(),
+                            response.getSignature());
+                    
+                    MessageUtils.sendMessage(update, successMessage);
+                } else {
+                    MessageUtils.sendMessage(update, "❌ Transaction failed. Please try again.");
+                }
             }
+            
+        } catch (Exception e) {
+            log.error("Error processing transaction", e);
+            MessageUtils.sendMessage(update, "❌ Transaction failed: " + e.getMessage());
         }
         
         // Reset state to TOKEN_INFO_PAGE when done

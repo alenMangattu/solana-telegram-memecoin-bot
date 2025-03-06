@@ -7,7 +7,15 @@ import logger from './logger'; // Import the logger
 
 dotenv.config();
 
-interface TokenInfo {
+// Add this interface to define the RaydiumInfo structure
+export interface RaydiumInfo {
+    priceInSol: number;
+    poolId?: string;
+    lpMint?: string;
+    // Add other Raydium-specific properties as needed
+}
+
+export interface TokenInfo {
     address: string;
     name: string;
     symbol: string;
@@ -26,6 +34,9 @@ interface TokenInfo {
         uniqueHolders: number;
         averageHolding: number;
     };
+    logoURI?: string;
+    extensions?: any;
+    raydiumInfo?: RaydiumInfo;
 }
 
 export class TokenInfoService {
