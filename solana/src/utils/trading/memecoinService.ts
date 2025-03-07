@@ -216,16 +216,24 @@ export class MemecoinService {
         wallet.publicKey
       );
 
+      // If supply is the display amount (e.g., 100 for 100 tokens)
+      const rawSupply = Math.floor(supply * Math.pow(10, decimals));
+
       await mintTo(
         this.connection,
         wallet,
         mint,
         tokenAccount.address,
         wallet,
-        supply,
+        rawSupply,
         [],
         { commitment: 'confirmed' }
       );
+
+      // Log amounts for verification
+      logger.info(`Display supply: ${supply}`);
+      logger.info(`Raw supply: ${rawSupply}`);
+      logger.info(`Minted to account: ${tokenAccount.address.toBase58()}`);
 
       // Optionally revoke mint authority
       if (revokeMintAuthority) {
@@ -436,6 +444,56 @@ export class MemecoinService {
     }
   }
 
+  private async confirmTransactionWithRetry(
+    signature: string,
+    maxRetries: number = 5
+  ): Promise<void> {
+    let retries = 0;
+    
+    while (retries < maxRetries) {
+      try {
+        // Try to confirm the transaction using getSignatureStatus approach instead of subscribe
+        const { value: status } = await this.connection.getSignatureStatus(signature, {
+          searchTransactionHistory: true
+        });
+        
+        if (status && status.confirmationStatus === 'confirmed') {
+          logger.info(`Transaction confirmed: ${signature}`);
+          return;
+        }
+        
+        // If not confirmed yet, wait before retry
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        retries++;
+        
+      } catch (error: unknown) {
+        logger.warn(`Error confirming transaction (attempt ${retries}/${maxRetries}):`, error);
+        
+        // If we get a WebSocket error, wait a bit longer before retry
+        if (error instanceof Error && error.message.includes('socket was not')) {
+          await new Promise(resolve => setTimeout(resolve, 3000));
+        }
+        
+        retries++;
+        
+        // If we've reached max retries, check one last time with a standard HTTP request
+        if (retries >= maxRetries) {
+          try {
+            const { value: finalStatus } = await this.connection.getSignatureStatus(signature);
+            if (finalStatus && !finalStatus.err) {
+              logger.info(`Transaction eventually confirmed: ${signature}`);
+              return;
+            }
+          } catch (e) {
+            // Final attempt failed, will throw below
+          }
+          
+          throw new Error(`Failed to confirm transaction after ${maxRetries} attempts`);
+        }
+      }
+    }
+  }
+
   private async createMetadataWithTransaction(
     mint: PublicKey,
     wallet: Keypair,
@@ -503,12 +561,21 @@ export class MemecoinService {
           updateCallback
         );
 
-        logger.info(`Metadata transaction confirmed: ${signature}`);
-        if (updateCallback) {
-          await updateCallback(`✅ Metadata created successfully!`);
+        logger.info(`Metadata transaction sent: ${signature}`);
+        
+        try {
+          await this.confirmTransactionWithRetry(signature);
+          logger.info(`Metadata transaction confirmed: ${signature}`);
+          if (updateCallback) {
+            await updateCallback(`✅ Metadata created successfully`);
+          }
+          return;
+        } catch (error: unknown) {
+          const lastError = error instanceof Error ? error : new Error(String(error));
+          logger.error('Failed to confirm metadata transaction:', lastError);
+          throw new Error(`Metadata creation failed: ${lastError.message}`);
         }
-        return;
-      } catch (error) {
+      } catch (error: unknown) {
         lastError = error instanceof Error ? error : new Error(String(error));
         logger.error(`Metadata creation attempt ${attempt} failed:`, {
           error: lastError.message,

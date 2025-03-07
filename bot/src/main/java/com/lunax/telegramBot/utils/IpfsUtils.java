@@ -38,7 +38,7 @@ public class IpfsUtils {
     public static void initializeIpfs() {
 
         ipfsInstance = new IPFS("/ip4/127.0.0.1/tcp/5001");
-        appIpnsKey = initializeIpfsKey("Offical lunax bot IPFS " + Math.random());
+        appIpnsKey = initializeIpfsKey("Offical lunax bot IPFS");
         log.info("IPNS key: {}", appIpnsKey);
         log.info("IPFS node initialized");
     }

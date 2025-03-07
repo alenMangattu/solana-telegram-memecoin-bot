@@ -8,6 +8,7 @@ import {
 } from '@raydium-io/raydium-sdk-v2';
 import axios from 'axios';
 import type { LiquidityPoolKeys } from '@raydium-io/raydium-sdk-v2';
+import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
 // Custom URL for Raydium liquidity pools
 const LIQUIDITY_URL = '/v2/ammV3/pools';
@@ -39,6 +40,21 @@ interface SwapCompute {
     };
 }
 
+// Add custom error types
+export class InsufficientFundsError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = 'InsufficientFundsError';
+    }
+}
+
+export class InvalidAddressError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = 'InvalidAddressError';
+    }
+}
+
 export class SwapService {
     private connection: Connection;
     private solanaUtils: SolanaUtils;
@@ -46,6 +62,63 @@ export class SwapService {
     constructor(connection: Connection, solanaUtils: SolanaUtils) {
         this.connection = connection;
         this.solanaUtils = solanaUtils;
+    }
+
+    /**
+     * Validates if a string is a proper Solana public key
+     */
+    private async isValidSolanaAddress(address: string): Promise<boolean> {
+        try {
+            const pubKey = new PublicKey(address);
+            // For token mints, verify it's actually a token mint account
+            const accountInfo = await this.connection.getAccountInfo(pubKey);
+            return accountInfo !== null && accountInfo.owner.equals(TOKEN_PROGRAM_ID);
+        } catch {
+            return false;
+        }
+    }
+
+    /**
+     * Validates a private key
+     */
+    private isValidPrivateKey(privateKey: string): boolean {
+        try {
+            const decoded = bs58.decode(privateKey);
+            return decoded.length === 64; // Valid private keys are 64 bytes
+        } catch {
+            return false;
+        }
+    }
+
+    /**
+     * Validates wallet has sufficient SOL balance
+     */
+    private async checkSufficientBalance(
+        walletPubkey: PublicKey, 
+        requiredAmount: number
+    ): Promise<void> {
+        const balance = await this.connection.getBalance(walletPubkey);
+        if (balance < requiredAmount) {
+            throw new InsufficientFundsError(
+                `Insufficient SOL balance. Required: ${requiredAmount / 1e9} SOL, Available: ${balance / 1e9} SOL`
+            );
+        }
+    }
+
+    /**
+     * Get token decimals
+     */
+    private async getTokenDecimals(tokenMint: string): Promise<number> {
+        try {
+            const mintInfo = await this.connection.getParsedAccountInfo(new PublicKey(tokenMint));
+            if (!mintInfo.value?.data || typeof mintInfo.value.data !== 'object') {
+                throw new Error('Failed to fetch token info');
+            }
+            return (mintInfo.value.data as any).parsed.info.decimals;
+        } catch (error) {
+            logger.error(`Failed to get token decimals: ${error}`);
+            throw error;
+        }
     }
 
     /**
@@ -61,25 +134,37 @@ export class SwapService {
         solAmount: number,
         slippage: number,
         walletPrivateKey: string,
-        priorityFee: number = 100000 // Default to mid-priority (100,000 microlamports)
+        priorityFee: number = 100000
     ) {
-        // Validate the tokenMint address
-        if (!this.isValidSolanaAddress(tokenMint)) {
-            logger.error(`Invalid token address: ${tokenMint}`);
-            throw new Error("Invalid token address format. A Solana token address should be a Base58 encoded string typically 32-44 characters long.");
-        }
-
         try {
+            // Enhanced input validation
+            if (!await this.isValidSolanaAddress(tokenMint)) {
+                throw new InvalidAddressError(`Invalid token mint address: ${tokenMint}`);
+            }
+
+            if (!this.isValidPrivateKey(walletPrivateKey)) {
+                throw new Error("Invalid wallet private key format");
+            }
+
+            // Validate slippage
+            if (slippage < 0 || slippage > 100) {
+                throw new Error("Slippage must be between 0 and 100");
+            }
+
+            const keypair = Keypair.fromSecretKey(bs58.decode(walletPrivateKey));
+            const amountInLamports = Math.floor(solAmount * 1e9);
+
+            // Check if wallet has sufficient SOL
+            await this.checkSufficientBalance(keypair.publicKey, amountInLamports);
+
+            // Get token decimals for accurate amount calculation
+            const tokenDecimals = await this.getTokenDecimals(tokenMint);
+
+            // Get latest blockhash once for all transactions
+            const { blockhash, lastValidBlockHeight } = await this.connection.getLatestBlockhash();
+
             logger.debug(`Starting swap execution...`);
             logger.debug(`Parameters: tokenMint=${tokenMint}, solAmount=${solAmount}, slippage=${slippage}, priorityFee=${priorityFee}`);
-            
-            // Decode private key and create keypair
-            const keypair = Keypair.fromSecretKey(bs58.decode(walletPrivateKey));
-            logger.debug(`Keypair created: ${keypair.publicKey.toBase58()}`);
-            
-            // For SOL swaps, amount is in lamports (1 SOL = 1e9 lamports)
-            const amountInLamports = Math.floor(solAmount * 1e9);
-            logger.debug(`Amount in lamports: ${amountInLamports}`);
             
             // Step 1: Get the swap computation data
             const { data: swapResponse } = await axios.get<SwapCompute>(
@@ -127,65 +212,59 @@ export class SwapService {
                 logger.debug(`Transaction ${i + 1} signed`);
                 
                 // Send the transaction
-                const txid = await this.connection.sendTransaction(transaction, { skipPreflight: true });
-                logger.debug(`Transaction ${i + 1} sent with txid: ${txid}`);
-                
-                // Get the latest blockhash for confirmation
-                const { lastValidBlockHeight, blockhash } = await this.connection.getLatestBlockhash({
-                    commitment: 'confirmed',
+                const txid = await this.connection.sendTransaction(transaction, {
+                    skipPreflight: false,
+                    preflightCommitment: 'confirmed',
+                    maxRetries: 3
                 });
                 
-                // Confirm the transaction
-                await this.connection.confirmTransaction(
-                    {
-                        blockhash,
-                        lastValidBlockHeight,
-                        signature: txid,
-                    },
-                    'confirmed'
-                );
+                // Wait for confirmation
+                await this.connection.confirmTransaction({
+                    blockhash,
+                    lastValidBlockHeight,
+                    signature: txid,
+                });
                 
                 logger.debug(`Transaction ${i + 1} confirmed`);
                 txids.push(txid);
             }
             
-            // Return the successful swap details
+            // Calculate accurate output amount using correct decimals
+            const outputAmount = parseFloat(swapResponse.data.outputAmount) / Math.pow(10, tokenDecimals);
+            const price = (outputAmount * Math.pow(10, 9)) / amountInLamports;
+
             return {
                 success: true,
-                signature: txids[txids.length - 1], // Return the last transaction signature
-                amountOut: parseFloat(swapResponse.data.outputAmount) / Math.pow(10, 6), // Assuming 6 decimals for token
-                price: parseFloat(swapResponse.data.outputAmount) / amountInLamports,
-                txids: txids
+                signature: txids[txids.length - 1],
+                amountOut: outputAmount,
+                price,
+                priceInSol: 1 / price,
+                txids
             };
         } catch (error) {
+            if (error instanceof InsufficientFundsError) {
+                return {
+                    success: false,
+                    error: error.message,
+                    errorType: 'INSUFFICIENT_FUNDS'
+                };
+            }
+
+            if (error instanceof InvalidAddressError) {
+                return {
+                    success: false,
+                    error: error.message,
+                    errorType: 'INVALID_ADDRESS'
+                };
+            }
+
             logger.error('Swap execution error:', error);
             return {
                 success: false,
-                error: error instanceof Error ? error.message : String(error)
+                error: error instanceof Error ? error.message : String(error),
+                errorType: 'UNKNOWN'
             };
         }
-    }
-
-    /**
-     * Validates if a string is a proper Solana address
-     * @param address The address to validate
-     * @return true if valid, false otherwise
-     */
-    private isValidSolanaAddress(address: string): boolean {
-        // Basic validation for Solana addresses
-        if (!address || address.length < 32 || address.length > 44) {
-            return false;
-        }
-
-        // Check if it uses only Base58 characters
-        const base58Chars = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
-        for (const char of address) {
-            if (base58Chars.indexOf(char) === -1) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     /**
