@@ -16,7 +16,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.annotation.Propagation;
 import com.lunax.telegramBot.model.db.EncryptionKeyMetadata;
 import com.lunax.telegramBot.model.repository.EncryptionKeyMetadataRepository;
 import org.slf4j.Logger;
@@ -48,7 +47,7 @@ public class WalletKeyManager {
      * By setting propagation to MANDATORY we ensure this method
      * runs within an already present (outer) transaction.
      */
-    @Transactional(propagation = Propagation.MANDATORY)
+    @Transactional()
     public void createNewKeyVersion(UUID walletId) throws Exception {
         log.info("Creating new key version for wallet: {}", walletId);
         
@@ -262,7 +261,7 @@ public class WalletKeyManager {
     /**
      * Stores a new wallet's private key
      */
-    @Transactional(propagation = Propagation.MANDATORY)
+    @Transactional()
     public void storePrivateKey(UUID walletId, String privateKey) throws Exception {
         log.info("Storing private key for wallet: {}", walletId);
 
@@ -322,5 +321,45 @@ public class WalletKeyManager {
         } else {
             log.info("Active encryption key metadata record already exists for wallet: {}", walletId);
         }
+    }
+
+    /**
+     * Deletes the wallet files associated with the given wallet ID.
+     * 
+     * @param walletId The ID of the wallet whose files should be deleted.
+     */
+    public void deleteWalletFiles(String walletId) {
+        try {
+            UUID walletUUID = UUID.fromString(walletId);
+            // Construct the paths for the wallet and key files
+            Path walletPath = Paths.get(walletsPath, getWalletFileName(walletUUID));
+            Path keyPath = Paths.get(encryptionKeysPath, getKeyFileName(walletUUID));
+
+            // Delete the wallet file if it exists
+            if (Files.exists(walletPath)) {
+                Files.delete(walletPath);
+                log.info("Deleted wallet file: {}", walletPath);
+            } else {
+                log.warn("Wallet file not found: {}", walletPath);
+            }
+
+            // Delete the key file if it exists
+            if (Files.exists(keyPath)) {
+                Files.delete(keyPath);
+                log.info("Deleted key file: {}", keyPath);
+            } else {
+                log.warn("Key file not found: {}", keyPath);
+            }
+        } catch (Exception e) {
+            log.error("Error deleting wallet files for wallet ID {}: {}", walletId, e.getMessage());
+        }
+    }
+
+    private String getKeyFileName(UUID walletId) {
+        return String.format("%s.key", walletId.toString());
+    }
+
+    private String getWalletFileName(UUID walletId) {
+        return String.format("%s.encrypted", walletId.toString());
     }
 }
