@@ -12,9 +12,7 @@ import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.lunax.telegramBot.model.db.Memecoin;
 import com.lunax.telegramBot.model.db.User;
-import com.lunax.telegramBot.model.repository.MemecoinRepo;
 import com.lunax.telegramBot.utils.IpfsUtils;
 import com.lunax.telegramBot.utils.WalletKeyManager;
 import com.lunax.telegramBot.utils.components.MessageUtils;
@@ -30,8 +28,6 @@ public class MemecoinCreationService {
     @Autowired
     private WalletKeyManager walletKeyManager;
 
-    @Autowired
-    private MemecoinRepo memecoinRepo;
 
     @Autowired
     private ApiRequestUtils apiRequestUtils;
@@ -108,17 +104,9 @@ public class MemecoinCreationService {
         String tokenAddress = response.getBody().getTokenAddress();
 
         // Create and save Memecoin entity
-        Account account = new Account(Base58.decode(walletPrivateKey));
-        String publicKey = account.getPublicKey().toString();
+        // Account account = new Account(Base58.decode(walletPrivateKey));
+        // String publicKey = account.getPublicKey().toString();
         
-        Memecoin newMemecoin = new Memecoin();
-        newMemecoin.setCreatorWalletId(publicKey);
-        newMemecoin.setName(name);
-        newMemecoin.setSymbol(symbol);
-        newMemecoin.setTotalSupply(supply);
-        newMemecoin.setTokenAddress(tokenAddress);
-        
-        // memecoinRepo.save(newMemecoin);
 
         String successMessage = String.format(
                 "✅ Memecoin created successfully!\n\n" +
@@ -168,9 +156,9 @@ public class MemecoinCreationService {
         }
     }
 
-    public void addMemecoin(Memecoin memecoin) {
-        memecoinRepo.save(memecoin);
-    }
+    // public void addMemecoin(Memecoin memecoin) {
+    //     memecoinRepo.save(memecoin);
+    // }
 
     private Long getChatId(Update update) {
         if (update.getMessage() != null) {

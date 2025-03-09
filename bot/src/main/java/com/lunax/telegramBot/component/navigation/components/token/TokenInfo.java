@@ -115,7 +115,13 @@ public class TokenInfo implements StateHandler {
 
                 // Validate token address
                 if (tokenAddress == null || tokenAddress.isEmpty()) {
-                        MessageUtils.sendMessage(update, "Invalid token address provided.");
+                        MessageUtils.sendMessage(update, "Invalid token address provided. Please enter a valid Solana token address.");
+                        return;
+                }
+                
+                // Check for valid Solana address format (Base58 encoded, proper length)
+                if (!isValidSolanaAddress(tokenAddress)) {
+                        MessageUtils.sendMessage(update, "❌ Invalid token address format. A Solana token address should be a Base58 encoded string typically 32-44 characters long.\n\nPlease enter a valid Solana token address.");
                         return;
                 }
 
@@ -144,9 +150,19 @@ public class TokenInfo implements StateHandler {
                         tokenInfoJson.put("tokenAddress", tokenAddress);
                         tokenInfoJson.put("tokenDecimals", (Integer) tokenInfo.getOrDefault("decimals", 0));
                         tokenInfoJson.put("tokenTotalSupply", (Long) tokenInfo.getOrDefault("totalSupply", 0L));
-                        tokenInfoJson.put("priceUSD", (Double) tokenInfo.getOrDefault("priceUSD", 0.0));
+
+                        // Retrieve the last price from the BirdEye response
+                        Double price = tokenInfo.containsKey("price")
+                                        ? (tokenInfo.get("price") instanceof Number
+                                            ? ((Number) tokenInfo.get("price")).doubleValue()
+                                            : 0.0)
+                                        : 0.0;
+
+                        // Store price as a String to maintain exact representation
+                        String priceUSD = String.valueOf(price);
 
                         // Store the structured JSON object in the state
+                        tokenInfoJson.put("priceUSD", priceUSD); // Store the price as a String
                         stateData.set("tokenInfo", tokenInfoJson);
                         stateService.setStateData(userId, stateData);
 
@@ -165,14 +181,6 @@ public class TokenInfo implements StateHandler {
                                                         ? ((Number) tokenInfo.get("totalSupply")).longValue()
                                                         : 0L)
                                         : 0L;
-
-                        Double priceUSD = tokenInfo.containsKey("priceUSD")
-                                        ? (tokenInfo.get("priceUSD") instanceof Number
-                                                        ? ((Number) tokenInfo.get("priceUSD")).doubleValue()
-                                                        : 0.0)
-                                        : (tokenInfo.containsKey("price") ? (tokenInfo.get("price") instanceof Number
-                                                        ? ((Number) tokenInfo.get("price")).doubleValue()
-                                                        : 0.0) : 0.0);
 
                         // Raydium pool info
                         Double tvl = tokenInfo.containsKey("tvl") ? (tokenInfo.get("tvl") instanceof Number
@@ -271,10 +279,42 @@ public class TokenInfo implements StateHandler {
                                 return; // Stop further processing if historical data retrieval fails
                         }
 
+                        // Extract the most recent price from historical data
+                        String updatedPriceUSD = priceUSD; // Default to the previously set price
+                        log.info("Historical data: {}", historicalData);
+                        
+                        // Updated condition to match the actual structure of the JSON response
+                        if (historicalData.has("data") && 
+                            historicalData.get("data").has("items") && 
+                            historicalData.get("data").get("items").isArray() && 
+                            historicalData.get("data").get("items").size() > 0) {
+                            
+                            JsonNode dataArray = historicalData.get("data").get("items");
+                            // Get the last element which should be the most recent price
+                            JsonNode lastDataPoint = dataArray.get(dataArray.size() - 1);
+                            if (lastDataPoint.has("value")) {
+                                updatedPriceUSD = lastDataPoint.get("value").asText();
+                                
+                                // Log the updated price
+                                log.info("Extracted last price from BirdEye response: {}", updatedPriceUSD);
+                                
+                                // Update the tokenInfo in state with the correct price
+                                tokenInfoJson.put("priceUSD", updatedPriceUSD);
+                                stateData.set("tokenInfo", tokenInfoJson);
+                                stateService.setStateData(userId, stateData);
+                                
+                                // Also update the local variable for use in the message
+                                priceUSD = updatedPriceUSD;
+                            }
+                        } else {
+                            log.error("Historical data structure unexpected: {}", historicalData);
+                        }
+
                         // Send the historical data to the chart endpoint and get the image
                         String tokenTicker = symbol; // Use the retrieved symbol
 
                         log.info("Token Ticker: {}", tokenTicker);
+                        log.info("Updated Price USD: {}", priceUSD);
 
                         InputStreamResource imageResource = solanaUtils.sendHistoricalDataToChart(tokenAddress,
                                         historicalData, timeFrequency, tokenTicker);
@@ -302,13 +342,30 @@ public class TokenInfo implements StateHandler {
                         stateData.put("tokenChartImagePath", tempFile.getAbsolutePath());
 
                         // Update the messageWithTokenInfo to remove the creation date
-                        String messageWithTokenInfo = String.format("""
+                        String messageWithTokenInfo;
+                        
+                        // For small numbers (like 0.0003), use scientific notation in the display
+                        double priceValue = Double.parseDouble(priceUSD);
+                        String formattedPrice;
+                        
+                        if (priceValue < 0.001) {
+                            // For very small numbers, format with 8 decimal places
+                            formattedPrice = String.format("%.8f", priceValue);
+                        } else if (priceValue < 1.0) {
+                            // For numbers between 0.001 and 1.0, format with 6 decimal places
+                            formattedPrice = String.format("%.6f", priceValue);
+                        } else {
+                            // For larger numbers, format with 2 decimal places
+                            formattedPrice = String.format("%.2f", priceValue);
+                        }
+                        
+                        messageWithTokenInfo = String.format("""
                                         📊 *Token Information: %s (%s)*
 
                                         💰 *Basic Information*
                                         • Decimals: %d
                                         • Total Supply: %,d
-                                        • Current Price: $%.6f
+                                        • Current Price: $%s
 
                                         🔄 *Liquidity Pool Info*
                                         • Pool ID: %s
@@ -328,7 +385,7 @@ public class TokenInfo implements StateHandler {
                                         symbol,
                                         decimals,
                                         totalSupply,
-                                        priceUSD,
+                                        formattedPrice, // Use the formatted price
                                         poolId,
                                         pairedWith,
                                         tvl,
@@ -372,5 +429,37 @@ public class TokenInfo implements StateHandler {
                         MessageUtils.editMessage(update,
                                         "An error occurred while fetching token information: " + e.getMessage(), null);
                 }
+        }
+
+        /**
+         * Validates if a string is a proper Solana address
+         * @param address The address to validate
+         * @return true if valid, false otherwise
+         */
+        private boolean isValidSolanaAddress(String address) {
+                // Basic validation for Solana addresses
+                if (address == null || address.isEmpty()) {
+                        return false;
+                }
+                
+                // Check if it looks like an @ mention or command
+                if (address.contains("@") || address.contains("/")) {
+                        return false;
+                }
+                
+                // Check length (typical Solana addresses are 32-44 chars)
+                if (address.length() < 32 || address.length() > 44) {
+                        return false;
+                }
+                
+                // Check if it uses only Base58 characters
+                String base58Chars = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+                for (char c : address.toCharArray()) {
+                        if (base58Chars.indexOf(c) == -1) {
+                                return false;
+                        }
+                }
+                
+                return true;
         }
 }

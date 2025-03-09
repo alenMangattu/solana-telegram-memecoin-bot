@@ -8,6 +8,7 @@ import { HeliusRpcInterface } from './utils/heliusRpcInterface';
 import logger from './utils/logger';
 import dotenv from 'dotenv';
 import { TokenInfoService } from './utils/tokeninfo';
+import { SwapService } from './utils/trading/swapService';
 
 dotenv.config();
 
@@ -31,6 +32,11 @@ const memecoinService = new MemecoinService(
 );
 
 const liquidityService = new LiquidityService(
+    solanaUtils.getConnection(),
+    solanaUtils
+);
+
+const swapService = new SwapService(
     solanaUtils.getConnection(),
     solanaUtils
 );
@@ -229,6 +235,109 @@ app.get('/api/token/info/:id', async (req, res) => {
         logger.error('Error fetching token information:', error);
         res.status(500).json({ 
             error: 'Failed to fetch token information',
+            details: error instanceof Error ? error.message : String(error)
+        });
+    }
+});
+
+// Add input validation schema for swap execution with priority
+const swapSchema = z.object({
+    tokenMint: z.string(),
+    solAmount: z.number().positive(),
+    slippage: z.number().min(0).max(100),
+    walletPrivateKey: z.string(),
+    priority: z.enum(['MIN', 'MID', 'MAX']).default('MID')
+});
+
+app.post('/api/swap/execute', async (req, res) => {
+    try {
+        logger.debug('Received swap execution request:', req.body);
+        const data = swapSchema.parse(req.body);
+        
+        // Map priority levels to Solana priority fees (in micro-lamports)
+        const priorityFees = {
+            'MIN': 1000,      // 1,000 micro-lamports
+            'MID': 100000,    // 100,000 micro-lamports 
+            'MAX': 1000000    // 1,000,000 micro-lamports
+        };
+        
+        const result = await swapService.executeSwap(
+            data.tokenMint,
+            data.solAmount,
+            data.slippage,
+            data.walletPrivateKey,
+            priorityFees[data.priority]
+        );
+        
+        logger.debug('Swap execution result:', result);
+        res.json(result);
+    } catch (error) {
+        logger.error('Swap execution error:', error);
+        res.status(500).json({ 
+            success: false,
+            error: 'Failed to execute swap',
+            details: error instanceof Error ? error.message : String(error)
+        });
+    }
+});
+
+// Add input validation schema for limit orders
+const limitOrderSchema = z.object({
+    tokenMint: z.string(),
+    solAmount: z.number().positive(),
+    limitPrice: z.number().positive(),
+    slippage: z.number().min(0).max(100),
+    walletPrivateKey: z.string()
+});
+
+app.post('/api/limit/create', async (req, res) => {
+    try {
+        const data = limitOrderSchema.parse(req.body);
+        
+        const result = await swapService.createLimitOrder(
+            data.tokenMint,
+            data.solAmount,
+            data.limitPrice,
+            data.slippage,
+            data.walletPrivateKey
+        );
+        
+        res.json(result);
+    } catch (error) {
+        logger.error('Limit order creation error:', error);
+        res.status(500).json({ 
+            success: false,
+            error: 'Failed to create limit order',
+            details: error instanceof Error ? error.message : String(error)
+        });
+    }
+});
+
+app.get('/api/token/price/:id', async (req, res) => {
+    const tokenId = req.params.id;
+    try {
+        // Get token price from an oracle or exchange
+        // This is a simplified example - in a real app you would use a price oracle
+        const tokenInfo = await tokenInfoService.getTokenInformation(tokenId);
+        
+        // If token has Raydium info with price, return it
+        if (tokenInfo.raydiumInfo && tokenInfo.raydiumInfo.priceInSol) {
+            const solPrice = await solanaUtils.getSolUsdPrice();
+            const tokenPriceUsd = tokenInfo.raydiumInfo.priceInSol * solPrice;
+            
+            res.json({ 
+                price: tokenPriceUsd,
+                priceInSol: tokenInfo.raydiumInfo.priceInSol,
+                solPrice: solPrice
+            });
+        } else {
+            // No price info available
+            res.json({ price: 0 });
+        }
+    } catch (error) {
+        logger.error('Error fetching token price:', error);
+        res.status(500).json({ 
+            error: 'Failed to fetch token price',
             details: error instanceof Error ? error.message : String(error)
         });
     }

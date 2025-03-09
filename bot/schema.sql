@@ -2,12 +2,7 @@
 -- DROP EXISTING OBJECTS (if any) to start cleanly
 -- ================================================
 
-DROP TABLE IF EXISTS token_holdings CASCADE;
-DROP TABLE IF EXISTS slippage_configs CASCADE;
 DROP TABLE IF EXISTS user_state CASCADE;
-DROP TABLE IF EXISTS exception_logs CASCADE;
-DROP TABLE IF EXISTS transaction_history CASCADE;
-DROP TABLE IF EXISTS trading_automation CASCADE;
 DROP TABLE IF EXISTS copy_trading CASCADE;
 DROP TABLE IF EXISTS encryption_key_metadata CASCADE;
 DROP TABLE IF EXISTS wallets CASCADE;
@@ -84,46 +79,6 @@ CREATE TABLE copy_trading (
     CONSTRAINT fk_target_wallet FOREIGN KEY (target_wallet) REFERENCES wallets(wallet_id) ON DELETE CASCADE
 );
 
--- ================================================
--- 6. Create the "trading_automation" table.
--- ================================================
-CREATE TABLE trading_automation (
-    id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL,
-    strategy_name VARCHAR(255) NOT NULL,
-    parameters JSONB NOT NULL,
-    enabled BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_user_automation FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
--- ================================================
--- 7. Create the "transaction_history" table.
--- ================================================
-CREATE TABLE transaction_history (
-    id SERIAL PRIMARY KEY,
-    wallet_id UUID NOT NULL,
-    transaction_type VARCHAR(50) NOT NULL CHECK (transaction_type IN ('DEPOSIT', 'WITHDRAWAL', 'TRADE')),
-    amount NUMERIC(18, 8) NOT NULL,
-    status VARCHAR(50) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_transaction_wallet FOREIGN KEY (wallet_id) REFERENCES wallets(wallet_id) ON DELETE CASCADE
-);
-
--- ================================================
--- 8. Create the "exception_logs" table.
--- ================================================
-CREATE TABLE exception_logs (
-    id SERIAL PRIMARY KEY,
-    error_message TEXT NOT NULL,
-    stack_trace TEXT,
-    user_id INTEGER,
-    occurred_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_exception_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
-);
-
--- ================================================
 -- 9. Create the "user_state" table.
 -- ================================================
 CREATE TABLE user_state (
@@ -133,31 +88,6 @@ CREATE TABLE user_state (
     state_data JSONB,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_user_state FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
--- ================================================
--- 10. Create the "slippage_configs" table.
--- ================================================
-CREATE TABLE slippage_configs (
-    id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL,
-    slippage_percentage NUMERIC(5, 2) NOT NULL CHECK (slippage_percentage >= 0 AND slippage_percentage <= 100),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_user_slippage FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
--- ================================================
--- 11. Create the "token_holdings" table.
--- ================================================
-CREATE TABLE token_holdings (
-    id SERIAL PRIMARY KEY,
-    wallet_id UUID NOT NULL,
-    token_symbol VARCHAR(50) NOT NULL,
-    balance NUMERIC(18, 8) NOT NULL CHECK (balance >= 0),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_token_wallet FOREIGN KEY (wallet_id) REFERENCES wallets(wallet_id) ON DELETE CASCADE,
-    CONSTRAINT unique_wallet_token UNIQUE (wallet_id, token_symbol)
 );
 
 -- ================================================
@@ -173,32 +103,44 @@ CREATE TABLE encryption_key_metadata (
     CONSTRAINT fk_wallet_key FOREIGN KEY (wallet_id) REFERENCES wallets(wallet_id) ON DELETE CASCADE
 );
 
--- Create unique constraint to ensure only one active key per wallet
-CREATE UNIQUE INDEX uq_active_wallet_key ON encryption_key_metadata (wallet_id) WHERE active = TRUE;
-
--- Create index for faster key lookups
-CREATE INDEX idx_encryption_key_metadata_wallet_active ON encryption_key_metadata(wallet_id, active);
-
--- Create index for expired keys lookup
-CREATE INDEX idx_encryption_key_metadata_expires ON encryption_key_metadata(expires_at) WHERE active = TRUE;
-
 -- ================================================
--- 13. Create the "memecoins" table
+-- 12. Create the "user_settings" table.
 -- ================================================
-CREATE TABLE memecoins (
+DROP TABLE IF EXISTS user_settings CASCADE; -- Ensure the table is dropped if it exists
+
+CREATE TABLE user_settings (
     id SERIAL PRIMARY KEY,
-    creator_wallet_id VARCHAR(44) NOT NULL,
-    name VARCHAR(100) NOT NULL,
-    symbol VARCHAR(20) NOT NULL UNIQUE,
-    total_supply NUMERIC(20, 9) NOT NULL,
-    image_url TEXT,
-    description TEXT,
-    token_address VARCHAR(255) UNIQUE,
+    user_id INTEGER NOT NULL UNIQUE,
+    settings JSONB NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_creator_wallet FOREIGN KEY (creator_wallet_id) REFERENCES wallets(wallet_id) ON DELETE CASCADE
+    CONSTRAINT fk_user_settings FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Create indexes for faster lookups
-CREATE INDEX idx_memecoins_symbol ON memecoins(symbol);
-CREATE INDEX idx_memecoins_creator ON memecoins(creator_wallet_id);
+-- ================================================
+-- 13. Create the "limit_orders" table.
+-- ================================================
+DROP TABLE IF EXISTS limit_orders CASCADE;
+
+CREATE TABLE limit_orders (
+    order_id VARCHAR(255) PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    wallet_id UUID NOT NULL,
+    token_mint VARCHAR(255) NOT NULL,
+    sol_amount DECIMAL(19, 9) NOT NULL,
+    limit_price DECIMAL(19, 9) NOT NULL,
+    slippage DECIMAL(5, 2) NOT NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    executed_at TIMESTAMP,
+    transaction_signature VARCHAR(255),
+    CONSTRAINT fk_order_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_order_wallet FOREIGN KEY (wallet_id) REFERENCES wallets(wallet_id) ON DELETE CASCADE
+);
+
+-- Create index for faster querying by status
+CREATE INDEX idx_limit_orders_status ON limit_orders(status);
+-- Create index for faster querying by user
+CREATE INDEX idx_limit_orders_user ON limit_orders(user_id);
+

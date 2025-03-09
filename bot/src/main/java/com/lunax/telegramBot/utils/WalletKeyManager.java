@@ -203,17 +203,26 @@ public class WalletKeyManager {
         }
 
         if (!Files.exists(walletPath)) {
+            log.error("Wallet file not found at expected path: {}", walletPath);
             throw new RuntimeException("Wallet file not found: " + walletPath);
         }
         if (!Files.exists(keyPath)) {
+            log.error("Encryption key file not found at expected path: {}", keyPath);
             throw new RuntimeException("Encryption key file not found: " + keyPath);
         }
 
         String encryptedPrivateKey = new String(Files.readAllBytes(walletPath));
         SecretKey encryptionKey = EncryptionUtils.deserializeKey(new String(Files.readAllBytes(keyPath)));
 
-        log.info("Using key file: {} for wallet file: {}", keyPath, walletPath);
-        return EncryptionUtils.decrypt(encryptedPrivateKey, encryptionKey);
+        log.info("Successfully retrieved key materials for wallet: {}", walletId);
+        String decryptedKey = EncryptionUtils.decrypt(encryptedPrivateKey, encryptionKey);
+        
+        // Log the first few characters of the key for debugging (not the whole key for security)
+        if (decryptedKey != null && decryptedKey.length() > 8) {
+            log.debug("Key begins with: {}...", decryptedKey.substring(0, 4));
+        }
+        
+        return decryptedKey;
     }
 
     /**

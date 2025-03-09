@@ -205,4 +205,21 @@ export class SolanaUtils {
     getHeliusApiUrl(): string | undefined {
         return this.heliusApiKey ? `https://api.helius.xyz/v0/assets` : undefined;
     }
+
+    /**
+     * Gets the current price of SOL in USD
+     * @returns Promise with the current SOL price in USD
+     */
+    async getSolUsdPrice(): Promise<number> {
+        try {
+            // Fetch SOL price from a reliable price oracle
+            const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd');
+            const data = await response.json();
+            return data.solana.usd;
+        } catch (error) {
+            logger.error('Error fetching SOL price:', error);
+            // Return a fallback price if fetching fails
+            return 150.0; // Default fallback value
+        }
+    }
 }

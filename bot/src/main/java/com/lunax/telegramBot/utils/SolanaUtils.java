@@ -28,6 +28,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.core.ParameterizedTypeReference;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -72,6 +73,10 @@ public class SolanaUtils {
     @Value("${solana.cluster.url}")
     private String clusterUrl;
 
+    // Add a new property for the TypeScript API URL
+    @Value("${typescript.api.base-url:http://localhost:3000}")
+    private String typescriptApiBaseUrl;
+
     /**
      * Generic method to make HTTP requests to the TypeScript API
      */
@@ -79,7 +84,7 @@ public class SolanaUtils {
         String endpoint,
         HttpMethod method,
         Object body,
-        Class<T> responseType
+        ParameterizedTypeReference<T> responseType
     ) {
         try {
             HttpHeaders headers = new HttpHeaders();
@@ -100,8 +105,9 @@ public class SolanaUtils {
                 .setReadTimeout(Duration.ofSeconds(60))
                 .build();
 
+            // Use typescriptApiBaseUrl instead of apiBaseUrl for TypeScript API requests
             ResponseEntity<T> response = restTemplateWithTimeout.exchange(
-                apiBaseUrl + endpoint,
+                typescriptApiBaseUrl + endpoint,
                 method,
                 requestEntity,
                 responseType
@@ -277,7 +283,7 @@ public class SolanaUtils {
                 "/api/liquidity/add",
                 HttpMethod.POST,
                 request,
-                AddLiquidityResponse.class
+                new ParameterizedTypeReference<AddLiquidityResponse>() {}
             );
 
             return response.getBody().getSignature();
@@ -347,7 +353,7 @@ public class SolanaUtils {
                 "/api/market/create",
                 HttpMethod.POST,
                 request,
-                CreateMarketResponse.class
+                new ParameterizedTypeReference<CreateMarketResponse>() {}
             );
 
             return response.getBody().getMarketId();
@@ -380,7 +386,7 @@ public class SolanaUtils {
                 "/api/pool/create",
                 HttpMethod.POST,
                 request,
-                CreateAmmPoolResponse.class
+                new ParameterizedTypeReference<CreateAmmPoolResponse>() {}
             );
 
             return response.getBody().getPoolId();
@@ -423,7 +429,7 @@ public class SolanaUtils {
                 "/api/liquidity/burn",
                 HttpMethod.POST,
                 request,
-                BurnLiquidityResponse.class
+                new ParameterizedTypeReference<BurnLiquidityResponse>() {}
             );
 
             return response.getBody().getSignature();
@@ -466,7 +472,7 @@ public class SolanaUtils {
                 "/api/liquidity/remove",
                 HttpMethod.POST,
                 request,
-                RemoveLiquidityResponse.class
+                new ParameterizedTypeReference<RemoveLiquidityResponse>() {}
             );
 
             return response.getBody().getSignature();
@@ -755,6 +761,7 @@ public class SolanaUtils {
 
             if (response.getStatusCode().is2xxSuccessful()) {
                 log.info("Successfully retrieved historical data for token: {}", tokenAddress);
+                log.info("Historical data: {}", response.getBody());
                 return response.getBody();
             } else {
                 log.error("Failed to retrieve historical data: {}", response.getStatusCode());
@@ -798,6 +805,9 @@ public class SolanaUtils {
                 tokenAddress;
             tokenTicker = "Token-" + shortAddress;
         }
+        
+        // Remove the $ sign from the token ticker if it exists
+        tokenTicker = tokenTicker.replace("$", "");
         
         // Set top-level fields
         payload.put("token_ticker", tokenTicker); // Now guaranteed to be non-null
@@ -974,5 +984,259 @@ public class SolanaUtils {
         // Remove trailing zeros after decimal point
         String result = formattedAmount.stripTrailingZeros().toPlainString();
         return result;
+    }
+
+    /**
+     * Gets the current price of SOL in USD
+     * @return The current SOL price in USD
+     */
+    public double getSolanaPrice() {
+        // Implement your logic to fetch SOL price
+        // This could be from an API, cache, or other source
+        
+        // For now, return a reasonable default value
+        return 150.0; // Example value - replace with actual implementation
+    }
+
+    /**
+     * Enum for transaction priority levels
+     */
+    public enum TransactionPriority {
+        MIN, // Minimum priority fee
+        MID, // Medium priority fee
+        MAX  // Maximum priority fee
+    }
+
+    @Data
+    private static class SwapRequest {
+        private String tokenMint;      // The token address to buy
+        private double solAmount;      // Amount of SOL to spend
+        private double slippage;       // Slippage tolerance percentage 
+        private String walletPrivateKey; // Private key of the wallet making the purchase
+        private String priority;       // Transaction priority level (affects fees and speed)
+    }
+
+    @Data
+    private static class LimitOrderRequest {
+        private String tokenMint;      // The token address to buy
+        private double solAmount;      // Amount of SOL to spend
+        private double limitPrice;     // The target price at which to execute the order
+        private double slippage;       // Slippage tolerance percentage
+        private String walletPrivateKey; // Private key of the wallet making the purchase
+    }
+
+    @Data
+    public static class SwapResponse {
+        private boolean success;      // Whether the swap was successful
+        private String signature;     // Transaction signature
+        private String error;         // Error message if any
+        private double amount;        // Amount of tokens received
+        private double price;         // Execution price
+    }
+
+    /**
+     * Buys a token with SOL with specified priority
+     * @param tokenMint The token address to buy
+     * @param solAmount Amount of SOL to spend
+     * @param slippage Slippage tolerance percentage
+     * @param walletPrivateKey Private key of the wallet making the purchase
+     * @param priority Transaction priority level (affects fees and speed)
+     * @return SwapResponse containing the transaction details
+     */
+    public SwapResponse buyToken(
+        String tokenMint,
+        double solAmount,
+        double slippage, 
+        String walletPrivateKey,
+        TransactionPriority priority
+    ) {
+        try {
+            log.info("Buying token: {} with priority: {}", tokenMint, priority);
+            
+            SwapRequest request = new SwapRequest();
+            request.setTokenMint(tokenMint);
+            request.setSolAmount(solAmount);
+            request.setSlippage(slippage);
+            request.setWalletPrivateKey(walletPrivateKey);
+            request.setPriority(priority.toString());
+
+            ResponseEntity<SwapResponse> response = makeRequest(
+                "/api/swap/execute",
+                HttpMethod.POST,
+                request,
+                new ParameterizedTypeReference<SwapResponse>() {}
+            );
+
+            log.debug("Swap response: {}", response.getBody());
+            return response.getBody();
+        } catch (Exception e) {
+            log.error("Failed to buy token {}: {}", tokenMint, e.getMessage());
+            throw new RuntimeException("Failed to execute swap", e);
+        }
+    }
+
+    /**
+     * Creates a limit order to buy a token when it reaches a specific price
+     * @param tokenMint The token address to buy
+     * @param solAmount Amount of SOL to spend
+     * @param limitPrice The target price at which to execute the order
+     * @param slippage Slippage tolerance percentage
+     * @param walletPrivateKey Private key of the wallet making the purchase
+     * @return Order ID for tracking the limit order
+     */
+    public String createLimitOrder(
+        String tokenMint,
+        double solAmount,
+        double limitPrice,
+        double slippage,
+        String walletPrivateKey
+    ) {
+        try {
+            log.info("Creating limit order for token: {} at price: {}", tokenMint, limitPrice);
+            
+            LimitOrderRequest request = new LimitOrderRequest();
+            request.setTokenMint(tokenMint);
+            request.setSolAmount(solAmount);
+            request.setLimitPrice(limitPrice);
+            request.setSlippage(slippage);
+            request.setWalletPrivateKey(walletPrivateKey);
+
+            ResponseEntity<Map<String, Object>> response = makeRequest(
+                "/api/limit/create",
+                HttpMethod.POST,
+                request,
+                new ParameterizedTypeReference<Map<String, Object>>() {}
+            );
+
+            log.debug("Limit order response: {}", response.getBody());
+            return (String) response.getBody().get("orderId");
+        } catch (Exception e) {
+            log.error("Failed to create limit order for token {}: {}", tokenMint, e.getMessage());
+            throw new RuntimeException("Failed to create limit order", e);
+        }
+    }
+
+    /**
+     * Gets the status of a limit order
+     * @param orderId The ID of the limit order
+     * @return Order status information
+     */
+    public Map<String, Object> getLimitOrderStatus(String orderId) {
+        try {
+            log.info("Getting limit order status for: {}", orderId);
+            
+            ResponseEntity<Map<String, Object>> response = makeRequest(
+                "/api/limit/status?orderId=" + orderId,
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<Map<String, Object>>() {}
+            );
+
+            return response.getBody();
+        } catch (Exception e) {
+            log.error("Failed to get limit order status for {}: {}", orderId, e.getMessage());
+            throw new RuntimeException("Failed to get limit order status", e);
+        }
+    }
+
+    /**
+     * Cancels a limit order
+     * @param orderId The ID of the limit order
+     * @param walletPrivateKey Private key of the wallet that created the order
+     * @return True if the order was successfully canceled
+     */
+    public boolean cancelLimitOrder(String orderId, String walletPrivateKey) {
+        try {
+            log.info("Canceling limit order: {}", orderId);
+            
+            Map<String, String> request = new HashMap<>();
+            request.put("orderId", orderId);
+            request.put("walletPrivateKey", walletPrivateKey);
+
+            ResponseEntity<Map<String, Object>> response = makeRequest(
+                "/api/limit/cancel",
+                HttpMethod.POST,
+                request,
+                new ParameterizedTypeReference<Map<String, Object>>() {}
+            );
+
+            Map<String, Object> responseBody = response.getBody();
+            return (boolean) responseBody.get("success");
+        } catch (Exception e) {
+            log.error("Failed to cancel limit order {}: {}", orderId, e.getMessage());
+            throw new RuntimeException("Failed to cancel limit order", e);
+        }
+    }
+
+    /**
+     * Sends blockchain instructions to the Solana network
+     * @param instructions The array of transaction instructions to send
+     * @param keypair The keypair for signing the transaction
+     * @param options Additional options for sending the transaction
+     * @return An array of transaction signatures
+     */
+    public String[] sendInstructions(
+        Object[] instructions,
+        Object keypair,
+        Map<String, Object> options
+    ) {
+        try {
+            log.info("Sending {} instructions to Solana network", instructions.length);
+            
+            // In a real implementation, this would interact with the Solana blockchain
+            // For now, we're just passing the request to our TypeScript API
+            
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("instructions", instructions);
+            requestBody.put("keypair", keypair);
+            requestBody.put("options", options);
+            
+            ResponseEntity<Map<String, Object>> response = makeRequest(
+                "/api/transaction/send",
+                HttpMethod.POST,
+                requestBody,
+                new ParameterizedTypeReference<Map<String, Object>>() {}
+            );
+            
+            Map<String, Object> responseBody = response.getBody();
+            if (responseBody != null && responseBody.containsKey("signatures")) {
+                List<String> signatures = (List<String>) responseBody.get("signatures");
+                return signatures.toArray(new String[0]);
+            }
+            
+            // If we reached here, something went wrong but no exception was thrown
+            throw new RuntimeException("Failed to get transaction signatures from response");
+        } catch (Exception e) {
+            log.error("Failed to send instructions to Solana network: {}", e.getMessage());
+            throw new RuntimeException("Failed to send instructions", e);
+        }
+    }
+
+    /**
+     * Gets the current price of a token in USD
+     * @param tokenMint The token mint address
+     * @return The current token price in USD
+     */
+    public double getTokenPrice(String tokenMint) {
+        try {
+            log.info("Getting price for token: {}", tokenMint);
+            
+            ResponseEntity<Map<String, Object>> response = makeRequest(
+                "/api/token/price/" + tokenMint,
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<Map<String, Object>>() {}
+            );
+            
+            Map<String, Object> responseBody = response.getBody();
+            if (responseBody != null && responseBody.containsKey("price")) {
+                return Double.parseDouble(responseBody.get("price").toString());
+            }
+            
+            return 0.0;
+        } catch (Exception e) {
+            log.error("Failed to get price for token {}: {}", tokenMint, e.getMessage());
+            return 0.0;
+        }
     }
 }
