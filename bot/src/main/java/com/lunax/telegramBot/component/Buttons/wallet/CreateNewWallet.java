@@ -15,6 +15,9 @@ import com.lunax.telegramBot.utils.SolanaUtils;
 import com.lunax.telegramBot.utils.WalletKeyManager;
 import com.lunax.telegramBot.utils.components.ButtonHandler;
 import com.lunax.telegramBot.utils.components.MessageUtils;
+import com.lunax.telegramBot.component.navigation.components.Home;
+
+import java.util.List;
 
 @Component
 public class CreateNewWallet implements ButtonHandler {
@@ -69,6 +72,7 @@ public class CreateNewWallet implements ButtonHandler {
         try {
             Long telegramUserId = update.getCallbackQuery().getFrom().getId();
             System.out.println("CreateNewWallet callback for userId: " + telegramUserId);
+            System.out.println("ATTEMPTING TO EVICT CACHE for user: " + telegramUserId);
             
             if (!userService.hasAcceptedTos(telegramUserId)) {
                 throw new RuntimeException("Please accept the Terms of Service before creating a wallet");
@@ -81,6 +85,13 @@ public class CreateNewWallet implements ButtonHandler {
                     newUser.setAcceptedTos(true);
                     return userRepository.save(newUser);
                 });
+            
+            // Check if user has reached the wallet limit of 8
+            List<Wallet> userWallets = walletRepository.findByUser(user);
+            if (userWallets.size() >= 8) {
+                MessageUtils.editMessage(update, "❌ You have reached the maximum limit of 8 wallets per user. Please delete an existing wallet before creating a new one.", null);
+                return;
+            }
 
             MessageUtils.editMessage(update, "⏳ Generating wallet...", null);
             System.out.println("Calling solanaService.createNewWallet for user: " + user.getTelegramId());
@@ -92,13 +103,17 @@ public class CreateNewWallet implements ButtonHandler {
             user.setCurrentWallet(wallet.getWalletId());
             userRepository.save(user);
 
+            // Get reference to Home component to clear cache
+            // home.clearCacheForUser(telegramUserId);
+            // System.out.println("WALLET CREATED - Cache cleared for user " + telegramUserId);
+
             Thread.sleep(750);
 
             String text = "✨ Wallet generated successfully!\n\nPublic Key: `" + wallet.getWalletAddress() + "`";
             MessageUtils.editMessage(update, text, null);
             MessageUtils.sendMessage(update, "You need to deposit 1 SOL to `" + wallet.getWalletAddress() + 
                 "` wallet to start using it. (click to copy)");
-            MessageUtils.sendMessage(update, "You can type /home or /start to go to the main menu.");
+            // MessageUtils.sendMessage(update, "You can type /home or /start to go to the main menu.");
         } catch (Exception e) {
             throw new RuntimeException("Failed to create and store wallet securely", e);
         }

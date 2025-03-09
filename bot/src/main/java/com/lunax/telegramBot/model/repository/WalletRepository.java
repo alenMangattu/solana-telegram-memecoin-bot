@@ -12,18 +12,18 @@ import java.util.UUID;
 import java.util.List;
 
 @Repository
-public interface WalletRepository extends JpaRepository<Wallet, Long> {
+public interface WalletRepository extends JpaRepository<Wallet, UUID> {
     boolean existsByWalletAddress(String walletAddress);
     
-    @Cacheable(value = "userWallets", key = "#user.id")
+    // @Cacheable(value = "userWallets", key = "#user.id")
     List<Wallet> findByUser(User user);
     
     @Override
-    @CacheEvict(value = "userWallets", key = "#result?.user?.id", condition = "#result?.user != null")
+    // @CacheEvict(value = "userWallets", key = "#result?.user?.id", condition = "#result?.user != null")
     <S extends Wallet> S save(S wallet);
     
     @Query("SELECT w FROM Wallet w WHERE w.user = :user")
-    @CacheEvict(value = "userWallets", key = "#user.id")
+    // @CacheEvict(value = "userWallets", key = "#user.id")
     void invalidateUserWalletsCache(@Param("user") User user);
     
     // New method to delete a wallet by its ID

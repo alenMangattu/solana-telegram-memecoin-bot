@@ -2,6 +2,8 @@ package com.lunax.telegramBot.utils.components;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.BiConsumer;
 
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -23,6 +25,7 @@ import java.net.URL;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -45,6 +48,7 @@ public class MessageUtils {
     private static TelegramLongPollingBot botInstance;
     private static String botToken;
     private static final Logger log = LoggerFactory.getLogger(MessageUtils.class);
+    private static final Map<String, BiConsumer<Update, java.util.regex.Matcher>> callbackHandlers = new HashMap<>();
 
     public static void setBotInstance(TelegramLongPollingBot bot) {
         botInstance = bot;
@@ -687,5 +691,39 @@ public class MessageUtils {
         } catch (TelegramApiException e) {
             log.error("Error deleting message: {}", e.getMessage());
         }
+    }
+
+    /**
+     * Register a callback handler for a pattern
+     * @param pattern The regex pattern to match against callback data
+     * @param handler The handler to execute when the pattern matches
+     */
+    public static void registerCallbackHandler(String pattern, BiConsumer<Update, java.util.regex.Matcher> handler) {
+        callbackHandlers.put(pattern, handler);
+    }
+
+    /**
+     * Process a callback query by checking registered patterns
+     * @param update The update containing the callback query
+     * @return true if a handler was found and executed, false otherwise
+     */
+    public static boolean processCallbackQuery(Update update) {
+        if (!update.hasCallbackQuery()) {
+            return false;
+        }
+        
+        String callbackData = update.getCallbackQuery().getData();
+        
+        for (Map.Entry<String, BiConsumer<Update, java.util.regex.Matcher>> entry : callbackHandlers.entrySet()) {
+            java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(entry.getKey());
+            java.util.regex.Matcher matcher = pattern.matcher(callbackData);
+            
+            if (matcher.matches()) {
+                entry.getValue().accept(update, matcher);
+                return true;
+            }
+        }
+        
+        return false;
     }
 }

@@ -3,9 +3,11 @@ package com.lunax.telegramBot.controller;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 
 import com.lunax.telegramBot.component.Buttons.HomePageButtons.MemeCoinCreations.AskMemeCoinData;
 import com.lunax.telegramBot.component.Buttons.HomePageButtons.MemeCoinCreations.InitialLiquidity.AddLiquidity;
+import com.lunax.telegramBot.component.Buttons.wallet.ImportExistingWallet;
 import com.lunax.telegramBot.component.navigation.HandlerRegistry;
 import com.lunax.telegramBot.component.navigation.components.Home;
 import com.lunax.telegramBot.component.navigation.components.settings.SettingsImpl;
@@ -23,12 +25,17 @@ import org.springframework.stereotype.Component;
 
 import com.lunax.telegramBot.component.navigation.components.token.Buy;
 import com.lunax.telegramBot.component.navigation.components.token.TokenInfo;
+import com.lunax.telegramBot.model.db.User;
+import com.lunax.telegramBot.model.db.Wallet;
 import com.lunax.telegramBot.model.repository.UserRepository;
+import com.lunax.telegramBot.model.repository.WalletRepository;
 
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.UUID;
+
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @Slf4j
 @Component
@@ -72,6 +79,12 @@ public class BotController extends TelegramLongPollingBot {
     @Autowired
     private Buy buy;
 
+    @Autowired
+    private WalletRepository walletRepository;
+
+    @Autowired
+    private ImportExistingWallet importWallet;
+
     public BotController(String botUsername, String botToken) {
         super(botToken);
         this.botUsername = botUsername;
@@ -85,16 +98,22 @@ public class BotController extends TelegramLongPollingBot {
             if (update.hasCallbackQuery()) {
                 String callbackData = update.getCallbackQuery().getData();
                 log.info("Received callback data: {}", callbackData);
-                ButtonHandler handler = handlerRegistry.getHandler(callbackData);
-
-                if (handler != null) {
-                    try {
-                        handler.handleCallback(update);
-                    } catch (Exception e) {
-                        log.error("Error handling callback {}: {}", callbackData, e.getMessage());
+                
+                // First try to process with MessageUtils pattern-based handlers
+                boolean handled = MessageUtils.processCallbackQuery(update);
+                
+                // If not handled by MessageUtils, try the registry
+                if (!handled) {
+                    ButtonHandler handler = handlerRegistry.getHandler(callbackData);
+                    if (handler != null) {
+                        try {
+                            handler.handleCallback(update);
+                        } catch (Exception e) {
+                            log.error("Error handling callback {}: {}", callbackData, e.getMessage());
+                        }
+                    } else {
+                        log.warn("No handler found for callback data: {}", callbackData);
                     }
-                } else {
-                    log.warn("No handler found for callback data: {}", callbackData);
                 }
             } else if (update.hasMessage()) {
                 Message message = update.getMessage();
@@ -128,7 +147,30 @@ public class BotController extends TelegramLongPollingBot {
 
                         // Handle the start command
                         if (messageText.startsWith("/start") || messageText.startsWith("/home")) {
-                            home.executeVoid(update);
+                            // Create a dummy callback query if we're processing a message
+                            // This ensures Home.executeVoid works properly regardless of update type
+                            if (update.hasMessage() && !update.hasCallbackQuery()) {
+                                try {
+                                    // Create a new Update with a CallbackQuery to make it compatible with Home.executeVoid
+                                    Update callbackUpdate = new Update();
+                                    CallbackQuery callbackQuery = new CallbackQuery();
+                                    callbackQuery.setFrom(update.getMessage().getFrom());
+                                    callbackQuery.setMessage(update.getMessage());
+                                    callbackQuery.setData("home"); // Dummy data to indicate home navigation
+                                    callbackUpdate.setCallbackQuery(callbackQuery);
+                                    
+                                    // Call home.executeVoid with the properly formatted update
+                                    log.info("Converting message to callback for home navigation");
+                                    home.executeVoid(callbackUpdate);
+                                } catch (Exception e) {
+                                    log.error("Error displaying home page: {}", e.getMessage(), e);
+                                    MessageUtils.sendMessage(update, "Error displaying home page. Please try again.");
+                                }
+                            } else {
+                                // If we already have a callback query, just proceed normally
+                                home.executeVoid(update);
+                            }
+                            return;
                         } else if (messageText.startsWith("/settings")) {
                             settings.executeVoid(update);
                         } else if (messageText.equals("/getfiles")) {
@@ -161,11 +203,15 @@ public class BotController extends TelegramLongPollingBot {
                         tokenInfo.executeVoid(update);
                     } else if (currentState == ChatState.TOKEN_INFO_PAGE) {
                         // Handle any specific actions for the TOKEN_INFO_PAGE state if needed
-                        // For now, we assume the tokenInfo.executeVoid already handles the necessary actions
                         log.info(messageText);
                         log.info("User is viewing token information.");
                     } else if (currentState == ChatState.AWAITING_BUY_AMOUNT || currentState == ChatState.AWAITING_BUY_SLIPPAGE || currentState == ChatState.AWAITING_LIMIT_PRICE) {
                         buy.executeVoid(update);
+                    } else if (currentState == ChatState.AWAITING_WALLET_LABEL) {
+                        // Handle wallet label update
+                        handleWalletLabelUpdate(update);
+                    } else if (currentState == ChatState.AWAITING_WALLET_IMPORT) {
+                        importWallet.processPrivateKey(update, messageText);
                     } else if (message.hasText()) {
                         log.info("User is in state: {}", currentState);
                         log.info("Received: {}", messageText);
@@ -213,6 +259,70 @@ public class BotController extends TelegramLongPollingBot {
         }
         // Return the first wallet ID or implement your logic to choose which wallet to return
         return walletIds.get(0);
+    }
+
+    /**
+     * Handle the wallet label update process
+     */
+    private void handleWalletLabelUpdate(Update update) {
+        Long telegramId = update.getMessage().getFrom().getId();
+        String newLabel = update.getMessage().getText();
+        
+        try {
+            // Get the wallet ID from state data
+            ObjectNode stateData = stateService.getStateData(telegramId);
+            if (stateData == null || !stateData.has("walletId")) {
+                MessageUtils.sendMessage(update, "❌ Error updating wallet label. Missing wallet information.");
+                stateService.setState(telegramId, ChatState.IDLE);
+                return;
+            }
+            
+            String walletId = stateData.get("walletId").asText();
+            log.info("Updating label for wallet {} to '{}'", walletId, newLabel);
+            
+            // Get the wallet and update the label
+            User user = userService.findByTelegramId(telegramId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+            
+            // Find the wallet by ID using UUID.fromString
+            Wallet wallet = walletRepository.findById(UUID.fromString(walletId))
+                .orElseThrow(() -> new RuntimeException("Wallet not found"));
+            
+            // Ensure the wallet belongs to the current user
+            if (!wallet.getUser().getId().equals(user.getId())) {
+                throw new RuntimeException("This wallet does not belong to you");
+            }
+            
+            // Update the label
+            wallet.setWalletLabel(newLabel);
+            walletRepository.save(wallet);
+            
+            // Reset the state
+            stateService.setState(telegramId, ChatState.IDLE);
+            stateService.clearStateData(telegramId);
+            
+            // Confirm and return to wallet management
+            MessageUtils.sendMessage(update, "✅ Wallet label updated successfully to: " + newLabel);
+            
+            // Create a dummy callback update to trigger the wallet listing
+            // Update callbackUpdate = new Update();
+            // CallbackQuery callbackQuery = new CallbackQuery();
+            // callbackQuery.setFrom(update.getMessage().getFrom());
+            // callbackQuery.setData("wallets"); // This should match the callback data for the Wallets handler
+            // callbackUpdate.setCallbackQuery(callbackQuery);
+            
+            // // Get the wallets button handler from the registry and call it
+            // ButtonHandler walletsHandler = handlerRegistry.getHandler("wallets");
+            // if (walletsHandler != null) {
+            //     walletsHandler.handleCallback(callbackUpdate);
+            // }
+            // wallets.executeVoid(update);
+            
+        } catch (Exception e) {
+            log.error("Error updating wallet label: {}", e.getMessage());
+            MessageUtils.sendMessage(update, "❌ Error updating wallet label: " + e.getMessage());
+            stateService.setState(telegramId, ChatState.IDLE);
+        }
     }
 
     @Override

@@ -14,16 +14,17 @@ public class CacheConfig {
     public CacheManager cacheManager() {
         return new ConcurrentMapCacheManager(
                 "tosAcceptance",
-                "userWallets",
+                // "userWallets",
                 "userStates",
                 "stateData",
                 "userValidation",
                 "userInfo",
-                "walletsByUser",
+                // "walletsByUser",
                 "userTokenAccounts",
                 "topTokenHolders",
                 "tokenHolders",
                 "userSettings"
+                // "homeWalletCache"
         );
     }
 }

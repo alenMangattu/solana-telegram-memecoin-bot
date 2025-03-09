@@ -22,6 +22,10 @@ public enum ChatState {
     AWAITING_MEMECOIN_CONFIRMATION, // Waiting for confirmation
     CREATING_MEMECOIN,              // Processing memecoin creation
     
+    // Wallet Management States
+    AWAITING_WALLET_LABEL,          // Waiting for new wallet label
+    AWAITING_WALLET_IMPORT,         // Waiting for wallet private key import
+    
     // Memecoin Trading States
     TRADE_MEMECOIN_START,           // Starting trading process
     AWAITING_TRADE_SYMBOL,          // Waiting for memecoin ticker to trade

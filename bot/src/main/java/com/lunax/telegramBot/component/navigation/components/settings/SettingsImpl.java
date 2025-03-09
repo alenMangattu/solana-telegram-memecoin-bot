@@ -8,7 +8,7 @@ import com.lunax.telegramBot.component.Buttons.BacktoHome;
 import com.lunax.telegramBot.component.Buttons.SettingsButtons.HouseOfRules;
 import com.lunax.telegramBot.component.Buttons.SettingsButtons.NotificationHub;
 import com.lunax.telegramBot.component.Buttons.SettingsButtons.TraidingPerfernces;
-import com.lunax.telegramBot.component.Buttons.SettingsButtons.Wallets;
+import com.lunax.telegramBot.component.Buttons.SettingsButtons.WalletsButton;
 import com.lunax.telegramBot.component.navigation.components.StateHandler;
 import com.lunax.telegramBot.utils.components.ButtonHandler;
 import com.lunax.telegramBot.utils.components.MessageUtils;
@@ -30,7 +30,7 @@ public class SettingsImpl implements StateHandler {
    private TraidingPerfernces traidingPerfernces;
 
    @Autowired
-   private Wallets wallets;
+   private WalletsButton wallets;
 
    @Autowired
    private HouseOfRules houseOfRules;

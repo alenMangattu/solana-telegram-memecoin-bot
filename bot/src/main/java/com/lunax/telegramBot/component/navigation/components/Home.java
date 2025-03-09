@@ -1,10 +1,15 @@
 package com.lunax.telegramBot.component.navigation.components;
 
 import java.util.List;
+import java.util.Comparator;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -27,6 +32,9 @@ import com.lunax.telegramBot.utils.components.ButtonHandler;
 import com.lunax.telegramBot.utils.components.MessageUtils;
 
 import jakarta.annotation.PostConstruct;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.scheduling.annotation.Scheduled;
 
 @Component
 public class Home implements StateHandler {
@@ -63,6 +71,9 @@ public class Home implements StateHandler {
     @Autowired
     private RefreshHome refreshHome;
 
+    @Autowired
+    private CacheManager cacheManager;
+
     private ButtonHandler[][] buttonHandlers2;
 
     @PostConstruct
@@ -96,14 +107,12 @@ public class Home implements StateHandler {
             username = update.getMessage().getFrom().getUserName();
         } else if (update.hasCallbackQuery()) {
             telegramId = update.getCallbackQuery().getFrom().getId();
-            // You can also retrieve the username if needed
-            // username = update.getCallbackQuery().getFrom().getUserName();
         } else {
             // Handle unexpected update types
             log.warn("Received an update that is neither a message nor a callback query.");
-            return; // Exit if the update type is not supported
+            return;
         }
-
+        
         System.out.println("From ID: " + telegramId);
 
         // Check if user exists, create if not
@@ -135,7 +144,6 @@ public class Home implements StateHandler {
             MessageUtils.editMessageInlineKeyboard(update, text, button);
         else
             MessageUtils.sendInlineKeyboard(update, text, button);
-
     }
 
     @Override
@@ -143,32 +151,42 @@ public class Home implements StateHandler {
         this.executeVoid(update, false);
     }
 
-    public String generateHomeText(Long telegramId) {
+    private String generateHomeText(Long telegramId) {
+        log.info("Generating fresh home text for user {}", telegramId);
+        
+        User user = userService.findByTelegramId(telegramId)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        List<Wallet> wallets = walletService.findByUser(user);
+        
         String text = "*Welcome to LunaxBot home page*\n\n";
 
-        User user = userService.findByTelegramId(telegramId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
         text += "*Your Wallets:*\n";
-        List<Wallet> wallets = walletService.findByUser(user);
+        
+        // Sort wallets by creation date (oldest first)
+        wallets.sort(Comparator.comparing(Wallet::getCreatedAt));
 
         if (wallets.isEmpty()) {
             text += "No wallets found. Create or import a wallet to get started.\n";
         } else {
-            int i = 0;
             for (Wallet wallet : wallets) {
-                text += "Wallet " + (i + 1) + ":";
+                // Use wallet label as the header
+                String walletLabel = (wallet.getWalletLabel() != null && !wallet.getWalletLabel().isEmpty())
+                        ? wallet.getWalletLabel() : "Unnamed Wallet";
+                
+                text += "*" + walletLabel + "*:\n"; // Display the label as the header
+
                 if (wallet.getWalletId().equals(user.getCurrentWallet())) {
-                    text += " (current)";
+                    text += "🟢 (Current Wallet)\n"; // Indicate current wallet
                 }
-                text += "\nBalance: `" + solanaUtils.getBalance(wallet.getWalletAddress()) + " SOL`\n";
-                text += "Address: `" + wallet.getWalletAddress() + "`\n";
-                i++;
+                
+                text += "Balance: `" + solanaUtils.getBalance(wallet.getWalletAddress()) + " SOL`\n";
+                text += "Address: `" + wallet.getWalletAddress() + "`\n\n";
             }
         }
 
-        text += "\n\nSelect an option below:";
-
+        text += "Select an option below:";
+        log.debug("Home text generated: {}", text);
         return text;
     }
 
