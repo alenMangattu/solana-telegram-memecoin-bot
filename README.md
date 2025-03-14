@@ -55,15 +55,6 @@ This project is a Telegram bot that allows users to create and manage memecoins 
 - Use commands to create wallets, mint memecoins, and manage liquidity.
 - Follow the bot's prompts to complete actions.
 
-## Contributing
-
-Contributions are welcome! Please fork the repository and submit a pull request for any improvements or bug fixes.
-
 ## License
 
 Coming soon.
-
-## Acknowledgments
-
-- Thanks to the Solana community for their support and resources.
-- Special thanks to the Telegram Bot API documentation for guidance on bot development.
