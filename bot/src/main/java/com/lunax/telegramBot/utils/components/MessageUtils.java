@@ -49,6 +49,7 @@ public class MessageUtils {
     private static String botToken;
     private static final Logger log = LoggerFactory.getLogger(MessageUtils.class);
     private static final Map<String, BiConsumer<Update, java.util.regex.Matcher>> callbackHandlers = new HashMap<>();
+    private static final Map<String, java.util.function.Consumer<Update>> callbackQueryHandlers = new HashMap<>();
 
     public static void setBotInstance(TelegramLongPollingBot bot) {
         botInstance = bot;
@@ -703,7 +704,16 @@ public class MessageUtils {
     }
 
     /**
-     * Process a callback query by checking registered patterns
+     * Register a callback query handler for an exact match
+     * @param callbackData The exact callback data string to match
+     * @param handler The handler to execute when matched
+     */
+    public static void registerCallbackQueryHandler(String callbackData, java.util.function.Consumer<Update> handler) {
+        callbackQueryHandlers.put(callbackData, handler);
+    }
+
+    /**
+     * Process a callback query by checking for exact matches
      * @param update The update containing the callback query
      * @return true if a handler was found and executed, false otherwise
      */
@@ -714,6 +724,13 @@ public class MessageUtils {
         
         String callbackData = update.getCallbackQuery().getData();
         
+        // First check exact matches in callbackQueryHandlers
+        if (callbackQueryHandlers.containsKey(callbackData)) {
+            callbackQueryHandlers.get(callbackData).accept(update);
+            return true;
+        }
+        
+        // Then check pattern matches in callbackHandlers
         for (Map.Entry<String, BiConsumer<Update, java.util.regex.Matcher>> entry : callbackHandlers.entrySet()) {
             java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(entry.getKey());
             java.util.regex.Matcher matcher = pattern.matcher(callbackData);

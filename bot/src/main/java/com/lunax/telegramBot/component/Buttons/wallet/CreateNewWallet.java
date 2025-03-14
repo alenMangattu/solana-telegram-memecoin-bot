@@ -2,6 +2,7 @@ package com.lunax.telegramBot.component.Buttons.wallet;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
@@ -68,6 +69,7 @@ public class CreateNewWallet implements ButtonHandler {
     }
 
     @Override
+    @CacheEvict(value = {"userWallets", "homeWalletCache"}, allEntries = true)
     public void handleCallback(Update update) {
         try {
             Long telegramUserId = update.getCallbackQuery().getFrom().getId();
@@ -103,9 +105,10 @@ public class CreateNewWallet implements ButtonHandler {
             user.setCurrentWallet(wallet.getWalletId());
             userRepository.save(user);
 
-            // Get reference to Home component to clear cache
+            // After updating user's current wallet, make sure to evict the cache
+            // Uncomment and fix the reference to Home
+            // Home home = ApplicationContextProvider.getBean(Home.class);
             // home.clearCacheForUser(telegramUserId);
-            // System.out.println("WALLET CREATED - Cache cleared for user " + telegramUserId);
 
             Thread.sleep(750);
 

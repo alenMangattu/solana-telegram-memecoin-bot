@@ -80,8 +80,8 @@ public class ImportExistingWallet implements ButtonHandler {
     }
 
     @Override
-    // @CacheEvict(value = "homeWalletCache", key = "#update.callbackQuery.from.id")
     @Transactional
+    @CacheEvict(value = {"userWallets", "homeWalletCache"}, key = "#update.callbackQuery.from.id")
     public void handleCallback(Update update) {
         Long telegramId = update.getCallbackQuery().getFrom().getId();
         
@@ -141,6 +141,8 @@ public class ImportExistingWallet implements ButtonHandler {
      * @param update The Telegram update containing the user's message with private key
      * @param privateKey The private key entered by the user
      */
+    @Transactional
+    @CacheEvict(value = {"userWallets", "homeWalletCache"}, key = "#update.getMessage().from.id")
     public void processPrivateKey(Update update, String privateKey) {
         Long telegramId = update.getMessage().getFrom().getId();
         

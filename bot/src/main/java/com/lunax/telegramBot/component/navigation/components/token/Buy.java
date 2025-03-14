@@ -21,6 +21,7 @@ import com.lunax.telegramBot.utils.components.ButtonHandler;
 import com.lunax.telegramBot.utils.components.MessageUtils;
 import com.lunax.telegramBot.service.TransactionSendingService;
 import com.lunax.telegramBot.model.db.LimitOrder;
+import com.lunax.telegramBot.model.repository.UserSettingsRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -57,6 +58,9 @@ public class Buy implements StateHandler {
     
     @Autowired
     private WalletKeyManager walletKeyManager;
+
+    @Autowired
+    private UserSettingsRepository userSettingsRepository;
 
     // Define callback data constants
     private static final String CONFIRM_BUY = "buy_confirm";
@@ -157,11 +161,6 @@ public class Buy implements StateHandler {
                 log.debug("User {} entered custom slippage: {}", userId, slippage);
                 updateSlippage(update, userId, slippage);
                 return;
-            } else if (currentState == ChatState.AWAITING_LIMIT_PRICE) {
-                String limitPrice = update.getMessage().getText();
-                log.debug("User {} entered limit price: {}", userId, limitPrice);
-                updateLimitPrice(update, userId, limitPrice);
-                return;
             }
         }
 
@@ -192,24 +191,27 @@ public class Buy implements StateHandler {
         // Try to get values from user settings
         Optional<User> userOpt = userService.findByTelegramId(userId);
         if (userOpt.isPresent()) {
-            Optional<UserSettings> settingsOpt = userSettingsService.findByUserId(userOpt.get().getId());
-            if (settingsOpt.isPresent() && settingsOpt.get().getSettings() != null) {
-                JsonNode settings = settingsOpt.get().getSettings();
+            // ADDED: Force system logging to ensure visibility
+            User user = userOpt.get();
+            System.out.println("Getting slippage for user ID: " + user.getId());
+            
+            // Explicitly call slippage method with higher log level
+            int buySlippage = getBuySlippageFromSettings(user);
+            System.out.println("Explicitly retrieved buy slippage: " + buySlippage);
+            
+            // Set default slippage from the retrieved value
+            defaultSlippage = buySlippage;
+            
+            UserSettings settings = userSettingsService.findByUserId(user.getId());
+            if (settings != null && settings.getSettings() != null) {
+                JsonNode settingsJson = settings.getSettings();
+                System.out.println("User settings JSON: " + settingsJson);
                 
                 // Get buy amounts from settings
-                if (settings.has("buy") && settings.get("buy").isArray()) {
-                    JsonNode buyArr = settings.get("buy");
+                if (settingsJson.has("buy") && settingsJson.get("buy").isArray()) {
+                    JsonNode buyArr = settingsJson.get("buy");
                     for (int i = 0; i < Math.min(buyArr.size(), 3); i++) {
                         buyAmounts[i] = buyArr.get(i).asDouble();
-                    }
-                }
-                
-                // Get slippage from settings
-                if (settings.has("slippage")) {
-                    if (settings.get("slippage").isNumber()) {
-                        defaultSlippage = settings.get("slippage").asDouble();
-                    } else if (settings.get("slippage").isArray() && settings.get("slippage").size() > 0) {
-                        defaultSlippage = settings.get("slippage").get(0).asDouble();
                     }
                 }
             }
@@ -617,9 +619,6 @@ public class Buy implements StateHandler {
         String tokenSymbol = tokenInfo.get("tokenSymbol").asText();
         String tokenAddress = tokenInfo.get("tokenAddress").asText();
         double buyAmount = stateData.has("buyAmount") ? stateData.get("buyAmount").asDouble() : 0.1;
-        double slippage = stateData.has("slippage") ? stateData.get("slippage").asDouble() : 1.0;
-        boolean isLimitOrder = stateData.has("isLimitOrder") ? stateData.get("isLimitOrder").asBoolean() : false;
-        double limitPrice = stateData.has("limitPrice") ? stateData.get("limitPrice").asDouble() : 0.0;
         
         // Delete current message 
         if (update.hasCallbackQuery()) {
@@ -634,8 +633,16 @@ public class Buy implements StateHandler {
         }
         
         User user = userOpt.get();
+        
+        // Get slippage and speed from user settings - moved after user is defined
+        int slippage = getBuySlippageFromSettings(user);
+        SolanaUtils.TransactionPriority speed = getSpeedFromSettings(user);
+        
+        boolean isLimitOrder = stateData.has("isLimitOrder") ? stateData.get("isLimitOrder").asBoolean() : false;
+        double limitPrice = stateData.has("limitPrice") ? stateData.get("limitPrice").asDouble() : 0.0;
+        
         if (user.getCurrentWallet() == null) {
-            MessageUtils.sendMessage(update, "❌ No wallet selected. Please select a wallet first.");
+            MessageUtils.sendMessage(update, "❌ You don't have an active wallet. Please set up a wallet first.");
             return;
         }
         
@@ -752,5 +759,87 @@ public class Buy implements StateHandler {
         
         // Reset state to TOKEN_INFO_PAGE
         stateService.setState(userId, ChatState.TOKEN_INFO_PAGE);
+    }
+
+    // Update the getBuySlippageFromSettings method with higher log levels
+    private int getBuySlippageFromSettings(User user) {
+        try {
+            // Use DEBUG level for visibility in logs
+            log.debug("Getting buy slippage for user ID: {}", user.getId());
+            UserSettings settings = userSettingsService.findByUserId(user.getId());
+            
+            if (settings == null) {
+                log.debug("No settings found for user ID: {}", user.getId());
+                return 20; // Default value
+            }
+            
+            JsonNode settingsJson = settings.getSettings();
+            log.debug("User settings retrieved: {}", settingsJson);
+            
+            if (settingsJson.has("buy_slippage")) {
+                JsonNode buySlippageNode = settingsJson.get("buy_slippage");
+                if (buySlippageNode.isArray() && buySlippageNode.size() > 0) {
+                    int slippage = buySlippageNode.get(0).asInt();
+                    log.debug("Retrieved buy slippage: {}", slippage);
+                    return slippage;
+                } else {
+                    log.debug("buy_slippage exists but is not a valid array or is empty");
+                }
+            } else {
+                log.debug("buy_slippage field not found in user settings");
+            }
+            
+            // Try fallback to general slippage setting
+            if (settingsJson.has("slippage")) {
+                if (settingsJson.get("slippage").isNumber()) {
+                    int slippage = settingsJson.get("slippage").asInt();
+                    log.debug("Using fallback general slippage: {}", slippage);
+                    return slippage;
+                }
+            }
+            
+            log.debug("Using default slippage value: 20");
+            return 20; // Default value if not found
+        } catch (Exception e) {
+            log.debug("Error getting buy slippage from settings", e);
+            return 20; // Default value on error
+        }
+    }
+
+    // Also update the getSpeedFromSettings method
+    private SolanaUtils.TransactionPriority getSpeedFromSettings(User user) {
+        try {
+            log.debug("Getting transaction speed for user ID: {}", user.getId());
+            UserSettings settings = userSettingsService.findByUserId(user.getId());
+            
+            if (settings == null) {
+                log.debug("No settings found for user ID: {}", user.getId());
+                return SolanaUtils.TransactionPriority.MID;
+            }
+            
+            JsonNode settingsJson = settings.getSettings();
+            log.debug("User settings retrieved for speed: {}", settingsJson);
+            
+            if (settingsJson.has("speed")) {
+                String speedStr = settingsJson.get("speed").asText();
+                log.debug("Speed setting found: {}", speedStr);
+                
+                try {
+                    SolanaUtils.TransactionPriority priority = SolanaUtils.TransactionPriority.valueOf(speedStr);
+                    log.debug("Parsed speed setting to enum: {}", priority);
+                    return priority;
+                } catch (IllegalArgumentException e) {
+                    log.debug("Invalid speed setting value: {}", speedStr);
+                }
+            } else {
+                log.debug("speed field not found in user settings");
+            }
+            
+            log.debug("Using default speed: MID");
+            return SolanaUtils.TransactionPriority.MID;
+        } catch (Exception e) {
+            log.debug("Error getting speed from settings", e);
+            return SolanaUtils.TransactionPriority.MID;
+        }
     }
 }

@@ -14,18 +14,25 @@ import java.util.List;
 @Repository
 public interface WalletRepository extends JpaRepository<Wallet, UUID> {
     boolean existsByWalletAddress(String walletAddress);
-    
-    // @Cacheable(value = "userWallets", key = "#user.id")
+
+    @Cacheable(value = "userWallets", key = "#user.id")
     List<Wallet> findByUser(User user);
-    
+
     @Override
-    // @CacheEvict(value = "userWallets", key = "#result?.user?.id", condition = "#result?.user != null")
+    @CacheEvict(value = "userWallets", key = "#result?.user?.id", condition = "#result?.user != null")
     <S extends Wallet> S save(S wallet);
-    
+
     @Query("SELECT w FROM Wallet w WHERE w.user = :user")
-    // @CacheEvict(value = "userWallets", key = "#user.id")
+    @CacheEvict(value = "userWallets", key = "#user.id")
     void invalidateUserWalletsCache(@Param("user") User user);
-    
+
     // New method to delete a wallet by its ID
-    void deleteByWalletId(UUID walletId);
+
+    @Query("DELETE FROM Wallet w WHERE w.walletId = :walletId")
+    void deleteByWalletId(@Param("walletId") UUID walletId);
+
+    // Add a method that can be used when we have both user and wallet ID
+    @CacheEvict(value = "userWallets", key = "#user.id")
+    @Query("DELETE FROM Wallet w WHERE w.walletId = :walletId AND w.user = :user")
+    void deleteByWalletIdAndUser(@Param("walletId") UUID walletId, @Param("user") User user);
 }

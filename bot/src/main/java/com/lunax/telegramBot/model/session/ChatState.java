@@ -60,7 +60,17 @@ public enum ChatState {
     AWAITING_BUY_AMOUNT,
     AWAITING_BUY_SLIPPAGE,
     BUY_CONFIRMATION,
-    AWAITING_LIMIT_PRICE;
+    AWAITING_LIMIT_PRICE,
+    
+    // New states from the code block
+    AWAITING_BUY_AMOUNT_INPUT,
+    AWAITING_SELL_AMOUNT_INPUT,
+    AWAITING_SLIPPAGE_INPUT,
+    
+    // New trading preferences states
+    AWAITING_EMA_INPUT,         // Waiting for EMA values input
+    AWAITING_RSI_INPUT,         // Waiting for RSI period input
+    AWAITING_SPEED_SELECTION;   // Waiting for transaction speed selection
 
     /**
      * Check if the current state is a terminal state
@@ -124,5 +134,18 @@ public enum ChatState {
                this == AWAITING_LP_BURN_AMOUNT ||
                this == AWAITING_LIQUIDITY_CONFIRMATION ||
                this == PROCESSING_LIQUIDITY);
+    }
+    
+    /**
+     * Check if the state is related to trading preferences
+     * @return true if in trading preferences flow
+     */
+    public boolean isTradingPreferences() {
+        return this != null && (this == AWAITING_BUY_AMOUNT_INPUT ||
+               this == AWAITING_SELL_AMOUNT_INPUT ||
+               this == AWAITING_SLIPPAGE_INPUT ||
+               this == AWAITING_EMA_INPUT ||
+               this == AWAITING_RSI_INPUT ||
+               this == AWAITING_SPEED_SELECTION);
     }
 }
