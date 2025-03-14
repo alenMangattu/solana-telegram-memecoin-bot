@@ -14,6 +14,8 @@ import com.lunax.telegramBot.model.db.UserSettings;
 import com.lunax.telegramBot.model.repository.UserRepository;
 import com.lunax.telegramBot.model.repository.UserSettingsRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 
 @Service
 public class UserService {
@@ -25,7 +27,7 @@ public class UserService {
     private UserSettingsRepository userSettingsRepository;
 
     @Autowired
-    private com.fasterxml.jackson.databind.ObjectMapper objectMapper;
+    private ObjectMapper objectMapper;
 
     @Cacheable(value = "userInfo", key = "#telegramId")
     public Optional<User> findByTelegramId(Long telegramId) {
@@ -68,11 +70,43 @@ public class UserService {
         userSettings.setUserId(user.getId());
         
         try {
-            userSettings.setSettings(objectMapper.readTree(
-                "{\"buy\": [0.1, 0.5, 2], \"sell\": [0.1, 0.5, 2], \"slippage\": 20}"
-            ));
+            // Create comprehensive default settings
+            ObjectNode settingsJson = objectMapper.createObjectNode();
+            
+            // Default buy amounts [0.1, 0.5, 2]
+            ArrayNode buyArray = settingsJson.putArray("buy");
+            buyArray.add(0.1);
+            buyArray.add(0.5);
+            buyArray.add(2.0);
+            
+            // Default sell amounts [0.1, 0.5, 2]
+            ArrayNode sellArray = settingsJson.putArray("sell");
+            sellArray.add(0.1);
+            sellArray.add(0.5);
+            sellArray.add(2.0);
+            
+            // Default buy_slippage [20]
+            ArrayNode buySlippageArray = settingsJson.putArray("buy_slippage");
+            buySlippageArray.add(20);
+            
+            // Default sell_slippage [50]
+            ArrayNode sellSlippageArray = settingsJson.putArray("sell_slippage");
+            sellSlippageArray.add(50);
+            
+            // Default EMA [1, 3]
+            ArrayNode emaArray = settingsJson.putArray("EMA");
+            emaArray.add(1);
+            emaArray.add(3);
+            
+            // Default RSI 3
+            settingsJson.put("RSI", 3);
+            
+            // Default speed MEDIUM
+            settingsJson.put("speed", "MEDIUM");
+            
+            userSettings.setSettings(settingsJson);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to parse settings JSON", e);
+            throw new RuntimeException("Failed to create default settings", e);
         }
         
         userSettings.setCreatedAt(LocalDateTime.now());

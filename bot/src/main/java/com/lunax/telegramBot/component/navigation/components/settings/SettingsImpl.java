@@ -7,7 +7,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import com.lunax.telegramBot.component.Buttons.BacktoHome;
 import com.lunax.telegramBot.component.Buttons.SettingsButtons.HouseOfRules;
 import com.lunax.telegramBot.component.Buttons.SettingsButtons.NotificationHub;
-import com.lunax.telegramBot.component.Buttons.SettingsButtons.TraidingPerfernces;
+import com.lunax.telegramBot.component.Buttons.SettingsButtons.TradingPreferencesButton;
 import com.lunax.telegramBot.component.Buttons.SettingsButtons.WalletsButton;
 import com.lunax.telegramBot.component.navigation.components.StateHandler;
 import com.lunax.telegramBot.utils.components.ButtonHandler;
@@ -27,7 +27,7 @@ public class SettingsImpl implements StateHandler {
    private NotificationHub notificationHub;
 
    @Autowired
-   private TraidingPerfernces traidingPerfernces;
+   private TradingPreferencesButton traidingPerfernces;
 
    @Autowired
    private WalletsButton wallets;

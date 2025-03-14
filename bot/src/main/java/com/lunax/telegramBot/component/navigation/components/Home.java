@@ -97,6 +97,16 @@ public class Home implements StateHandler {
             Do you accept these terms?
             """;
 
+    @Cacheable(value = "homeWalletCache", key = "#telegramId")
+    public String generateCachedHomeText(Long telegramId) {
+        return generateHomeText(telegramId);
+    }
+
+    @CacheEvict(value = "homeWalletCache", key = "#telegramId")
+    public void clearCacheForUser(Long telegramId) {
+        log.info("Clearing home cache for user: {}", telegramId);
+    }
+
     public void executeVoid(Update update, boolean edit) {
         Long telegramId;
         String username = null;
@@ -138,7 +148,7 @@ public class Home implements StateHandler {
             MessageUtils.sendInlineKeyboard(update, tos, buttonHandlers);
             return;
         }
-        String text = this.generateHomeText(telegramId);
+        String text = this.generateCachedHomeText(telegramId);
         ButtonHandler[][] button = this.getButtonHandlers();
         if (edit)
             MessageUtils.editMessageInlineKeyboard(update, text, button);
