@@ -11,6 +11,7 @@ import com.lunax.telegramBot.component.Buttons.wallet.ImportExistingWallet;
 import com.lunax.telegramBot.component.navigation.HandlerRegistry;
 import com.lunax.telegramBot.component.navigation.components.Home;
 import com.lunax.telegramBot.component.navigation.components.settings.SettingsImpl;
+import com.lunax.telegramBot.component.navigation.components.settings.TraidingPerferences;
 import com.lunax.telegramBot.model.session.ChatState;
 import com.lunax.telegramBot.service.StateService;
 import com.lunax.telegramBot.service.UserService;
@@ -84,6 +85,9 @@ public class BotController extends TelegramLongPollingBot {
 
     @Autowired
     private ImportExistingWallet importWallet;
+
+    @Autowired
+    private TraidingPerferences tradingPreferences;
 
     public BotController(String botUsername, String botToken) {
         super(botToken);
@@ -212,6 +216,9 @@ public class BotController extends TelegramLongPollingBot {
                         handleWalletLabelUpdate(update);
                     } else if (currentState == ChatState.AWAITING_WALLET_IMPORT) {
                         importWallet.processPrivateKey(update, messageText);
+                    } else if (currentState.isTradingPreferences()) {
+                        // Handle all trading preferences states with a single method
+                        tradingPreferences.handleMessage(update);
                     } else if (message.hasText()) {
                         log.info("User is in state: {}", currentState);
                         log.info("Received: {}", messageText);

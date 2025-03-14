@@ -7,6 +7,8 @@ import java.util.Comparator;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -54,6 +56,9 @@ public class Wallets implements StateHandler {
     
     @Autowired
     private ImportExistingWallet importExistingWallet;
+
+    @Autowired
+    private CacheManager cacheManager;
 
     @Override
     public void executeVoid(Update update) {
@@ -282,8 +287,8 @@ public class Wallets implements StateHandler {
             // Delete the wallet
             walletService.deleteWallet(user, walletId);
             
-            // Clear home cache
-            // home.clearCacheForUser(telegramId);
+            // Clear caches
+            clearCacheForUser(telegramId);
             
             // Clear session cache in the service
             walletService.clearSessionCache();
@@ -291,7 +296,7 @@ public class Wallets implements StateHandler {
             MessageUtils.sendMessage(update, "✅ Wallet deleted successfully.");
             executeVoid(update);
             
-            // System.out.println("WALLET DELETED - Cache for user " + telegramId + " should be evicted");
+            System.out.println("WALLET DELETED - Cache for user " + telegramId + " successfully evicted");
         } catch (Exception e) {
             MessageUtils.sendMessage(update, "❌ Error deleting wallet: " + e.getMessage());
         }
@@ -460,5 +465,19 @@ public class Wallets implements StateHandler {
         
         ButtonHandler[][] buttonHandlers = convertKeyboardToButtonHandlers(keyboard);
         MessageUtils.editMessage(update, message.toString(), buttonHandlers);
+    }
+
+    // Add a proper method to clear the cache
+    public void clearCacheForUser(Long telegramId) {
+        // Clear cache programmatically since this is called from other components
+        Cache cache = cacheManager.getCache("userWallets");
+        if (cache != null) {
+            User user = userService.findByTelegramId(telegramId)
+                .orElse(null);
+            if (user != null) {
+                cache.evict(user.getId());
+                System.out.println("Cache cleared for user ID: " + user.getId());
+            }
+        }
     }
 }
