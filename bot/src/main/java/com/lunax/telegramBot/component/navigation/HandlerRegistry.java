@@ -10,6 +10,8 @@ import com.lunax.telegramBot.component.Buttons.HomePageButtons.MemeCoinCreations
 import com.lunax.telegramBot.component.Buttons.HomePageButtons.MemeCoinCreations.YesOrNoButtons.RevokeMintAuthority;
 import com.lunax.telegramBot.utils.components.ButtonHandler;
 import com.lunax.telegramBot.component.navigation.components.mymemecoin.PaginationButtonHandler;
+import com.lunax.telegramBot.component.navigation.components.token.TradePaginationButtonHandler;
+import com.lunax.telegramBot.component.Buttons.HomePageButtons.TradeMemeCoinButton;
 
 import jakarta.annotation.PostConstruct;
 import java.util.HashMap;
@@ -37,13 +39,17 @@ public class HandlerRegistry {
             AddLiquidity addLiquidity,
             RevokeMintAuthority revokeMintAuthority,
             RevokeFreezeAuthority revokeFreezeAuthority,
-            PaginationButtonHandler paginationButtonHandler) {
+            PaginationButtonHandler paginationButtonHandler,
+            TradeMemeCoinButton tradeMemeCoinButton,
+            TradePaginationButtonHandler tradePaginationButtonHandler) {
         
         handlers.put(askMemeCoinData.getCallbackData(), askMemeCoinData);
         handlers.put(addLiquidity.getCallbackData(), addLiquidity);
         handlers.put("revoke_mint_authority_confirm", revokeMintAuthority);
         handlers.put("revoke_freeze_authority_confirm", revokeFreezeAuthority);
         handlers.put("page_", paginationButtonHandler);
+        handlers.put("trade_meme_coin", tradeMemeCoinButton);
+        handlers.put("trade_page_", tradePaginationButtonHandler);
         handlers.put("revoke_mint_authority_cancel", new CancelMintAuthority(revokeMintAuthority));
     }
     
