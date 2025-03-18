@@ -817,4 +817,38 @@ public class SolanaCliUtils {
 
         return objectMapper.readTree(output);
     }
+
+    /**
+     * Gets the token balance for a wallet's token account
+     *
+     * @param walletAddress The wallet address to check
+     * @param tokenAddress The token address to check balance for
+     * @return The token balance as a string
+     * @throws Exception If there is an error retrieving the balance
+     */
+    public String getTokenBalance(String walletAddress, String tokenAddress) throws Exception {
+        // Get the user token account details first
+        JsonNode accountInfo = getUserTokenAccount(tokenAddress, walletAddress);
+        
+        if (accountInfo != null && accountInfo.has("tokenAmount")) {
+            JsonNode tokenAmount = accountInfo.get("tokenAmount");
+            if (tokenAmount.has("uiAmountString")) {
+                // This is the formatted amount with proper decimal places
+                return tokenAmount.get("uiAmountString").asText();
+            } else if (tokenAmount.has("amount") && tokenAmount.has("decimals")) {
+                // Calculate the balance manually if uiAmountString is not available
+                String amountStr = tokenAmount.get("amount").asText();
+                int decimals = tokenAmount.get("decimals").asInt();
+                
+                // Convert to double and format with proper decimals
+                double rawAmount = Double.parseDouble(amountStr);
+                double amount = rawAmount / Math.pow(10, decimals);
+                return String.valueOf(amount);
+            }
+        }
+        
+        // Fallback - return zero if we can't get the balance
+        log.warn("Unable to extract token balance from account info for token: {}", tokenAddress);
+        return "0";
+    }
 }

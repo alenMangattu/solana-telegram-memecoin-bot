@@ -153,7 +153,7 @@ public class MemecoinList implements StateHandler {
 
         // Prepare the formatted list of tokens
         StringBuilder formattedList = new StringBuilder();
-        formattedList.append("📜 *Here is the list of your token you own (Page " + (page + 1) + "):*\n\n");
+        formattedList.append("📜 *Here is the list of your token you are holding (Page " + (page + 1) + "):*\n\n");
 
         int totalTokens = tokenAddresses.size();
         int totalPages = (int) Math.ceil((double) totalTokens / PAGE_SIZE);

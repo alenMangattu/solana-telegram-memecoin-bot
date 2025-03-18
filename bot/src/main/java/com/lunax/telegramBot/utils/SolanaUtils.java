@@ -1239,4 +1239,53 @@ public class SolanaUtils {
             return 0.0;
         }
     }
+
+    /**
+     * Gets the token balance for a specific token in a wallet
+     * 
+     * @param walletAddress The wallet address to check
+     * @param tokenAddress The token address to check balance for
+     * @return The token amount with proper decimal scaling
+     */
+    public double getTokenAmount(String walletAddress, String tokenAddress) {
+        try {
+            // Use the solanaCliUtils to get token account info
+            JsonNode accountInfo = solanaCliUtils.getUserTokenAccount(tokenAddress, walletAddress);
+            
+            if (accountInfo != null && accountInfo.has("tokenAmount")) {
+                JsonNode tokenAmount = accountInfo.get("tokenAmount");
+                // Get the amount and decimals
+                if (tokenAmount.has("amount") && tokenAmount.has("decimals")) {
+                    String amountStr = tokenAmount.get("amount").asText();
+                    int decimals = tokenAmount.get("decimals").asInt();
+                    
+                    // Convert to double and apply decimal scaling
+                    double amount = Double.parseDouble(amountStr);
+                    return amount / Math.pow(10, decimals);
+                }
+            }
+            
+            // If we can't get the information in the expected format, try a different approach
+            // This is a fallback for tokens that might have different data structures
+            log.warn("Using fallback method to get token balance for: {}", tokenAddress);
+            String tokenBalance = solanaCliUtils.getTokenBalance(walletAddress, tokenAddress);
+            return Double.parseDouble(tokenBalance);
+            
+        } catch (Exception e) {
+            log.error("Error getting token amount for address {}: {}", tokenAddress, e.getMessage());
+            return 0.0;
+        }
+    }
+
+    /**
+     * Gets the token balance for a specific token in a wallet
+     * Alias for getTokenAmount method to maintain compatibility
+     * 
+     * @param walletAddress The wallet address to check
+     * @param tokenAddress The token address to check balance for
+     * @return The token amount with proper decimal scaling
+     */
+    public double getTokenBalance(String walletAddress, String tokenAddress) {
+        return getTokenAmount(walletAddress, tokenAddress);
+    }
 }

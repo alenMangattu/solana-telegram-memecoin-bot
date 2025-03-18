@@ -5,6 +5,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import com.lunax.telegramBot.component.Buttons.Token.TopHoldersButton;
+import com.lunax.telegramBot.component.navigation.components.trading.TradeMemeCoin;
 import com.lunax.telegramBot.event.NavigationEvent;
 import com.lunax.telegramBot.service.StateService;
 import com.lunax.telegramBot.utils.components.ButtonHandler;
@@ -20,6 +21,9 @@ public class NavigationEventListener {
     @Autowired
     private StateService stateService;
     
+    @Autowired
+    private TradeMemeCoin tradeMemeCoin;
+    
     // You would add other handlers here as needed
     
     @EventListener
@@ -30,6 +34,17 @@ public class NavigationEventListener {
         Long userId = event.getUpdate().getCallbackQuery().getFrom().getId();
         Long chatId = event.getUpdate().getCallbackQuery().getMessage().getChatId();
         Integer messageId = event.getUpdate().getCallbackQuery().getMessage().getMessageId();
+        
+        // Handle trade page navigation events
+        if (destination.startsWith("trade_page_")) {
+            try {
+                int page = Integer.parseInt(destination.split("_")[2]);
+                tradeMemeCoin.executeVoid(event.getUpdate(), page);
+                return;
+            } catch (NumberFormatException e) {
+                log.error("Error parsing page number from destination: {}", destination, e);
+            }
+        }
         
         switch (destination) {
             case "token_info":
@@ -52,6 +67,11 @@ public class NavigationEventListener {
                 
             case "token_holders":
                 // This is already handled in TopHoldersButton.java
+                break;
+                
+            case "trade_meme_coin":
+                // Handle trade meme coin navigation
+                tradeMemeCoin.executeVoid(event.getUpdate());
                 break;
                 
             default:
