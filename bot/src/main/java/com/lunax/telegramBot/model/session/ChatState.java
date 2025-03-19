@@ -70,7 +70,12 @@ public enum ChatState {
     // New trading preferences states
     AWAITING_EMA_INPUT,         // Waiting for EMA values input
     AWAITING_RSI_INPUT,         // Waiting for RSI period input
-    AWAITING_SPEED_SELECTION;   // Waiting for transaction speed selection
+    AWAITING_SPEED_SELECTION,   // Waiting for transaction speed selection
+    
+    // New states from the code block
+    VIEW_LIMIT_ORDERS,          // User is viewing their limit orders
+    DELETE_LIMIT_ORDER,         // User is selecting a limit order to delete
+    CREATING_LIMIT_ORDER;       // User is in the process of creating a limit order
 
     /**
      * Check if the current state is a terminal state
