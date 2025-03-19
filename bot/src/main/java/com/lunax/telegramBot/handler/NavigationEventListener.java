@@ -10,6 +10,7 @@ import com.lunax.telegramBot.event.NavigationEvent;
 import com.lunax.telegramBot.service.StateService;
 import com.lunax.telegramBot.utils.components.ButtonHandler;
 import com.lunax.telegramBot.utils.components.MessageUtils;
+import com.lunax.telegramBot.component.navigation.components.trading.ViewLimitOrders;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +24,9 @@ public class NavigationEventListener {
     
     @Autowired
     private TradeMemeCoin tradeMemeCoin;
+    
+    @Autowired
+    private ViewLimitOrders viewLimitOrders;
     
     // You would add other handlers here as needed
     
@@ -72,6 +76,16 @@ public class NavigationEventListener {
             case "trade_meme_coin":
                 // Handle trade meme coin navigation
                 tradeMemeCoin.executeVoid(event.getUpdate());
+                break;
+                
+            case "view_limit_orders":
+                // Handle view limit orders navigation
+                viewLimitOrders.executeVoid(event.getUpdate());
+                break;
+                
+            case "delete_limit_order":
+                // For delete limit order, we'll use the same component as view, as it includes delete functionality
+                viewLimitOrders.executeVoid(event.getUpdate());
                 break;
                 
             default:

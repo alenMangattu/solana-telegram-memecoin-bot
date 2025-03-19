@@ -56,6 +56,7 @@ public class MessageUtils {
         botToken = bot.getBotToken();
     }
 
+
     public static Message getMessage(Update update) {
         if (update.hasMessage()) {
             return update.getMessage();

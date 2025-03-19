@@ -22,6 +22,7 @@ import com.lunax.telegramBot.utils.components.MessageUtils;
 import com.lunax.telegramBot.service.TransactionSendingService;
 import com.lunax.telegramBot.model.db.LimitOrder;
 import com.lunax.telegramBot.model.repository.UserSettingsRepository;
+import com.lunax.telegramBot.model.db.OrderAction;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -664,12 +665,13 @@ public class Buy implements StateHandler {
             if (isLimitOrder) {
                 // Create a limit order
                 LimitOrder order = transactionSendingService.createLimitOrder(
-                    userId,
+                    user.getTelegramId(),
                     walletId,
                     tokenAddress,
                     BigDecimal.valueOf(buyAmount),
                     BigDecimal.valueOf(limitPrice),
-                    BigDecimal.valueOf(slippage)
+                    BigDecimal.valueOf(slippage),
+                    OrderAction.BUY
                 );
                 
                 String limitOrderMessage = String.format("""
@@ -679,7 +681,7 @@ public class Buy implements StateHandler {
                         
                         💰 Amount: %.4f SOL
                         📊 Limit Price: $%.6f
-                        🔄 Slippage: %.1f%%
+                        🔄 Slippage: %d%%
                         🔑 Order ID: %s
                         
                         Your order will execute automatically when the price reaches $%.6f
