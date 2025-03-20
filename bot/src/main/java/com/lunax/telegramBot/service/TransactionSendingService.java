@@ -11,6 +11,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.annotation.Propagation;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -45,6 +47,7 @@ public class TransactionSendingService {
      * @param userId The Telegram ID of the user (not the database ID)
      */
     @Transactional
+    @CacheEvict(value = "limitOrders", key = "'telegram_' + #userId")
     public LimitOrder createLimitOrder(
         Long userId, // This is the Telegram ID, not the database ID
         UUID walletId,
@@ -118,6 +121,7 @@ public class TransactionSendingService {
     /**
      * Cancel a limit order
      */
+    @CacheEvict(value = "limitOrders", key = "'telegram_' + #telegramId")
     public boolean cancelOrder(String orderId, Long telegramId) {
         Optional<LimitOrder> orderOpt = limitOrderRepository.findById(orderId);
         
@@ -210,6 +214,7 @@ public class TransactionSendingService {
     /**
      * Get all limit orders for a user by user ID and status
      */
+    @Cacheable(value = "limitOrders", key = "'user_' + #userId")
     public List<LimitOrder> getLimitOrdersByUserIdAndIsActiveOrPending(Long userId) {
         // List<String> statuses = Arrays.asList("active", "pending");
         
@@ -230,6 +235,7 @@ public class TransactionSendingService {
     /**
      * Get all limit orders for a user by telegram ID and status
      */
+    @Cacheable(value = "limitOrders", key = "'telegram_' + #telegramId")
     public List<LimitOrder> getLimitOrdersByTelegramId(Long telegramId) {
         String sqlQuery = String.format(
             "SELECT * FROM limit_orders lo WHERE lo.user_id = %d AND lo.status IN ('active', 'pending') ORDER BY lo.created_at DESC", 

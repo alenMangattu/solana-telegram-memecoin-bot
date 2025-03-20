@@ -1,5 +1,7 @@
 package com.lunax.telegramBot.utils;
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Duration;
@@ -521,32 +523,25 @@ public class SolanaUtils {
     }
 
     /**
-     * Fetches all token accounts for a given wallet address.
-     * @param walletAddress The wallet address to check.
-     * @return A list of token addresses.
+     * Gets a list of token addresses in a wallet
+     * @param walletAddress The wallet address to check
+     * @return List of token addresses
      */
     public List<String> getTokenAccounts(String walletAddress) {
+        List<String> tokenAddresses = new ArrayList<>();
         try {
-            // Fetch token accounts using SolanaCliUtils
-            JsonNode tokenAccountsResponse = solanaCliUtils.getWalletTokenAccounts(walletAddress);
-            List<String> tokenAddresses = new ArrayList<>();
-
-            // Check if the response has the "accounts" field and is an array
-            JsonNode tokenAccounts = tokenAccountsResponse.get("accounts");
-            if (tokenAccounts != null && tokenAccounts.isArray()) {
-                for (JsonNode account : tokenAccounts) {
-                    JsonNode addressNode = account.get("address");
-                    if (addressNode != null) {
-                        // Add the address to the list
-                        tokenAddresses.add(addressNode.asText()); // Get the address
-                    } else {
-                        log.warn("Address is null for account: {}", account);
+            // Use the solanaCliUtils to get all token accounts
+            JsonNode allAccounts = solanaCliUtils.getAllTokenAccounts(walletAddress);
+            
+            if (allAccounts != null && allAccounts.has("accounts") && allAccounts.get("accounts").isArray()) {
+                for (JsonNode account : allAccounts.get("accounts")) {
+                    if (account.has("mint")) {
+                        String mintAddress = account.get("mint").asText();
+                        tokenAddresses.add(mintAddress);
                     }
                 }
-            } else {
-                log.warn("Expected tokenAccounts to be an array, but got: {}", tokenAccountsResponse);
             }
-
+            
             return tokenAddresses;
         } catch (Exception e) {
             log.error("Failed to fetch token accounts for wallet {}: {}", walletAddress, e.getMessage());
@@ -1278,14 +1273,45 @@ public class SolanaUtils {
     }
 
     /**
-     * Gets the token balance for a specific token in a wallet
-     * Alias for getTokenAmount method to maintain compatibility
-     * 
+     * Gets the token balance for a specific wallet and token
      * @param walletAddress The wallet address to check
      * @param tokenAddress The token address to check balance for
-     * @return The token amount with proper decimal scaling
+     * @return The token balance as a double
      */
     public double getTokenBalance(String walletAddress, String tokenAddress) {
-        return getTokenAmount(walletAddress, tokenAddress);
+        try {
+            // Use the correct CLI command format
+            String command = String.format("spl-token balance %s --owner %s", 
+                                           tokenAddress, walletAddress);
+            
+            ProcessBuilder processBuilder = new ProcessBuilder("/bin/sh", "-c", command);
+            processBuilder.redirectErrorStream(true);
+            Process process = processBuilder.start();
+            
+            StringBuilder output = new StringBuilder();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    output.append(line).append("\n");
+                }
+            }
+            
+            int exitCode = process.waitFor();
+            if (exitCode == 0) {
+                // Successfully executed command, parse the output
+                String result = output.toString().trim();
+                // Extract the balance from the output (format might be "12.34 XYZ")
+                if (result.contains(" ")) {
+                    result = result.substring(0, result.indexOf(" "));
+                }
+                return Double.parseDouble(result);
+            } else {
+                log.error("Error getting token balance. Exit code: {}, Output: {}", exitCode, output);
+                return 0.0; // Return 0 instead of throwing exception
+            }
+        } catch (Exception e) {
+            log.error("Error getting token balance: {}", e.getMessage());
+            return 0.0; // Return 0 instead of throwing exception
+        }
     }
 }

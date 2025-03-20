@@ -38,6 +38,8 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import com.lunax.telegramBot.component.navigation.components.trading.TradeMemeCoin;
+
 @Slf4j
 @Component
 public class BotController extends TelegramLongPollingBot {
@@ -88,6 +90,9 @@ public class BotController extends TelegramLongPollingBot {
 
     @Autowired
     private TraidingPerferences tradingPreferences;
+
+    @Autowired
+    private TradeMemeCoin tradeMemeCoin;
 
     public BotController(String botUsername, String botToken) {
         super(botToken);
@@ -204,7 +209,30 @@ public class BotController extends TelegramLongPollingBot {
                     } else if (currentState.isLiquidityAddition()) {
                         addLiquidity.handleMessage(update);
                     } else if (currentState == ChatState.AWAITING_TOKEN_SELECTION) {
-                        tokenInfo.executeVoid(update);
+                        // Check if it's for trade or for token info
+                        ObjectNode stateData = stateService.getStateData(telegramId);
+                        
+                        if (stateData != null && stateData.has("tradeType")) {
+                            // This is for trade (buy/sell)
+                            tradeMemeCoin.processTokenAddressInput(update);
+                        } else {
+                            // Regular token info
+                            tokenInfo.executeVoid(update);
+                        }
+                    } else if (currentState == ChatState.TRADE_MEMECOIN_START) {
+                        // User is entering a token address directly in the trade page
+                        // Set up default state data for trading
+                        ObjectNode stateData = stateService.getStateData(telegramId);
+                        if (stateData == null) {
+                            stateData = stateService.initState(telegramId);
+                        }
+                        
+                        // Default to "buy" if no trade type specified
+                        stateData.put("tradeType", "buy");
+                        stateService.setStateData(telegramId, stateData);
+                        
+                        // Process the token address for trading
+                        tradeMemeCoin.processTokenAddressInput(update);
                     } else if (currentState == ChatState.TOKEN_INFO_PAGE) {
                         // Handle any specific actions for the TOKEN_INFO_PAGE state if needed
                         log.info(messageText);
@@ -219,6 +247,9 @@ public class BotController extends TelegramLongPollingBot {
                     } else if (currentState.isTradingPreferences()) {
                         // Handle all trading preferences states with a single method
                         tradingPreferences.handleMessage(update);
+                    } else if (currentState == ChatState.AWAITING_SOURCE_WALLET_ADDRESS) {
+                        // Process source wallet input for copy trading
+                        tradeMemeCoin.processSourceWalletInput(update);
                     } else if (message.hasText()) {
                         log.info("User is in state: {}", currentState);
                         log.info("Received: {}", messageText);

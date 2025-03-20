@@ -4,9 +4,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.lunax.telegramBot.component.Buttons.Token.TimePeriodButton;
-import com.lunax.telegramBot.component.Buttons.Token.TimeFrequencyButton;
 import com.lunax.telegramBot.component.Buttons.Token.BuyButton;
 import com.lunax.telegramBot.component.Buttons.Token.SellButton;
+import com.lunax.telegramBot.component.Buttons.Token.TimeFrequencyButton;
 
 @Configuration
 public class ButtonConfig {

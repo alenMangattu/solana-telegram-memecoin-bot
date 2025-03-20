@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.util.UUID;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface WalletRepository extends JpaRepository<Wallet, UUID> {
@@ -35,4 +36,12 @@ public interface WalletRepository extends JpaRepository<Wallet, UUID> {
     @CacheEvict(value = "userWallets", key = "#user.id")
     @Query("DELETE FROM Wallet w WHERE w.walletId = :walletId AND w.user = :user")
     void deleteByWalletIdAndUser(@Param("walletId") UUID walletId, @Param("user") User user);
+
+    // Add this method to fix findByAddress
+    Optional<Wallet> findByWalletAddress(String address);
+
+    // Alias method to make findByAddress work
+    default Optional<Wallet> findByAddress(String address) {
+        return findByWalletAddress(address);
+    }
 }
