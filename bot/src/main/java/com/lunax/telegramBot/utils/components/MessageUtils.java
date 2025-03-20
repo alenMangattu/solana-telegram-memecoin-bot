@@ -416,17 +416,16 @@ public class MessageUtils {
             }
         }
     }
-
     /**
      * Edit message text with inline keyboard built from ButtonHandler[][] format
      */
-    public static void editMessageText(Long chatId, Integer messageId, String text, ButtonHandler[][] buttonHandlers) {
+    public static Message editMessageText(Long chatId, Integer messageId, String text, ButtonHandler[][] buttonHandlers) {
         EditMessageText editMessage = new EditMessageText();
         editMessage.setChatId(chatId.toString());
         editMessage.setMessageId(messageId);
         editMessage.setText(text);
         editMessage.setParseMode("Markdown");
-
+        
         // Set reply markup if buttons are provided
         if (buttonHandlers != null) {
             InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
@@ -445,11 +444,20 @@ public class MessageUtils {
             markup.setKeyboard(buttons);
             editMessage.setReplyMarkup(markup);
         }
-
+        
         try {
-            botInstance.execute(editMessage);
+            // Cast the result to Message, or handle the boolean return value
+            Object result = botInstance.execute(editMessage);
+            if (result instanceof Message) {
+                return (Message) result;
+            } else {
+                // For EditMessageText, a boolean might be returned instead
+                log.debug("EditMessageText returned: {}", result);
+                return null;
+            }
         } catch (TelegramApiException e) {
             log.error("Error editing message: {}", e.getMessage());
+            return null;
         }
     }
 
@@ -743,5 +751,12 @@ public class MessageUtils {
         }
         
         return false;
+    }
+
+    /**
+     * Edit a message by chat ID and message ID
+     */
+    public static Message editMessage(Long chatId, Integer messageId, String text, ButtonHandler[][] buttonHandlers) {
+        return editMessageText(chatId, messageId, text, buttonHandlers);
     }
 }

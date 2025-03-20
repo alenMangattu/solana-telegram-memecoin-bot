@@ -66,4 +66,12 @@ public class Wallet {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
+
+    public String getAddress() {
+        return walletAddress;
+    }
+
+    public void setAddress(String address) {
+        this.walletAddress = address;
+    }
 }

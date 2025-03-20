@@ -6,6 +6,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 
 import com.lunax.telegramBot.utils.components.ButtonHandler;
 import com.lunax.telegramBot.component.navigation.components.token.Sell;
+import com.lunax.telegramBot.component.navigation.components.trading.TradeMemeCoin;
 import com.lunax.telegramBot.model.session.ChatState;
 
 @Component
@@ -13,6 +14,9 @@ public class SellButton implements ButtonHandler {
 
     @Autowired
     private Sell sell;
+    
+    @Autowired
+    private TradeMemeCoin tradeMemeCoin;
 
     @Override
     public String getButtonText() {
@@ -31,6 +35,7 @@ public class SellButton implements ButtonHandler {
 
     @Override
     public void handleCallback(Update update) {
-        sell.executeVoid(update);
+        // Instead of trying to get TradeMemeCoin from Sell, use it directly
+        tradeMemeCoin.handleTradeButton(update, false); // false means sell
     }
 } 

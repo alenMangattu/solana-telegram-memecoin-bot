@@ -1,4 +1,4 @@
-package com.lunax.telegramBot.component.navigation.components.trading;
+package com.lunax.telegramBot.component.Buttons.Token;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -6,6 +6,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.lunax.telegramBot.component.navigation.components.trading.ViewLimitOrders;
 import com.lunax.telegramBot.model.db.LimitOrder;
 import com.lunax.telegramBot.model.db.User;
 import com.lunax.telegramBot.service.StateService;
@@ -20,7 +21,7 @@ import java.util.Optional;
 
 @Slf4j
 @Component
-public class CancelOrderButtonHandler implements ButtonHandler {
+public class CancelLimitOrderButton implements ButtonHandler {
     
     @Autowired
     private TransactionSendingService transactionSendingService;

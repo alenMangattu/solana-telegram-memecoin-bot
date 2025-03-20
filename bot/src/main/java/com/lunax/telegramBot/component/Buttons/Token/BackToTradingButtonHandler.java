@@ -1,4 +1,4 @@
-package com.lunax.telegramBot.component.navigation.components.trading;
+package com.lunax.telegramBot.component.Buttons.Token;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;

@@ -1,19 +1,22 @@
 package com.lunax.telegramBot.model.repository;
 
-import com.lunax.telegramBot.model.db.CopyTrading; // Assuming you have a CopyTrading entity
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-import java.util.Optional;
+import com.lunax.telegramBot.model.db.CopyTrading;
+
 @Repository
-public interface CopyTraidingRepository extends JpaRepository<CopyTrading, Integer> {
-    
+public interface CopyTradingRepository extends JpaRepository<CopyTrading, Long> {
+    // Add any custom query methods here if needed
+
+
     // Find all copy trading records for a specific user
     List<CopyTrading> findByUserId(Integer userId);
     
     // Find a specific copy trading record by its ID
     Optional<CopyTrading> findById(Integer id);
     
-    // Additional custom queries can be added here
-}
+} 

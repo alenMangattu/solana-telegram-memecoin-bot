@@ -75,8 +75,12 @@ public enum ChatState {
     // New states from the code block
     VIEW_LIMIT_ORDERS,          // User is viewing their limit orders
     DELETE_LIMIT_ORDER,         // User is selecting a limit order to delete
-    CREATING_LIMIT_ORDER;       // User is in the process of creating a limit order
-
+    CREATING_LIMIT_ORDER,       // User is in the process of creating a limit order
+    
+    // Copy trading states
+    COPY_TRADING_PAGE,          // User is viewing copy trading page
+    AWAITING_SOURCE_WALLET_ADDRESS; // User is entering a source wallet address for copy trading
+    
     /**
      * Check if the current state is a terminal state
      * @return true if the state is terminal, false otherwise
@@ -121,9 +125,11 @@ public enum ChatState {
                this == AWAITING_TRADE_AMOUNT ||
                this == AWAITING_TRADE_TYPE ||
                this == CONFIRMING_TRADE ||
-               this == PROCESSING_TRADE);
+               this == PROCESSING_TRADE || 
+               this == COPY_TRADING_PAGE ||
+               this == AWAITING_SOURCE_WALLET_ADDRESS);
     }
-
+    
     /**
      * Check if the state is related to liquidity addition
      * @return true if in liquidity addition flow

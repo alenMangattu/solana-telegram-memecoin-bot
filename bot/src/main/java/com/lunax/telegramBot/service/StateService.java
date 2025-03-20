@@ -114,7 +114,12 @@ public class StateService {
         userStateRepository.save(userState);
     }
 
-    public void initState(Long telegramId) {
+    /**
+     * Initialize state for a user and return the created state data
+     * @param telegramId The Telegram ID of the user
+     * @return The newly created state data as ObjectNode
+     */
+    public ObjectNode initState(Long telegramId) {
         // Get the user entity
         User user = userRepository.findByTelegramId(telegramId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -131,5 +136,8 @@ public class StateService {
         
         // Save to database
         userStateRepository.save(userState);
+        
+        // Return the created state data
+        return stateData;
     }
 }

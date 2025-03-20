@@ -1,6 +1,7 @@
 package com.lunax.telegramBot.component.navigation.components.token;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
@@ -52,7 +53,7 @@ public class Buy implements StateHandler {
     private UserSettingsService userSettingsService;
     
     @Autowired
-    private HandlerRegistry handlerRegistry;
+    private ApplicationContext applicationContext;
 
     @Autowired
     private TransactionSendingService transactionSendingService;
@@ -97,7 +98,7 @@ public class Buy implements StateHandler {
             }
         };
         
-        handlerRegistry.registerHandler(BUY_TOKEN, buyTokenHandler);
+        getHandlerRegistry().registerHandler(BUY_TOKEN, buyTokenHandler);
         log.info("Registered buy_token handler");
     }
 
@@ -174,7 +175,7 @@ public class Buy implements StateHandler {
         ObjectNode stateData = stateService.getStateData(userId);
         if (stateData == null || !stateData.has("tokenInfo")) {
             log.debug("No token selected for user {}", userId);
-            MessageUtils.sendMessage(update, "❌ No token selected. Please select a token first.");
+            MessageUtils.sendMessage(update, "Enter the token mint address:");
             return;
         }
         
@@ -335,7 +336,7 @@ public class Buy implements StateHandler {
         // Register handlers
         for (ButtonHandler[] row : keyboard) {
             for (ButtonHandler button : row) {
-                handlerRegistry.registerHandler(button.getCallbackData(), button);
+                getHandlerRegistry().registerHandler(button.getCallbackData(), button);
                 log.debug("Registered button handler for callback data: {}", button.getCallbackData());
             }
         }
@@ -506,7 +507,7 @@ public class Buy implements StateHandler {
             // Register these handlers
             for (ButtonHandler[] row : keyboard) {
                 for (ButtonHandler button : row) {
-                    handlerRegistry.registerHandler(button.getCallbackData(), button);
+                    getHandlerRegistry().registerHandler(button.getCallbackData(), button);
                 }
             }
             
@@ -597,7 +598,7 @@ public class Buy implements StateHandler {
         // Register these handlers
         for (ButtonHandler[] row : keyboard) {
             for (ButtonHandler button : row) {
-                handlerRegistry.registerHandler(button.getCallbackData(), button);
+                getHandlerRegistry().registerHandler(button.getCallbackData(), button);
                 log.debug("Registered button handler for callback data: {}", button.getCallbackData());
             }
         }
@@ -843,5 +844,10 @@ public class Buy implements StateHandler {
             log.debug("Error getting speed from settings", e);
             return SolanaUtils.TransactionPriority.MID;
         }
+    }
+
+    // Create a method to get HandlerRegistry lazily
+    private HandlerRegistry getHandlerRegistry() {
+        return applicationContext.getBean(HandlerRegistry.class);
     }
 }

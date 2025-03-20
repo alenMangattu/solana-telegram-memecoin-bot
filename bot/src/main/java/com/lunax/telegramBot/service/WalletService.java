@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.util.Optional;
 
 @Service
 public class WalletService {
@@ -89,5 +90,21 @@ public class WalletService {
      */
     public void clearSessionCache() {
         entityManager.clear();
+    }
+
+    /**
+     * Find a wallet by address or create a new one if it doesn't exist
+     */
+    public Wallet findOrCreateByAddress(String address) {
+        Optional<Wallet> walletOpt = walletRepository.findByAddress(address);
+        
+        if (walletOpt.isPresent()) {
+            return walletOpt.get();
+        } else {
+            Wallet wallet = new Wallet();
+            wallet.setAddress(address);
+            // Set other required fields based on your implementation
+            return walletRepository.save(wallet);
+        }
     }
 }
