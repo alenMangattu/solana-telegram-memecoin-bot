@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.util.Optional;
 
 @Service
 public class WalletService {
@@ -89,5 +90,51 @@ public class WalletService {
      */
     public void clearSessionCache() {
         entityManager.clear();
+    }
+
+    /**
+     * Securely find or create a wallet by address for copy trading
+     * This ensures the wallet is properly associated with the user
+     */
+    @Transactional
+    public Wallet findOrCreateByAddress(String address, User user) {
+        // First try to find an existing wallet with this address
+        Optional<Wallet> existingWallet = walletRepository.findByWalletAddress(address);
+        
+        if (existingWallet.isPresent()) {
+            // Security check: If this wallet already exists but belongs to another user,
+            // create a new tracking wallet for this user instead
+            Wallet wallet = existingWallet.get();
+            if (!wallet.getUser().getId().equals(user.getId())) {
+                log.info("Creating tracking wallet for address {} that belongs to another user", address);
+                return createTrackingWallet(address, user);
+            }
+            return wallet;
+        } else {
+            // Create a new wallet associated with this user
+            return createTrackingWallet(address, user);
+        }
+    }
+    
+    /**
+     * Helper method to create a tracking wallet
+     */
+    private Wallet createTrackingWallet(String address, User user) {
+        Wallet wallet = new Wallet();
+        wallet.setWalletAddress(address);
+        wallet.setUser(user);
+        wallet.setWalletLabel("Copy Trading Wallet");
+        log.info("Created new tracking wallet for address {} for user {}", address, user.getId());
+        return walletRepository.save(wallet);
+    }
+
+    @Deprecated
+    public Wallet findOrCreateByAddress(String address) {
+        log.warn("Using deprecated findOrCreateByAddress without user parameter - this may cause errors");
+        return findByWalletAddress(address).orElse(null);
+    }
+
+    public Optional<Wallet> findByWalletAddress(String address) {
+        return walletRepository.findByWalletAddress(address);
     }
 }

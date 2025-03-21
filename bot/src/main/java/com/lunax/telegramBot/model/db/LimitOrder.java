@@ -10,6 +10,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.EnumType;
 
 @Entity
 @Table(name = "limit_orders")
@@ -53,4 +55,8 @@ public class LimitOrder {
     
     @Column(name = "transaction_signature")
     private String transactionSignature;
+    
+    @Column(name = "action", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private OrderAction action = OrderAction.BUY;
 } 

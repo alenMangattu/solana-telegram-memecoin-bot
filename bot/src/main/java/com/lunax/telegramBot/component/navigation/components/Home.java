@@ -18,7 +18,7 @@ import com.lunax.telegramBot.component.Buttons.AcceptTosHandler;
 import com.lunax.telegramBot.component.Buttons.HomePageButtons.MyMemeCoins;
 import com.lunax.telegramBot.component.Buttons.HomePageButtons.RefreshHome;
 import com.lunax.telegramBot.component.Buttons.HomePageButtons.Settings;
-import com.lunax.telegramBot.component.Buttons.HomePageButtons.TradeMemeCoin;
+import com.lunax.telegramBot.component.Buttons.HomePageButtons.TradeMemeCoinButton;
 import com.lunax.telegramBot.component.Buttons.HomePageButtons.MemeCoinCreations.AskMemeCoinData;
 import com.lunax.telegramBot.event.NavigationEvent;
 import com.lunax.telegramBot.model.db.User;
@@ -54,7 +54,7 @@ public class Home implements StateHandler {
     private AskMemeCoinData createMemeCoin;
 
     @Autowired
-    private TradeMemeCoin tradeMemeCoin;
+    private TradeMemeCoinButton tradeMemeCoin;
 
     @Autowired
     private MyMemeCoins myMemeCoins;

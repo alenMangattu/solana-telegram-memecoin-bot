@@ -8,6 +8,8 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.Arrays;
 import java.nio.charset.StandardCharsets;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 
 import org.bitcoinj.core.Base58;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,6 +19,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import lombok.extern.slf4j.Slf4j;
@@ -764,27 +767,94 @@ public class SolanaCliUtils {
         return null;
     }
 
-    @Cacheable(value = "userTokenAccounts", key = "#userAddress + '-' + #tokenAddress")
-    public JsonNode getUserTokenAccount(String tokenAddress, String userAddress) throws Exception {
-        log.info("Fetching token account info for token: {} and user: {}", tokenAddress, userAddress);
-        ProcessBuilder processBuilder = new ProcessBuilder(
-            "spl-token",
-            "account-info",
-            tokenAddress,
-            "--owner", userAddress,
-            "--output", "json",
-            "--url", clusterUrl
-        );
-
+    /**
+     * Get token account information for a specific user and token
+     * @param tokenMint The token mint address
+     * @param walletAddress The wallet address
+     * @return JsonNode containing token account information or null if not found
+     */
+    public JsonNode getUserTokenAccount(String tokenMint, String walletAddress) {
+        try {
+            log.info("Fetching token account info for token: {} and user: {}", tokenMint, walletAddress);
+            
+            // First, get all token accounts for this wallet
+            String command = String.format("spl-token accounts --owner %s --output json", walletAddress);
+            
+            ProcessBuilder processBuilder = new ProcessBuilder("/bin/sh", "-c", command);
+            processBuilder.redirectErrorStream(true);
         Process process = processBuilder.start();
-        String output = new String(process.getInputStream().readAllBytes());
-        
-        if (process.waitFor() != 0) {
-            throw new RuntimeException("Failed to get user token account: " + 
-                new String(process.getErrorStream().readAllBytes()));
+            
+            StringBuilder output = new StringBuilder();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    output.append(line).append("\n");
+                }
+            }
+            
+            int exitCode = process.waitFor();
+            if (exitCode == 0) {
+                // Parse the JSON output
+                String jsonString = output.toString().trim();
+                JsonNode accountsNode = objectMapper.readTree(jsonString);
+                
+                // Find the account for the specific mint
+                if (accountsNode.has("accounts") && accountsNode.get("accounts").isArray()) {
+                    for (JsonNode account : accountsNode.get("accounts")) {
+                        if (account.has("mint") && account.get("mint").asText().equals(tokenMint)) {
+                            return account;
+                        }
+                    }
+                }
+                
+                // If we didn't find a specific account for this mint, return the whole list
+                // so the caller can use it for other purposes
+                return accountsNode;
+            } else {
+                log.error("Error getting user token account. Exit code: {}, Output: {}", exitCode, output);
+                return null;
+            }
+        } catch (Exception e) {
+            log.error("Failed to get user token account: {}", e.getMessage());
+            return null;
         }
+    }
 
-        return objectMapper.readTree(output);
+    /**
+     * Get all token accounts for a wallet
+     * @param walletAddress The wallet address
+     * @return JsonNode containing all token accounts information
+     */
+    public JsonNode getAllTokenAccounts(String walletAddress) {
+        try {
+            // Get all token accounts for this wallet
+            String command = String.format("spl-token accounts --owner %s --output json", walletAddress);
+            
+            ProcessBuilder processBuilder = new ProcessBuilder("/bin/sh", "-c", command);
+            processBuilder.redirectErrorStream(true);
+            Process process = processBuilder.start();
+            
+            StringBuilder output = new StringBuilder();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    output.append(line).append("\n");
+                }
+            }
+            
+            int exitCode = process.waitFor();
+            if (exitCode == 0) {
+                // Parse the JSON output
+                String jsonString = output.toString().trim();
+                return objectMapper.readTree(jsonString);
+            } else {
+                log.error("Error getting all token accounts. Exit code: {}, Output: {}", exitCode, output);
+                return objectMapper.createObjectNode();
+            }
+        } catch (Exception e) {
+            log.error("Failed to get all token accounts: {}", e.getMessage());
+            return objectMapper.createObjectNode();
+        }
     }
 
     @Scheduled(fixedRate = 30000) // 30000 milliseconds = 30 seconds
@@ -794,9 +864,9 @@ public class SolanaCliUtils {
     }
 
     /**
-     * Gets all token accounts for a wallet
+     * Gets all token addresses for a wallet
      * @param walletAddress The wallet address to check
-     * @return JsonNode containing all token accounts
+     * @return JsonNode containing all token addresses
      */
     public JsonNode getWalletTokenAccounts(String walletAddress) throws Exception {
         ProcessBuilder processBuilder = new ProcessBuilder(
@@ -806,15 +876,60 @@ public class SolanaCliUtils {
             "--output", "json",
             "--url", clusterUrl
         );
- 
+
         Process process = processBuilder.start();
         String output = new String(process.getInputStream().readAllBytes());
-       
+
         if (process.waitFor() != 0) {
             throw new RuntimeException("Failed to get wallet token accounts: " + 
                 new String(process.getErrorStream().readAllBytes()));
         }
 
-        return objectMapper.readTree(output);
+        JsonNode accountsNode = objectMapper.readTree(output);
+        ArrayNode tokenAddresses = objectMapper.createArrayNode();
+
+        if (accountsNode != null && accountsNode.isArray()) {
+            for (JsonNode account : accountsNode) {
+                if (account.has("address")) {
+                    tokenAddresses.add(account.get("address").asText());
+                }
+            }
+        }
+
+        return tokenAddresses;
+    }
+
+    /**
+     * Gets the token balance for a wallet's token account
+     *
+     * @param walletAddress The wallet address to check
+     * @param tokenAddress The token address to check balance for
+     * @return The token balance as a string
+     * @throws Exception If there is an error retrieving the balance
+     */
+    public String getTokenBalance(String walletAddress, String tokenAddress) throws Exception {
+        // Get the user token account details first
+        JsonNode accountInfo = getUserTokenAccount(tokenAddress, walletAddress);
+        
+        if (accountInfo != null && accountInfo.has("tokenAmount")) {
+            JsonNode tokenAmount = accountInfo.get("tokenAmount");
+            if (tokenAmount.has("uiAmountString")) {
+                // This is the formatted amount with proper decimal places
+                return tokenAmount.get("uiAmountString").asText();
+            } else if (tokenAmount.has("amount") && tokenAmount.has("decimals")) {
+                // Calculate the balance manually if uiAmountString is not available
+                String amountStr = tokenAmount.get("amount").asText();
+                int decimals = tokenAmount.get("decimals").asInt();
+                
+                // Convert to double and format with proper decimals
+                double rawAmount = Double.parseDouble(amountStr);
+                double amount = rawAmount / Math.pow(10, decimals);
+                return String.valueOf(amount);
+            }
+        }
+        
+        // Fallback - return zero if we can't get the balance
+        log.warn("Unable to extract token balance from account info for token: {}", tokenAddress);
+        return "0";
     }
 }

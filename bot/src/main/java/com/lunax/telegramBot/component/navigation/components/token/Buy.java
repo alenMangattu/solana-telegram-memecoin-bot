@@ -1,6 +1,7 @@
 package com.lunax.telegramBot.component.navigation.components.token;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
@@ -22,6 +23,7 @@ import com.lunax.telegramBot.utils.components.MessageUtils;
 import com.lunax.telegramBot.service.TransactionSendingService;
 import com.lunax.telegramBot.model.db.LimitOrder;
 import com.lunax.telegramBot.model.repository.UserSettingsRepository;
+import com.lunax.telegramBot.model.db.OrderAction;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -51,7 +53,7 @@ public class Buy implements StateHandler {
     private UserSettingsService userSettingsService;
     
     @Autowired
-    private HandlerRegistry handlerRegistry;
+    private ApplicationContext applicationContext;
 
     @Autowired
     private TransactionSendingService transactionSendingService;
@@ -96,7 +98,7 @@ public class Buy implements StateHandler {
             }
         };
         
-        handlerRegistry.registerHandler(BUY_TOKEN, buyTokenHandler);
+        getHandlerRegistry().registerHandler(BUY_TOKEN, buyTokenHandler);
         log.info("Registered buy_token handler");
     }
 
@@ -173,7 +175,7 @@ public class Buy implements StateHandler {
         ObjectNode stateData = stateService.getStateData(userId);
         if (stateData == null || !stateData.has("tokenInfo")) {
             log.debug("No token selected for user {}", userId);
-            MessageUtils.sendMessage(update, "❌ No token selected. Please select a token first.");
+            MessageUtils.sendMessage(update, "Enter the token mint address:");
             return;
         }
         
@@ -334,7 +336,7 @@ public class Buy implements StateHandler {
         // Register handlers
         for (ButtonHandler[] row : keyboard) {
             for (ButtonHandler button : row) {
-                handlerRegistry.registerHandler(button.getCallbackData(), button);
+                getHandlerRegistry().registerHandler(button.getCallbackData(), button);
                 log.debug("Registered button handler for callback data: {}", button.getCallbackData());
             }
         }
@@ -505,7 +507,7 @@ public class Buy implements StateHandler {
             // Register these handlers
             for (ButtonHandler[] row : keyboard) {
                 for (ButtonHandler button : row) {
-                    handlerRegistry.registerHandler(button.getCallbackData(), button);
+                    getHandlerRegistry().registerHandler(button.getCallbackData(), button);
                 }
             }
             
@@ -596,7 +598,7 @@ public class Buy implements StateHandler {
         // Register these handlers
         for (ButtonHandler[] row : keyboard) {
             for (ButtonHandler button : row) {
-                handlerRegistry.registerHandler(button.getCallbackData(), button);
+                getHandlerRegistry().registerHandler(button.getCallbackData(), button);
                 log.debug("Registered button handler for callback data: {}", button.getCallbackData());
             }
         }
@@ -664,12 +666,13 @@ public class Buy implements StateHandler {
             if (isLimitOrder) {
                 // Create a limit order
                 LimitOrder order = transactionSendingService.createLimitOrder(
-                    userId,
+                    user.getTelegramId(),
                     walletId,
                     tokenAddress,
                     BigDecimal.valueOf(buyAmount),
                     BigDecimal.valueOf(limitPrice),
-                    BigDecimal.valueOf(slippage)
+                    BigDecimal.valueOf(slippage),
+                    OrderAction.BUY
                 );
                 
                 String limitOrderMessage = String.format("""
@@ -679,7 +682,7 @@ public class Buy implements StateHandler {
                         
                         💰 Amount: %.4f SOL
                         📊 Limit Price: $%.6f
-                        🔄 Slippage: %.1f%%
+                        🔄 Slippage: %d%%
                         🔑 Order ID: %s
                         
                         Your order will execute automatically when the price reaches $%.6f
@@ -841,5 +844,10 @@ public class Buy implements StateHandler {
             log.debug("Error getting speed from settings", e);
             return SolanaUtils.TransactionPriority.MID;
         }
+    }
+
+    // Create a method to get HandlerRegistry lazily
+    private HandlerRegistry getHandlerRegistry() {
+        return applicationContext.getBean(HandlerRegistry.class);
     }
 }

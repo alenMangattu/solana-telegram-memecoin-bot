@@ -26,13 +26,16 @@ import lombok.extern.slf4j.Slf4j;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.lunax.telegramBot.service.StateService;
-
+import com.lunax.telegramBot.service.UserService;
 import com.lunax.telegramBot.utils.components.ButtonHandler;
+import com.lunax.telegramBot.model.db.User;
 import com.lunax.telegramBot.model.session.ChatState;
 import com.lunax.telegramBot.component.Buttons.Token.BuyButton;
 import com.lunax.telegramBot.component.Buttons.Token.SellButton;
 import com.lunax.telegramBot.component.Buttons.Token.TimeFrequencyButton;
 import com.lunax.telegramBot.component.Buttons.Token.TimePeriodButton;
+
+import java.util.Optional;
 
 // New button autowiring for time periods and frequencies
 @Slf4j
@@ -80,6 +83,9 @@ public class TokenInfo implements StateHandler {
         @Lazy
         @Autowired
         private TopHoldersButton topHoldersButton;
+
+        @Autowired
+        private UserService userService;
 
         @SuppressWarnings("null")
         @Override
@@ -140,6 +146,34 @@ public class TokenInfo implements StateHandler {
                                                 "Token not found. Please check the token address and try again.", null);
                                 return;
                         }
+
+                        // Add code to get user's wallet address and check for token balance
+                        Long telegramId = update.hasCallbackQuery() ? 
+                                update.getCallbackQuery().getFrom().getId() : 
+                                update.getMessage().getFrom().getId();
+                        
+                        // Fetch user to get wallet address
+                        Optional<User> userOpt = userService.findByTelegramId(telegramId);
+                        double userBalance = 0.0;
+                        boolean userHasToken = false;
+                        
+                        if (userOpt.isPresent()) {
+                                User user = userOpt.get();
+                                String walletAddress = user.getCurrentWalletAddress();
+                                
+                                if (walletAddress != null && !walletAddress.isEmpty()) {
+                                        try {
+                                                userBalance = solanaUtils.getTokenBalance(walletAddress, tokenAddress);
+                                                userHasToken = userBalance > 0;
+                                        } catch (Exception e) {
+                                                log.warn("Could not fetch token balance: {}", e.getMessage());
+                                        }
+                                }
+                        }
+
+                        // Store user balance in state
+                        stateData.put("userTokenBalance", userBalance);
+                        stateService.setStateData(userId, stateData);
 
                         log.info("Token Info: {}", tokenInfo);
 
@@ -359,13 +393,19 @@ public class TokenInfo implements StateHandler {
                             formattedPrice = String.format("%.2f", priceValue);
                         }
                         
+                        // When building the messageWithTokenInfo, add user's balance if they have the token
+                        String balanceInfo = "";
+                        if (userHasToken) {
+                                balanceInfo = String.format("\n• Your Balance: %,.6f %s", userBalance, symbol);
+                        }
+                        
                         messageWithTokenInfo = String.format("""
                                         📊 *Token Information: %s (%s)*
 
                                         💰 *Basic Information*
                                         • Decimals: %d
                                         • Total Supply: %,d
-                                        • Current Price: $%s
+                                        • Current Price: $%s%s
 
                                         🔄 *Liquidity Pool Info*
                                         • Pool ID: %s
@@ -386,6 +426,7 @@ public class TokenInfo implements StateHandler {
                                         decimals,
                                         totalSupply,
                                         formattedPrice, // Use the formatted price
+                                        balanceInfo,   // Add user's balance
                                         poolId,
                                         pairedWith,
                                         tvl,

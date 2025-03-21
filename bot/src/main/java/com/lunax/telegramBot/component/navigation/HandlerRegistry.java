@@ -10,10 +10,19 @@ import com.lunax.telegramBot.component.Buttons.HomePageButtons.MemeCoinCreations
 import com.lunax.telegramBot.component.Buttons.HomePageButtons.MemeCoinCreations.YesOrNoButtons.RevokeMintAuthority;
 import com.lunax.telegramBot.utils.components.ButtonHandler;
 import com.lunax.telegramBot.component.navigation.components.mymemecoin.PaginationButtonHandler;
+import com.lunax.telegramBot.component.navigation.components.token.TradePaginationButtonHandler;
+import com.lunax.telegramBot.component.Buttons.HomePageButtons.TradeMemeCoinButton;
+import com.lunax.telegramBot.component.navigation.components.trading.TradeMemeCoin;
+import com.lunax.telegramBot.component.navigation.components.trading.CopyTradingHandler;
+import com.lunax.telegramBot.service.CopyTradingHandlerService;
+import com.lunax.telegramBot.component.navigation.components.trading.CopyTradingPaginationHandler;
 
 import jakarta.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.function.BiConsumer;
 
 import org.telegram.telegrambots.meta.api.objects.Update;
 import com.lunax.telegramBot.model.session.ChatState;
@@ -29,7 +38,12 @@ public class HandlerRegistry {
     @Autowired
     private ApplicationContext applicationContext;
 
+    @Autowired
+    private CopyTradingHandlerService copyTradingHandlerService;
+
     private static final Logger log = LoggerFactory.getLogger(HandlerRegistry.class);
+
+    private final Map<String, List<BiConsumer<Update, String>>> dynamicHandlers = new HashMap<>();
 
     @Autowired
     public HandlerRegistry(
@@ -37,13 +51,17 @@ public class HandlerRegistry {
             AddLiquidity addLiquidity,
             RevokeMintAuthority revokeMintAuthority,
             RevokeFreezeAuthority revokeFreezeAuthority,
-            PaginationButtonHandler paginationButtonHandler) {
+            PaginationButtonHandler paginationButtonHandler,
+            TradeMemeCoinButton tradeMemeCoinButton,
+            TradePaginationButtonHandler tradePaginationButtonHandler) {
         
         handlers.put(askMemeCoinData.getCallbackData(), askMemeCoinData);
         handlers.put(addLiquidity.getCallbackData(), addLiquidity);
         handlers.put("revoke_mint_authority_confirm", revokeMintAuthority);
         handlers.put("revoke_freeze_authority_confirm", revokeFreezeAuthority);
         handlers.put("page_", paginationButtonHandler);
+        handlers.put("trade_meme_coin", tradeMemeCoinButton);
+        handlers.put("trade_page_", tradePaginationButtonHandler);
         handlers.put("revoke_mint_authority_cancel", new CancelMintAuthority(revokeMintAuthority));
     }
     
@@ -95,6 +113,88 @@ public class HandlerRegistry {
                 }
             }
         });
+
+        // Copy trading button handler
+        registerHandler("copy_trading_page", new ButtonHandler() {
+            @Override
+            public void handleCallback(Update update) {
+                copyTradingHandlerService.handleCopyTradingButton(update);
+            }
+
+            @Override
+            public String getButtonText() {
+                return "Copy Trading Page";
+            }
+
+            @Override
+            public String getCallbackData() {
+                return "copy_trading_page";
+            }
+        });
+
+        // Add copy trading config handler
+        registerHandler("add_copy_trading_config", new ButtonHandler() {
+            @Override
+            public void handleCallback(Update update) {
+                copyTradingHandlerService.handleAddCopyTradingConfig(update);
+            }
+
+            @Override
+            public String getButtonText() {
+                return "Add New Configuration";
+            }
+
+            @Override
+            public String getCallbackData() {
+                return "add_copy_trading_config";
+            }
+        });
+
+        // Handle "back_to_trading" button
+        registerHandler("back_to_trading", new ButtonHandler() {
+            @Override
+            public void handleCallback(Update update) {
+                getTradeMemeCoin().executeVoid(update);
+            }
+
+            @Override
+            public String getButtonText() {
+                return "Back to Trading";
+            }
+
+            @Override
+            public String getCallbackData() {
+                return "back_to_trading";
+            }
+        });
+
+        // Dynamic handlers for toggle and delete actions
+        registerDynamicHandler("toggle_copy_config_", (update, data) -> {
+            String[] parts = data.split("_");
+            Long configId = Long.parseLong(parts[3]);
+            boolean newState = Boolean.parseBoolean(parts[4]);
+            copyTradingHandlerService.handleToggleCopyConfig(update, configId, newState);
+        });
+
+        registerDynamicHandler("delete_copy_config_", (update, data) -> {
+            String[] parts = data.split("_");
+            Long configId = Long.parseLong(parts[3]);
+            copyTradingHandlerService.handleDeleteCopyConfig(update, configId);
+        });
+
+        // Register handlers for multiplier selection buttons
+        registerDynamicHandler("copy_trade_multiplier_", (update, data) -> {
+            String[] parts = data.split("_");
+            String multiplierStr = parts[3];
+            copyTradingHandlerService.handleMultiplierSelection(update, multiplierStr);
+        });
+
+        // Register pagination handler for copy trading
+        TradePaginationButtonHandler tradePaginationButtonHandler = applicationContext.getBean(TradePaginationButtonHandler.class);
+        CopyTradingPaginationHandler copyTradingPaginationHandler = applicationContext.getBean(CopyTradingPaginationHandler.class);
+        
+        handlers.put("trade_page_", tradePaginationButtonHandler);
+        handlers.put("copy_trading_page_", copyTradingPaginationHandler);
     }
     
     public ButtonHandler getHandler(String callbackData) {
@@ -131,5 +231,25 @@ public class HandlerRegistry {
 
     public StateHandler getStateHandler(String stateName) {
         return stateHandlers.get(stateName);
+    }
+
+    public void registerDynamicHandler(String prefix, BiConsumer<Update, String> handler) {
+        dynamicHandlers.computeIfAbsent(prefix, k -> new ArrayList<>()).add(handler);
+    }
+
+    public void handleDynamicCallback(String callbackData, Update update) {
+        for (Map.Entry<String, List<BiConsumer<Update, String>>> entry : dynamicHandlers.entrySet()) {
+            String prefix = entry.getKey();
+            if (callbackData.startsWith(prefix)) {
+                for (BiConsumer<Update, String> handler : entry.getValue()) {
+                    handler.accept(update, callbackData);
+                }
+                return;
+            }
+        }
+    }
+
+    private TradeMemeCoin getTradeMemeCoin() {
+        return applicationContext.getBean(TradeMemeCoin.class);
     }
 }

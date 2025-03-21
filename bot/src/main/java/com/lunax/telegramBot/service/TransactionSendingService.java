@@ -9,13 +9,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
+import com.lunax.telegramBot.model.db.OrderAction;
 
 @Slf4j
 @Service
@@ -35,7 +44,47 @@ public class TransactionSendingService {
     
     /**
      * Creates a new limit order in the database
+     * @param userId The Telegram ID of the user (not the database ID)
      */
+    @Transactional
+    @CacheEvict(value = "limitOrders", key = "'telegram_' + #userId")
+    public LimitOrder createLimitOrder(
+        Long userId, // This is the Telegram ID, not the database ID
+        UUID walletId,
+        String tokenMint,
+        BigDecimal solAmount,
+        BigDecimal limitPrice,
+        BigDecimal slippage,
+        OrderAction action
+    ) {
+        try {
+            // Create a new limit order
+            LimitOrder order = new LimitOrder();
+            String orderId = "order_" + System.currentTimeMillis() + "_" + (int)(Math.random() * 10000);
+            order.setOrderId(orderId);
+            order.setUserId(userId);
+            order.setWalletId(walletId);
+            order.setTokenMint(tokenMint);
+            order.setSolAmount(solAmount);
+            order.setLimitPrice(limitPrice);
+            order.setSlippage(slippage);
+            order.setStatus("pending");
+            order.setAction(action != null ? action : OrderAction.BUY);
+            order.setCreatedAt(Timestamp.valueOf(LocalDateTime.now()));
+            order.setUpdatedAt(Timestamp.valueOf(LocalDateTime.now()));
+            
+            // Save using repository
+            return limitOrderRepository.save(order);
+        } catch (Exception e) {
+            log.error("Error creating limit order: {}", e.getMessage());
+            throw e;
+        }
+    }
+    
+    /**
+     * Also add a convenience overload that defaults to BUY
+     */
+    @Transactional
     public LimitOrder createLimitOrder(
         Long userId,
         UUID walletId,
@@ -44,44 +93,39 @@ public class TransactionSendingService {
         BigDecimal limitPrice,
         BigDecimal slippage
     ) {
-        String orderId = "order_" + System.currentTimeMillis() + "_" + (int)(Math.random() * 10000);
-        
-        LimitOrder order = new LimitOrder();
-        order.setOrderId(orderId);
-        order.setUserId(userId);
-        order.setWalletId(walletId);
-        order.setTokenMint(tokenMint);
-        order.setSolAmount(solAmount);
-        order.setLimitPrice(limitPrice);
-        order.setSlippage(slippage);
-        order.setStatus("active");
-        order.setCreatedAt(Timestamp.valueOf(LocalDateTime.now()));
-        order.setUpdatedAt(Timestamp.valueOf(LocalDateTime.now()));
-        
-        return limitOrderRepository.save(order);
+        return createLimitOrder(userId, walletId, tokenMint, solAmount, limitPrice, slippage, OrderAction.BUY);
     }
     
     /**
      * Retrieve a limit order by its ID
      */
     public Optional<LimitOrder> getLimitOrder(String orderId) {
-        return limitOrderRepository.findById(orderId);
+        Optional<LimitOrder> orderOpt = limitOrderRepository.findById(orderId);
+        log.info("Fetched limit order with ID {}: {}", orderId, orderOpt);
+        return orderOpt;
     }
     
     /**
-     * Get all active limit orders for a user
+     * Get all active and pending limit orders for a user
      */
     public List<LimitOrder> getActiveOrdersForUser(Long userId) {
-        return limitOrderRepository.findByUserIdAndStatusOrderByCreatedAtDesc(userId, "active");
+        List<LimitOrder> orders = limitOrderRepository.findByUserIdAndStatusInOrderByCreatedAtDesc(
+            userId
+            // Arrays.asList("pending", "active")
+        );
+        
+        log.info("Fetched {} active and pending orders for user {}: {}", orders.size(), userId, orders);
+        return orders;
     }
     
     /**
      * Cancel a limit order
      */
-    public boolean cancelOrder(String orderId, Long userId) {
+    @CacheEvict(value = "limitOrders", key = "'telegram_' + #telegramId")
+    public boolean cancelOrder(String orderId, Long telegramId) {
         Optional<LimitOrder> orderOpt = limitOrderRepository.findById(orderId);
         
-        if (orderOpt.isPresent() && orderOpt.get().getUserId().equals(userId)) {
+        if (orderOpt.isPresent() && orderOpt.get().getUserId().equals(telegramId)) {
             LimitOrder order = orderOpt.get();
             order.setStatus("cancelled");
             order.setUpdatedAt(Timestamp.valueOf(LocalDateTime.now()));
@@ -114,7 +158,19 @@ public class TransactionSendingService {
         
         for (LimitOrder order : activeOrders) {
             try {
-                // For demo purposes only - in a real app you would check actual market prices
+                // COMMENTING OUT EXTERNAL API CALLS
+                // For demo purposes, we'll just mark the order as executed if it's active
+                log.info("Found active limit order {}: marking as executed for demo purposes", 
+                         order.getOrderId());
+                
+                order.setStatus("executed");
+                order.setExecutedAt(Timestamp.valueOf(LocalDateTime.now()));
+                order.setUpdatedAt(Timestamp.valueOf(LocalDateTime.now()));
+                limitOrderRepository.save(order);
+                
+                log.info("Limit order {} marked as executed", order.getOrderId());
+                
+                /* Original code commented out
                 double currentPrice = solanaUtils.getTokenPrice(order.getTokenMint());
                 
                 // Check if price condition is met
@@ -125,6 +181,7 @@ public class TransactionSendingService {
                     // Execute the order
                     executeOrder(order);
                 }
+                */
             } catch (Exception e) {
                 log.error("Error checking limit order {}: {}", order.getOrderId(), e.getMessage(), e);
             }
@@ -136,39 +193,77 @@ public class TransactionSendingService {
      */
     private void executeOrder(LimitOrder order) {
         try {
-            // Get wallet private key - in a real app this would use secure key retrieval
-            String walletPrivateKey = "dummy_key"; // Replace with actual key retrieval
-            
-            // Execute the swap
-            SolanaUtils.SwapResponse swapResult = solanaUtils.buyToken(
-                order.getTokenMint(),
-                order.getSolAmount().doubleValue(),
-                order.getSlippage().doubleValue(),
-                walletPrivateKey,
-                SolanaUtils.TransactionPriority.MID
-            );
-            
-            // Update order status
-            if (swapResult.isSuccess()) {
-                order.setStatus("executed");
-                order.setTransactionSignature(swapResult.getSignature());
-                order.setExecutedAt(Timestamp.valueOf(LocalDateTime.now()));
-            } else {
-                order.setStatus("failed");
-            }
-            
+            // Execute the swap logic here (mocked for now)
+            order.setStatus("executed"); // Change status to executed
+            order.setTransactionSignature("mock_signature_" + System.currentTimeMillis());
+            order.setExecutedAt(Timestamp.valueOf(LocalDateTime.now()));
             order.setUpdatedAt(Timestamp.valueOf(LocalDateTime.now()));
             limitOrderRepository.save(order);
             
-            log.info("Limit order {} executed with transaction signature: {}", 
-                     order.getOrderId(), swapResult.getSignature());
+            log.info("Limit order {} marked as executed with mock signature", order.getOrderId());
         } catch (Exception e) {
-            log.error("Error executing limit order {}: {}", order.getOrderId(), e.getMessage(), e);
+            log.error("Error executing limit order {}: {}", order.getOrderId(), e.getMessage());
             
             // Update order status to failed
             order.setStatus("failed");
             order.setUpdatedAt(Timestamp.valueOf(LocalDateTime.now()));
             limitOrderRepository.save(order);
         }
+    }
+
+    /**
+     * Get all limit orders for a user by user ID and status
+     */
+    @Cacheable(value = "limitOrders", key = "'user_' + #userId")
+    public List<LimitOrder> getLimitOrdersByUserIdAndIsActiveOrPending(Long userId) {
+        // List<String> statuses = Arrays.asList("active", "pending");
+        
+        // // Log the SQL query
+        // String sqlQuery = String.format(
+        //     "SELECT * FROM limit_orders lo WHERE lo.user_id = %d AND lo.status IN (%s) ORDER BY lo.created_at DESC",
+        //     userId,
+        //     statuses.stream().map(status -> "'" + status + "'").collect(Collectors.joining(", "))
+        // );
+        
+        // log.info("Executing query: {}", sqlQuery);
+        
+        List<LimitOrder> orders = limitOrderRepository.findByUserIdAndStatusInOrderByCreatedAtDesc(userId);
+        log.info("Fetched {} limit orders for user {}: {}", orders.size(), userId, orders);
+        return orders;
+    }
+
+    /**
+     * Get all limit orders for a user by telegram ID and status
+     */
+    @Cacheable(value = "limitOrders", key = "'telegram_' + #telegramId")
+    public List<LimitOrder> getLimitOrdersByTelegramId(Long telegramId) {
+        String sqlQuery = String.format(
+            "SELECT * FROM limit_orders lo WHERE lo.user_id = %d AND lo.status IN ('active', 'pending') ORDER BY lo.created_at DESC", 
+            telegramId
+        );
+        
+        log.info("Executing query with Telegram ID: {}", sqlQuery);
+        
+        // Execute the SQL query directly
+        List<LimitOrder> orders = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> {
+            LimitOrder order = new LimitOrder();
+            order.setOrderId(rs.getString("order_id"));
+            order.setUserId(rs.getLong("user_id"));
+            order.setWalletId(UUID.fromString(rs.getString("wallet_id")));
+            order.setTokenMint(rs.getString("token_mint"));
+            order.setSolAmount(rs.getBigDecimal("sol_amount"));
+            order.setLimitPrice(rs.getBigDecimal("limit_price"));
+            order.setSlippage(rs.getBigDecimal("slippage"));
+            order.setStatus(rs.getString("status"));
+            order.setCreatedAt(rs.getTimestamp("created_at"));
+            order.setUpdatedAt(rs.getTimestamp("updated_at"));
+            order.setExecutedAt(rs.getTimestamp("executed_at"));
+            order.setTransactionSignature(rs.getString("transaction_signature"));
+            order.setAction(OrderAction.valueOf(rs.getString("action")));
+            return order;
+        });
+        
+        log.info("Fetched {} limit orders for telegramId {}: {}", orders.size(), telegramId, orders);
+        return orders;
     }
 } 

@@ -70,8 +70,19 @@ public enum ChatState {
     // New trading preferences states
     AWAITING_EMA_INPUT,         // Waiting for EMA values input
     AWAITING_RSI_INPUT,         // Waiting for RSI period input
-    AWAITING_SPEED_SELECTION;   // Waiting for transaction speed selection
-
+    AWAITING_SPEED_SELECTION,   // Waiting for transaction speed selection
+    
+    // New states from the code block
+    VIEW_LIMIT_ORDERS,          // User is viewing their limit orders
+    DELETE_LIMIT_ORDER,         // User is selecting a limit order to delete
+    CREATING_LIMIT_ORDER,       // User is in the process of creating a limit order
+    
+    // Copy trading states
+    COPY_TRADING_PAGE,          // User is viewing copy trading page
+    AWAITING_SOURCE_WALLET_INPUT, // User is entering a source wallet address for copy trading
+    AWAITING_COPY_TRADE_MULTIPLIER, // User is entering amount multiplier for copy trading
+    AWAITING_COPY_TRADE_MULTIPLIER_SELECTION; // User is selecting from multiplier options
+    
     /**
      * Check if the current state is a terminal state
      * @return true if the state is terminal, false otherwise
@@ -116,9 +127,11 @@ public enum ChatState {
                this == AWAITING_TRADE_AMOUNT ||
                this == AWAITING_TRADE_TYPE ||
                this == CONFIRMING_TRADE ||
-               this == PROCESSING_TRADE);
+               this == PROCESSING_TRADE || 
+               this == COPY_TRADING_PAGE ||
+               this == AWAITING_SOURCE_WALLET_INPUT);
     }
-
+    
     /**
      * Check if the state is related to liquidity addition
      * @return true if in liquidity addition flow
