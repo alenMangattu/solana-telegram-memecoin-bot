@@ -46,6 +46,13 @@ public class CopyTradingHandlerService {
     }
     
     /**
+     * Handle multiplier selection
+     */
+    public void handleMultiplierSelection(Update update, String multiplierStr) {
+        getTradeMemeCoin().getCopyTradingHandler().handleMultiplierSelection(update, multiplierStr);
+    }
+    
+    /**
      * Get the TradeMemeCoin instance lazily to avoid circular dependency
      */
     private TradeMemeCoin getTradeMemeCoin() {

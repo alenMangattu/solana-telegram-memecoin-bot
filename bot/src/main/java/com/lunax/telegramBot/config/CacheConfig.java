@@ -26,7 +26,8 @@ public class CacheConfig {
     // List of caches that need time-based expiration (per user)
     private static final List<String> TIME_BASED_CACHES = Arrays.asList(
             "tokenDetailsCache",
-            "userTokenAccounts"
+            "userTokenAccounts",
+            "copyTradingConfigs"
     );
 
     // Standard caches without time-based expiration

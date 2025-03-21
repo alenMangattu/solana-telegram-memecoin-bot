@@ -759,4 +759,69 @@ public class MessageUtils {
     public static Message editMessage(Long chatId, Integer messageId, String text, ButtonHandler[][] buttonHandlers) {
         return editMessageText(chatId, messageId, text, buttonHandlers);
     }
+
+    /**
+     * Convert ButtonHandler array to InlineKeyboardMarkup
+     */
+    public static InlineKeyboardMarkup convertButtonHandlersToMarkup(ButtonHandler[][] buttonHandlers) {
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+        
+        for (ButtonHandler[] row : buttonHandlers) {
+            List<InlineKeyboardButton> buttons = new ArrayList<>();
+            for (ButtonHandler handler : row) {
+                InlineKeyboardButton button = new InlineKeyboardButton();
+                button.setText(handler.getButtonText());
+                button.setCallbackData(handler.getCallbackData());
+                buttons.add(button);
+            }
+            rows.add(buttons);
+        }
+        
+        markup.setKeyboard(rows);
+        return markup;
+    }
+
+    /**
+     * Send an error message with standardized formatting
+     */
+    public static void sendErrorMessage(Update update, String errorMessage) {
+        String formattedMessage = "❌ Error: " + errorMessage;
+        sendMessage(update, formattedMessage);
+    }
+
+    /**
+     * Send a success message with standardized formatting
+     */
+    public static void sendSuccessMessage(Update update, String successMessage) {
+        String formattedMessage = "✅ Success: " + successMessage;
+        sendMessage(update, formattedMessage);
+    }
+
+    /**
+     * Send a message with inline keyboard buttons
+     * @param chatId The chat ID
+     * @param text The message text
+     * @param buttons The inline keyboard buttons
+     * @return The sent message
+     */
+    public static Message sendMessage(Long chatId, String text, List<List<InlineKeyboardButton>> buttons) {
+        try {
+            SendMessage sendMessage = new SendMessage();
+            sendMessage.setChatId(chatId.toString());
+            sendMessage.setText(text);
+            sendMessage.setParseMode("Markdown");
+            
+            if (buttons != null && !buttons.isEmpty()) {
+                InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+                markup.setKeyboard(buttons);
+                sendMessage.setReplyMarkup(markup);
+            }
+            
+            return botInstance.execute(sendMessage);
+        } catch (TelegramApiException e) {
+            log.error("Error sending message: {}", e.getMessage());
+            return null;
+        }
+    }
 }

@@ -18,26 +18,32 @@ public class CopyTrading {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "source_wallet", nullable = false)
     private Wallet sourceWallet;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "target_wallet", nullable = false)
-    private Wallet targetWallet;
+    @Column(name = "target_wallet", nullable = false)
+    private String targetAddress;
 
-    @Column(name = "enabled")
-    private boolean enabled = true;
+    @Column(name = "enabled", nullable = false)
+    private boolean enabled;
+
+    @Column(name = "amount_multiplier", nullable = false)
+    private double amountMultiplier = 1.0; // Default to 1.0 (same amount)
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    public String getTargetWalletAddress() {
+        return targetAddress;
+    }
 
     @PrePersist
     protected void onCreate() {

@@ -79,7 +79,9 @@ public enum ChatState {
     
     // Copy trading states
     COPY_TRADING_PAGE,          // User is viewing copy trading page
-    AWAITING_SOURCE_WALLET_ADDRESS; // User is entering a source wallet address for copy trading
+    AWAITING_SOURCE_WALLET_INPUT, // User is entering a source wallet address for copy trading
+    AWAITING_COPY_TRADE_MULTIPLIER, // User is entering amount multiplier for copy trading
+    AWAITING_COPY_TRADE_MULTIPLIER_SELECTION; // User is selecting from multiplier options
     
     /**
      * Check if the current state is a terminal state
@@ -127,7 +129,7 @@ public enum ChatState {
                this == CONFIRMING_TRADE ||
                this == PROCESSING_TRADE || 
                this == COPY_TRADING_PAGE ||
-               this == AWAITING_SOURCE_WALLET_ADDRESS);
+               this == AWAITING_SOURCE_WALLET_INPUT);
     }
     
     /**

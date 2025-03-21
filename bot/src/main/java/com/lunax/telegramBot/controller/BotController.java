@@ -23,6 +23,7 @@ import com.lunax.telegramBot.utils.WalletKeyManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.context.ApplicationEventPublisher;
 
 import com.lunax.telegramBot.component.navigation.components.token.Buy;
 import com.lunax.telegramBot.component.navigation.components.token.TokenInfo;
@@ -39,6 +40,7 @@ import java.util.UUID;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import com.lunax.telegramBot.component.navigation.components.trading.TradeMemeCoin;
+import com.lunax.telegramBot.event.CallbackQueryEvent;
 
 @Slf4j
 @Component
@@ -94,6 +96,9 @@ public class BotController extends TelegramLongPollingBot {
     @Autowired
     private TradeMemeCoin tradeMemeCoin;
 
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
+
     public BotController(String botUsername, String botToken) {
         super(botToken);
         this.botUsername = botUsername;
@@ -105,8 +110,32 @@ public class BotController extends TelegramLongPollingBot {
         // Process each update asynchronously
         CompletableFuture.runAsync(() -> {
             if (update.hasCallbackQuery()) {
+                // Publish callback query event before processing it
+                eventPublisher.publishEvent(new CallbackQueryEvent(this, update));
+                
                 String callbackData = update.getCallbackQuery().getData();
                 log.info("Received callback data: {}", callbackData);
+                
+                // Check if this is a dynamic handler pattern
+                if (callbackData.startsWith("copy_trade_multiplier_")) {
+                    String multiplierStr = callbackData.split("_")[3];
+                    tradeMemeCoin.getCopyTradingHandler().handleMultiplierSelection(update, multiplierStr);
+                    return;
+                }
+                
+                // Check for special callback patterns
+                if (callbackData.startsWith("trade_page_") || 
+                    callbackData.startsWith("copy_trading_page_")) { // Added copy trading pagination
+                    
+                    ButtonHandler handler = handlerRegistry.getHandler(callbackData);
+                    if (handler != null) {
+                        try {
+                            handler.handleCallback(update);
+                        } catch (Exception e) {
+                            log.error("Error handling pagination callback {}: {}", callbackData, e.getMessage());
+                        }
+                    }
+                }
                 
                 // First try to process with MessageUtils pattern-based handlers
                 boolean handled = MessageUtils.processCallbackQuery(update);
@@ -247,9 +276,12 @@ public class BotController extends TelegramLongPollingBot {
                     } else if (currentState.isTradingPreferences()) {
                         // Handle all trading preferences states with a single method
                         tradingPreferences.handleMessage(update);
-                    } else if (currentState == ChatState.AWAITING_SOURCE_WALLET_ADDRESS) {
-                        // Process source wallet input for copy trading
-                        tradeMemeCoin.processSourceWalletInput(update);
+                    } else if (currentState == ChatState.AWAITING_SOURCE_WALLET_INPUT) {
+                        log.info("Processing source wallet input: {}", messageText);
+                        tradeMemeCoin.getCopyTradingHandler().processSourceWalletInput(update);
+                    } else if (currentState == ChatState.AWAITING_COPY_TRADE_MULTIPLIER) {
+                        log.info("Processing custom multiplier input: {}", messageText);
+                        tradeMemeCoin.getCopyTradingHandler().processAmountMultiplierInput(update);
                     } else if (message.hasText()) {
                         log.info("User is in state: {}", currentState);
                         log.info("Received: {}", messageText);

@@ -93,18 +93,48 @@ public class WalletService {
     }
 
     /**
-     * Find a wallet by address or create a new one if it doesn't exist
+     * Securely find or create a wallet by address for copy trading
+     * This ensures the wallet is properly associated with the user
      */
-    public Wallet findOrCreateByAddress(String address) {
-        Optional<Wallet> walletOpt = walletRepository.findByAddress(address);
+    @Transactional
+    public Wallet findOrCreateByAddress(String address, User user) {
+        // First try to find an existing wallet with this address
+        Optional<Wallet> existingWallet = walletRepository.findByWalletAddress(address);
         
-        if (walletOpt.isPresent()) {
-            return walletOpt.get();
+        if (existingWallet.isPresent()) {
+            // Security check: If this wallet already exists but belongs to another user,
+            // create a new tracking wallet for this user instead
+            Wallet wallet = existingWallet.get();
+            if (!wallet.getUser().getId().equals(user.getId())) {
+                log.info("Creating tracking wallet for address {} that belongs to another user", address);
+                return createTrackingWallet(address, user);
+            }
+            return wallet;
         } else {
-            Wallet wallet = new Wallet();
-            wallet.setAddress(address);
-            // Set other required fields based on your implementation
-            return walletRepository.save(wallet);
+            // Create a new wallet associated with this user
+            return createTrackingWallet(address, user);
         }
+    }
+    
+    /**
+     * Helper method to create a tracking wallet
+     */
+    private Wallet createTrackingWallet(String address, User user) {
+        Wallet wallet = new Wallet();
+        wallet.setWalletAddress(address);
+        wallet.setUser(user);
+        wallet.setWalletLabel("Copy Trading Wallet");
+        log.info("Created new tracking wallet for address {} for user {}", address, user.getId());
+        return walletRepository.save(wallet);
+    }
+
+    @Deprecated
+    public Wallet findOrCreateByAddress(String address) {
+        log.warn("Using deprecated findOrCreateByAddress without user parameter - this may cause errors");
+        return findByWalletAddress(address).orElse(null);
+    }
+
+    public Optional<Wallet> findByWalletAddress(String address) {
+        return walletRepository.findByWalletAddress(address);
     }
 }

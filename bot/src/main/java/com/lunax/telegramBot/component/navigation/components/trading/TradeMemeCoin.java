@@ -405,4 +405,12 @@ public class TradeMemeCoin implements StateHandler {
     public void handleDeleteCopyConfig(Update update, Long configId) {
         copyTradingHandler.handleDeleteCopyConfig(update, configId);
     }
+
+    /**
+     * Getter for the CopyTradingHandler
+     * @return the copy trading handler
+     */
+    public CopyTradingHandler getCopyTradingHandler() {
+        return copyTradingHandler;
+    }
 }
