@@ -71,12 +71,13 @@ CREATE TABLE copy_trading (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL,
     source_wallet UUID NOT NULL,
-    target_wallet UUID NOT NULL,
+    target_wallet VARCHAR(255) NOT NULL,
     enabled BOOLEAN DEFAULT TRUE,
+    amount_multiplier DECIMAL(10, 2) NOT NULL DEFAULT 1.00,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_source_wallet FOREIGN KEY (source_wallet) REFERENCES wallets(wallet_id) ON DELETE CASCADE,
-    CONSTRAINT fk_target_wallet FOREIGN KEY (target_wallet) REFERENCES wallets(wallet_id) ON DELETE CASCADE
+    CONSTRAINT fk_user_copy_trading FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- 9. Create the "user_state" table.

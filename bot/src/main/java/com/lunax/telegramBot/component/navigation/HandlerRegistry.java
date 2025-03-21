@@ -15,6 +15,7 @@ import com.lunax.telegramBot.component.Buttons.HomePageButtons.TradeMemeCoinButt
 import com.lunax.telegramBot.component.navigation.components.trading.TradeMemeCoin;
 import com.lunax.telegramBot.component.navigation.components.trading.CopyTradingHandler;
 import com.lunax.telegramBot.service.CopyTradingHandlerService;
+import com.lunax.telegramBot.component.navigation.components.trading.CopyTradingPaginationHandler;
 
 import jakarta.annotation.PostConstruct;
 import java.util.HashMap;
@@ -180,6 +181,20 @@ public class HandlerRegistry {
             Long configId = Long.parseLong(parts[3]);
             copyTradingHandlerService.handleDeleteCopyConfig(update, configId);
         });
+
+        // Register handlers for multiplier selection buttons
+        registerDynamicHandler("copy_trade_multiplier_", (update, data) -> {
+            String[] parts = data.split("_");
+            String multiplierStr = parts[3];
+            copyTradingHandlerService.handleMultiplierSelection(update, multiplierStr);
+        });
+
+        // Register pagination handler for copy trading
+        TradePaginationButtonHandler tradePaginationButtonHandler = applicationContext.getBean(TradePaginationButtonHandler.class);
+        CopyTradingPaginationHandler copyTradingPaginationHandler = applicationContext.getBean(CopyTradingPaginationHandler.class);
+        
+        handlers.put("trade_page_", tradePaginationButtonHandler);
+        handlers.put("copy_trading_page_", copyTradingPaginationHandler);
     }
     
     public ButtonHandler getHandler(String callbackData) {
