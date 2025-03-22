@@ -6,9 +6,14 @@ import com.lunax.telegramBot.model.db.Wallet;
 import com.lunax.telegramBot.model.dto.CopyTradingDTO;
 import com.lunax.telegramBot.model.repository.CopyTradingRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.cache.annotation.CacheEvict;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,6 +22,8 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class CopyTradeService {
+    
+    private static final Logger rawDataLogger = LoggerFactory.getLogger("RawDataLogger");
     
     @Autowired
     private CopyTradingRepository copyTradingRepository;
@@ -30,7 +37,14 @@ public class CopyTradeService {
     @Transactional(readOnly = true)
     public List<CopyTrading> getCopyTradingByUserId(Long userId) {
         log.debug("Getting copy trading configurations for user ID: {}", userId);
-        return copyTradingRepository.findByUserId(userId.intValue());
+        
+        // Fetch from cache (if available)
+        List<CopyTrading> cachedData = copyTradingRepository.findByUserIdOrderByCreatedAtAsc(userId);
+        
+        // Log the cached data
+        log.debug("Cached data for user ID {}: {}", userId, cachedData);
+        
+        return cachedData;
     }
     
     /**
@@ -44,7 +58,9 @@ public class CopyTradeService {
         if (configOpt.isPresent()) {
             CopyTrading config = configOpt.get();
             config.setEnabled(enabled);
-            return copyTradingRepository.save(config);
+            CopyTrading savedConfig = copyTradingRepository.save(config);
+            clearUserConfigCache(config.getUser());
+            return savedConfig;
         } else {
             log.error("Copy trading configuration not found with ID: {}", configId);
             return null;
@@ -81,7 +97,9 @@ public class CopyTradeService {
         copyTrading.setEnabled(true);
         copyTrading.setAmountMultiplier(multiplier);
         
-        return copyTradingRepository.save(copyTrading);
+        CopyTrading savedConfig = copyTradingRepository.save(copyTrading);
+        clearUserConfigCache(user);
+        return savedConfig;
     }
     
     // Simple validator for Solana addresses
@@ -127,6 +145,7 @@ public class CopyTradeService {
         
         if (configOpt.isPresent()) {
             copyTradingRepository.delete(configOpt.get());
+            clearUserConfigCache(configOpt.get().getUser());
             return true;
         } else {
             log.error("Copy trading configuration not found with ID: {}", configId);
@@ -153,5 +172,22 @@ public class CopyTradeService {
     public CopyTrading getCopyTradingById(Long configId) {
         log.debug("Getting copy trading configuration with ID: {}", configId);
         return copyTradingRepository.findById(configId.intValue()).orElse(null);
+    }
+
+    @CacheEvict(value = "copyTradingConfigs", key = "#user.id")
+    private void clearUserConfigCache(User user) {
+        log.debug("Cleared copy trading config cache for user {}", user.getId());
+    }
+
+    // Method to fetch raw data from the database
+    @Transactional(readOnly = true)
+    public List<CopyTrading> getRawCopyTradingByUserId(Long userId) {
+        log.debug("Fetching raw copy trading configurations for user ID: {}", userId);
+        List<CopyTrading> rawData = copyTradingRepository.findByUserIdOrderByCreatedAtAsc(userId);
+        
+        // Log the raw data
+        rawDataLogger.info("Raw data from DB for user ID {}: {}", userId, rawData);
+        
+        return rawData;
     }
 }
