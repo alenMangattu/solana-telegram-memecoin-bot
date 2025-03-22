@@ -55,4 +55,10 @@ public class CopyTrading {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
+
+    @Override
+    public String toString() {
+        return String.format("CopyTrading[id=%d, userId=%d, sourceWallet=%s, targetWallet=%s, enabled=%b, multiplier=%.2f]",
+            id, user.getId(), sourceWallet.getWalletAddress(), targetAddress, enabled, amountMultiplier);
+    }
 }
