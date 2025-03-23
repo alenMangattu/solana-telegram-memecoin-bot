@@ -3,8 +3,6 @@ package com.lunax.telegramBot.service;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 
-import org.bitcoinj.core.Base58;
-import org.p2p.solanaj.core.Account;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
