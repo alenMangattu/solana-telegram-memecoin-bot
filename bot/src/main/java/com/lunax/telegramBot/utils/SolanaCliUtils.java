@@ -774,11 +774,12 @@ public class SolanaCliUtils {
      * @return JsonNode containing token account information or null if not found
      */
     public JsonNode getUserTokenAccount(String tokenMint, String walletAddress) {
+        // System.out.println("DEBUG: Entering getUserTokenAccount with tokenMint: " + tokenMint + " and walletAddress: " + walletAddress);
         try {
             log.info("Fetching token account info for token: {} and user: {}", tokenMint, walletAddress);
             
             // First, get all token accounts for this wallet
-            String command = String.format("spl-token accounts --owner %s --output json", walletAddress);
+            String command = String.format("spl-token accounts --owner %s --output json --url %s", walletAddress, clusterUrl);
             
             ProcessBuilder processBuilder = new ProcessBuilder("/bin/sh", "-c", command);
             processBuilder.redirectErrorStream(true);
@@ -826,10 +827,11 @@ public class SolanaCliUtils {
      * @return JsonNode containing all token accounts information
      */
     public JsonNode getAllTokenAccounts(String walletAddress) {
+        // System.out.println("DEBUG: Entering getAllTokenAccounts with walletAddress: " + walletAddress);
         try {
             // Get all token accounts for this wallet
-            String command = String.format("spl-token accounts --owner %s --output json", walletAddress);
-            
+            String command = String.format("spl-token accounts --owner %s --output json --url %s", walletAddress, clusterUrl);
+            System.out.println("DEBUG: Command: " + command);
             ProcessBuilder processBuilder = new ProcessBuilder("/bin/sh", "-c", command);
             processBuilder.redirectErrorStream(true);
             Process process = processBuilder.start();
@@ -838,6 +840,7 @@ public class SolanaCliUtils {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
+                    System.out.println("DEBUG: Line: " + line);
                     output.append(line).append("\n");
                 }
             }

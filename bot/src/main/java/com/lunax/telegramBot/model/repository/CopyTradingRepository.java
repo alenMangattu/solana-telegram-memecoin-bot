@@ -18,11 +18,11 @@ public interface CopyTradingRepository extends JpaRepository<CopyTrading, Long> 
     // Add any custom query methods here if needed
 
     // Find all copy trading records for a specific user
-    @Cacheable(value = "copyTradingConfigs", key = "#userId")
+    @Cacheable(value = "copyTradingConfigs", key = "'user_' + #userId")
     List<CopyTrading> findByUserId(Integer userId);
     
     // Find a specific copy trading record by its ID
-    @Cacheable(value = "copyTradingConfigs", key = "#id")
+    @Cacheable(value = "copyTradingConfigs", key = "'id_' + #id")
     Optional<CopyTrading> findById(Integer id);
     
     // New security method to check if config belongs to user
@@ -37,11 +37,16 @@ public interface CopyTradingRepository extends JpaRepository<CopyTrading, Long> 
 
     // Override save method to update cache
     @Override
-    @CachePut(value = "copyTradingConfigs", key = "#result.id")
+    @CachePut(value = "copyTradingConfigs", key = "'id_' + #result.id")
+    @CacheEvict(value = "copyTradingConfigs", key = "'user_' + #result.user.id")
     <S extends CopyTrading> S save(S entity);
 
     // Override deleteById to evict cache
     @Override
-    @CacheEvict(value = "copyTradingConfigs", key = "#id")
+    @CacheEvict(value = "copyTradingConfigs", key = "'id_' + #id")
     void deleteById(Long id);
+
+    // Find all copy trading records for a specific user
+    @Cacheable(value = "copyTradingConfigs", key = "'user_' + #userId")
+    List<CopyTrading> findByUserIdOrderByCreatedAtAsc(Long userId);
 } 

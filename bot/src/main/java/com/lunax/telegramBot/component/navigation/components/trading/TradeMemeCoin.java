@@ -20,6 +20,7 @@ import com.lunax.telegramBot.service.StateService;
 import com.lunax.telegramBot.service.TokenDetailsService;
 import com.lunax.telegramBot.utils.SolanaUtils;
 import com.lunax.telegramBot.utils.components.MessageUtils;
+import com.lunax.telegramBot.component.Buttons.Token.TokenInfoButton;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -53,6 +54,9 @@ public class TradeMemeCoin implements StateHandler {
     
     @Autowired
     private CopyTradingHandler copyTradingHandler;
+    
+    @Autowired
+    private TokenInfoButton tokenInfoButton;
     
     @Override
     public void executeVoid(Update update) {
@@ -198,25 +202,33 @@ public class TradeMemeCoin implements StateHandler {
                 .build());
             buttons.add(actionRow2);
             
-            // Buy and Sell buttons - Row 3
+            // Token Info button - Row 3
             List<InlineKeyboardButton> actionRow3 = new ArrayList<>();
             actionRow3.add(InlineKeyboardButton.builder()
-                .text("🔄 Buy")
-                .callbackData("buy_token")
-                .build());
-            actionRow3.add(InlineKeyboardButton.builder()
-                .text("💰 Sell")
-                .callbackData("sell_token")
+                .text(tokenInfoButton.getButtonText())
+                .callbackData(tokenInfoButton.getCallbackData())
                 .build());
             buttons.add(actionRow3);
             
-            // Back to Home button - Row 4
+            // Buy and Sell buttons - Row 4
             List<InlineKeyboardButton> actionRow4 = new ArrayList<>();
             actionRow4.add(InlineKeyboardButton.builder()
+                .text("🔄 Buy")
+                .callbackData("buy_token")
+                .build());
+            actionRow4.add(InlineKeyboardButton.builder()
+                .text("💰 Sell")
+                .callbackData("sell_token")
+                .build());
+            buttons.add(actionRow4);
+            
+            // Back to Home button - Row 5
+            List<InlineKeyboardButton> actionRow5 = new ArrayList<>();
+            actionRow5.add(InlineKeyboardButton.builder()
                 .text("Back to Home")
                 .callbackData("back_to_home")
                 .build());
-            buttons.add(actionRow4);
+            buttons.add(actionRow5);
             
             markup.setKeyboard(buttons);
             

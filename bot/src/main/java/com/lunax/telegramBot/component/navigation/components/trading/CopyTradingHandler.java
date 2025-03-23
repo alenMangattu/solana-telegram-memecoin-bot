@@ -297,9 +297,13 @@ public class CopyTradingHandler {
     public void handleAddCopyTradingConfig(Update update) {
         Long telegramId = update.getCallbackQuery().getFrom().getId();
         
-        // Clear any previous state data first
+        // Create new state data
+        ObjectNode stateData = objectMapper.createObjectNode();
+        stateData.put("currentPage", 0); // Reset to first page
+        stateService.setStateData(telegramId, stateData);
+        
+        // Set the state
         stateService.setState(telegramId, ChatState.AWAITING_SOURCE_WALLET_INPUT);
-        stateService.setStateData(telegramId, objectMapper.createObjectNode());
         
         MessageUtils.sendMessage(update, """
             Please enter the wallet address you want to copy trades from:
@@ -339,6 +343,7 @@ public class CopyTradingHandler {
         
         // Store external wallet address in state data (the wallet to copy)
         stateData.put("targetWalletAddress", externalWalletAddress);
+        stateData.put("currentPage", 0); // Reset to first page
         log.debug("Saved targetWalletAddress in state data: {}", externalWalletAddress);
         stateService.setStateData(telegramId, stateData);
         
@@ -353,8 +358,7 @@ public class CopyTradingHandler {
             Now select a copy trade multiplier (how much to trade relative to the copied wallet):
             """, externalWalletAddress);
         
-        // Send message with multiplier buttons - this message must be sent through a different way 
-        // since we need to include buttons
+        // Send message with multiplier buttons
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(update.getMessage().getChatId().toString());
         sendMessage.setText(message);
@@ -435,7 +439,19 @@ public class CopyTradingHandler {
                     // Clear the cache for this user
                     clearUserConfigCache(config.getUser());
                     
-                    // Show confirmation message with the wallet address
+                    // If disabling, also clear token holding cache
+                    if (!newEnabledState) {
+                        clearTokenHoldingCache(config.getUser());
+                    }
+                    
+                    // Get the current page from state data
+                    ObjectNode stateData = stateService.getStateData(update.getCallbackQuery().getFrom().getId());
+                    int currentPage = stateData != null && stateData.has("currentPage") ? stateData.get("currentPage").asInt() : 0;
+                    
+                    // First refresh the parent message
+                    handleCopyTradingButton(update, currentPage);
+                    
+                    // Then send the confirmation message
                     String statusChange = newEnabledState ? "Started" : "Paused";
                     String message = String.format("%s copy trading from wallet `%s`", 
                         statusChange, targetWallet);
@@ -450,9 +466,6 @@ public class CopyTradingHandler {
             log.error("Error toggling copy trading configuration: {}", e.getMessage());
             MessageUtils.sendMessage(update, "❌ Error: " + e.getMessage());
         }
-        
-        // Refresh the copy trading page
-        handleCopyTradingButton(update);
     }
 
     /**
@@ -474,7 +487,14 @@ public class CopyTradingHandler {
                     // Clear the cache for this user
                     clearUserConfigCache(user);
                     
-                    // Show confirmation message with the wallet address
+                    // Get the current page from state data
+                    ObjectNode stateData = stateService.getStateData(update.getCallbackQuery().getFrom().getId());
+                    int currentPage = stateData != null && stateData.has("currentPage") ? stateData.get("currentPage").asInt() : 0;
+                    
+                    // First refresh the parent message
+                    handleCopyTradingButton(update, currentPage);
+                    
+                    // Then send the confirmation message
                     String message = String.format("Deleted copy trading from wallet `%s`", targetWallet);
                     MessageUtils.sendMessage(update, message);
                 } else {
@@ -487,9 +507,6 @@ public class CopyTradingHandler {
             log.error("Error deleting copy trading configuration: {}", e.getMessage());
             MessageUtils.sendMessage(update, "❌ Error: " + e.getMessage());
         }
-        
-        // Refresh the copy trading page
-        handleCopyTradingButton(update);
     }
 
     // Add a new method to handle multiplier button selections
@@ -572,7 +589,19 @@ public class CopyTradingHandler {
                 // Clear the cache for this user
                 clearUserConfigCache(user);
                 
-                // Send success message
+                // Send success message with consistent formatting
+                String displaySourceWallet = sourceWalletAddress.length() > 16 ?
+                    sourceWalletAddress.substring(0, 6) + "..." + sourceWalletAddress.substring(sourceWalletAddress.length() - 6) :
+                    sourceWalletAddress;
+                    
+                String displayTargetWallet = targetWalletAddress.length() > 16 ?
+                    targetWalletAddress.substring(0, 6) + "..." + targetWalletAddress.substring(targetWalletAddress.length() - 6) :
+                    targetWalletAddress;
+                
+                // First refresh the parent message
+                handleCopyTradingButton(update, 0); // Reset to first page
+                
+                // Then send success message
                 MessageUtils.sendMessage(update, String.format("""
                         ✅ Copy trading configuration added successfully!
                         
@@ -580,13 +609,13 @@ public class CopyTradingHandler {
                         Target: `%s` (wallet to copy)
                         Multiplier: %.2fx
                         """, 
-                        copyTrading.getSourceWallet().getWalletAddress(),
-                        copyTrading.getTargetWalletAddress(),
+                        displaySourceWallet,
+                        displayTargetWallet,
                         multiplier));
                 
-                // Reset state and refresh page
+                // Reset state
                 stateService.setState(telegramId, ChatState.COPY_TRADING_PAGE);
-                handleCopyTradingButton(update);
+                stateService.setStateData(telegramId, objectMapper.createObjectNode());
             } catch (Exception e) {
                 log.error("Error creating copy trading configuration: {}", e.getMessage());
                 MessageUtils.sendMessage(update, "❌ Error: " + e.getMessage());
@@ -639,5 +668,13 @@ public class CopyTradingHandler {
     @CacheEvict(value = "copyTradingConfigs", key = "#user.id")
     private void clearUserConfigCache(User user) {
         log.debug("Cleared copy trading config cache for user {}", user.getId());
+    }
+
+    /**
+     * Clear the token holding cache for a user
+     */
+    @CacheEvict(value = "tokenHoldings", key = "#user.id")
+    private void clearTokenHoldingCache(User user) {
+        log.debug("Cleared token holding cache for user {}", user.getId());
     }
 } 
