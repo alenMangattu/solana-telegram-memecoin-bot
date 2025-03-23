@@ -21,3 +21,5 @@ docker stop telegram-bot
 docker start telegram-bot
 
 docker rm -f telegram-bot && docker run -d --name telegram-bot --network host -v /home/computer/secure/keys:/home/computer/secure/keys -v /home/computer/secure/wallets:/home/computer/secure/wallets -v /home/computer/.config/solana:/home/computer/.config/solana telegram-bot
+
+docker rm -f telegram-bot && docker run -d --name telegram-bot --network host -v /home/computer/secure/keys:/home/computer/secure/keys -v /home/computer/secure/wallets:/home/computer/secure/wallets -v /home/computer/.config/solana:/home/computer/.config/solana -v /home/computer/.local/share/solana:/home/computer/.local/share/solana telegram-bot
