@@ -203,7 +203,7 @@ export class SolanaUtils {
     }
 
     getHeliusApiUrl(): string | undefined {
-        return this.heliusApiKey ? `https://api.helius.xyz/v0/assets` : undefined;
+        return process.env.HELIUS_API_URL || undefined;
     }
 
     /**
