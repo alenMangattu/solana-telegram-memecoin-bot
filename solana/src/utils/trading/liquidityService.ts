@@ -16,7 +16,7 @@ export class LiquidityService {
     }
 
     async createPool(
-        fromToken: string,    // SOL token address or "SOL"
+    fromToken: string,    // SOL token address or "SOL"
         toToken: string,      // Your token address
         fromAmount: number,   // SOL amount
         toAmount: number,     // Your token amount

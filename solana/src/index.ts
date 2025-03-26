@@ -2,6 +2,8 @@ import express from 'express';
 import dotenv from 'dotenv';
 import { server } from './server';
 import type { Server } from 'http';
+import { Pool } from 'pg';
+import { OrderService } from './services/orderService';
 
 dotenv.config();
 
@@ -21,6 +23,18 @@ if (!process.env.HELIUS_API_KEY) {
 
 let httpServer: Server;
 
+// Database configuration
+const pool = new Pool({
+    user: 'postgres',
+    host: 'localhost',
+    database: 'lunax',
+    password: 'postgres', // Replace with your actual password
+    port: 5432,
+});
+
+// Initialize services
+const orderService = new OrderService(pool);
+
 // Start the server
 httpServer = server.listen(port, () => {
   console.log(`Server is running on port ${port}`);
@@ -37,6 +51,22 @@ process.on('SIGTERM', () => {
     });
   }
 });
+
+// Handle application shutdown
+process.on('SIGINT', async () => {
+    console.log('Shutting down...');
+    await pool.end();
+    process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+    console.log('Shutting down...');
+    await pool.end();
+    process.exit(0);
+});
+
+// Start the application
+console.log('Starting LunaX trading services...');
 
 /**
  * API Documentation
