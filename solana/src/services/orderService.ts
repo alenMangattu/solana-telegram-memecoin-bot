@@ -80,8 +80,6 @@ interface ActiveCopyTrading {
     sourceWallet: string;
     targetWallet: string;
     enabled: boolean;
-    sourceAddress: string;
-    targetAddress: string;
 }
 
 type OrderAction = 'BUY' | 'SELL';
@@ -162,42 +160,90 @@ export class OrderService {
         this.logActiveTokensAndWallets();
     }
 
-    private startPriceMonitoring() {
+    private async startPriceMonitoring() {
         logger.info('Starting price monitoring service...');
-        // Monitor price updates every 5 seconds
-        this.priceUpdateInterval = setInterval(async () => {
-            try {
+        
+        // Start a continuous monitoring loop
+        const monitorLoop = async () => {
+            while (true) {
+                try {
+                    // Get active orders from database
                 const activeOrders = await this.getActiveOrders();
+                    if (activeOrders.length > 0) {
                 logger.debug(`Checking ${activeOrders.length} active orders for price updates`);
                 
+                        // Group orders by token to avoid duplicate price checks
+                        const ordersByToken = new Map<string, LimitOrder[]>();
                 for (const order of activeOrders) {
-                    const currentPrice = this.priceService.getTokenPrice(order.tokenMint);
+                            if (!ordersByToken.has(order.tokenMint)) {
+                                ordersByToken.set(order.tokenMint, []);
+                            }
+                            ordersByToken.get(order.tokenMint)!.push(order);
+                        }
+                        
+                        // Check each token's price once and process all related orders
+                        for (const [tokenMint, orders] of ordersByToken) {
+                            try {
+                                const currentPrice = this.priceService.getTokenPrice(tokenMint);
                     if (currentPrice) {
-                        logger.info(`Checking price for token: ${order.tokenMint}`);
-                        logger.info(`Current price: $${currentPrice.price}`);
-                        logger.debug(`Price update for ${order.tokenMint}: $${currentPrice.price} (Order ID: ${order.orderId})`);
+                                    logger.debug(`Price update for ${tokenMint}: $${currentPrice.price}`);
+                                    // Process all orders for this token
+                                    for (const order of orders) {
                         await this.checkAndExecuteOrder(order, currentPrice.price);
+                                    }
+                                }
+                            } catch (tokenError) {
+                                logger.error(`Error processing token ${tokenMint}:`, tokenError);
+                                // Continue with next token even if one fails
+                                continue;
+                            }
+                        }
                     }
+                    
+                    // Small delay to prevent CPU overload
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                } catch (error) {
+                    logger.error('Error in price monitoring loop:', error);
+                    // Wait a bit longer on error before retrying
+                    await new Promise(resolve => setTimeout(resolve, 5000));
                 }
-            } catch (error) {
-                logger.error('Error in price monitoring:', error);
             }
-        }, 5000);
+        };
+
+        // Start the monitoring loop immediately
+        monitorLoop().catch(error => {
+            logger.error('Fatal error in price monitoring loop:', error);
+        });
+
+        // Also set up an interval to ensure the loop keeps running
+        this.priceUpdateInterval = setInterval(() => {
+            monitorLoop().catch(error => {
+                logger.error('Fatal error in price monitoring loop:', error);
+            });
+        }, 1000);
+
         logger.info('Price monitoring service started');
     }
 
     private async startMonitoring() {
         logger.info('Starting database monitoring service...');
+        
         // Get a client connection for notifications
         const client = await this.pool.connect();
         
         // Subscribe to database changes
         (client as any).on('notification', async (msg: { channel: string; payload: string }) => {
             logger.debug(`Received database notification: ${msg.channel}`);
+            try {
+                const payload = JSON.parse(msg.payload);
+                
             if (msg.channel === 'limit_orders_changes') {
-                await this.handleLimitOrderChange(JSON.parse(msg.payload));
+                    await this.handleLimitOrderChange(payload);
             } else if (msg.channel === 'copy_trading_changes') {
-                await this.handleCopyTradingChange(JSON.parse(msg.payload));
+                    await this.handleCopyTradingChange(payload);
+                }
+            } catch (error) {
+                logger.error('Error handling database notification:', error);
             }
         });
 
@@ -205,9 +251,33 @@ export class OrderService {
         await client.query('LISTEN limit_orders_changes');
         await client.query('LISTEN copy_trading_changes');
 
-        // Start monitoring active orders and token usage
-        setInterval(() => this.checkActiveOrders(), 1000);
-        setInterval(() => this.checkTokenUsage(), 60000); // Check every minute
+        // Start a continuous monitoring loop for active orders
+        const monitorLoop = async () => {
+            while (true) {
+                try {
+                    await this.checkActiveOrders();
+                    await this.checkTokenUsage();
+                    // Small delay to prevent CPU overload
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                } catch (error) {
+                    logger.error('Error in database monitoring loop:', error);
+                    // Wait a bit longer on error before retrying
+                    await new Promise(resolve => setTimeout(resolve, 5000));
+                }
+            }
+        };
+
+        // Start the monitoring loop immediately
+        monitorLoop().catch(error => {
+            logger.error('Fatal error in database monitoring loop:', error);
+        });
+
+        // Also set up an interval to ensure the loop keeps running
+        setInterval(() => {
+            monitorLoop().catch(error => {
+                logger.error('Fatal error in database monitoring loop:', error);
+            });
+        }, 1000);
         
         logger.info('Database monitoring service started');
     }
@@ -229,13 +299,9 @@ export class OrderService {
                     id: copyTrading.id,
                     sourceWallet: copyTrading.sourceWallet,
                     targetWallet: copyTrading.targetWallet,
-                    enabled: copyTrading.enabled,
-                    sourceAddress: wallets.walletAddress,
-                    targetAddress: wallets.walletAddress
+                    enabled: copyTrading.enabled
                 })
                 .from(copyTrading)
-                .leftJoin(wallets, eq(copyTrading.sourceWallet, wallets.walletId))
-                .leftJoin(wallets, eq(copyTrading.targetWallet, wallets.walletId))
                 .where(eq(copyTrading.enabled, true)) as ActiveCopyTrading[];
 
             // Log active tokens
@@ -254,8 +320,8 @@ export class OrderService {
             logger.info('\n=== Active Copy Trading Pairs ===');
             for (const ct of activeCopyTrading) {
                 logger.info(`Copy Trading ID: ${ct.id}`);
-                logger.info(`  Source Wallet: ${ct.sourceAddress}`);
-                logger.info(`  Target Wallet: ${ct.targetAddress}`);
+                logger.info(`  Source Wallet: ${ct.sourceWallet}`);
+                logger.info(`  Target Wallet: ${ct.targetWallet}`);
                 logger.info(`  Status: ${ct.enabled ? 'Active' : 'Inactive'}`);
             }
             logger.info('=====================================\n');
@@ -280,20 +346,22 @@ export class OrderService {
             const activeTokenMints = activeTokens.map(t => t.tokenMint);
             logger.debug(`Found ${activeTokenMints.length} active tokens in database`);
 
-            // Unsubscribe from tokens that are no longer in use
-            for (const token of monitoredTokens) {
-                if (!activeTokenMints.includes(token)) {
+            // Create sets for efficient lookup
+            const monitoredSet = new Set(monitoredTokens);
+            const activeSet = new Set(activeTokenMints);
+
+            // Find tokens to unsubscribe (in monitored but not in active)
+            const tokensToUnsubscribe = monitoredTokens.filter(token => !activeSet.has(token));
+            for (const token of tokensToUnsubscribe) {
                     logger.info(`Token ${token} no longer in use, unsubscribing...`);
                     this.priceService.unsubscribeFromToken(token);
-                }
             }
 
-            // Subscribe to any new tokens that are in use
-            for (const token of activeTokenMints) {
-                if (!monitoredTokens.includes(token)) {
+            // Find tokens to subscribe (in active but not in monitored)
+            const tokensToSubscribe = activeTokenMints.filter(token => !monitoredSet.has(token));
+            for (const token of tokensToSubscribe) {
                     logger.info(`New token ${token} in use, subscribing...`);
                     this.priceService.subscribeToToken(token);
-                }
             }
 
             // Log current state after changes
@@ -307,11 +375,44 @@ export class OrderService {
         const { operation, order } = payload;
         logger.info(`Handling limit order change: ${operation} for order ${order.orderId}`);
         
+        try {
         if (operation === 'INSERT') {
+                logger.debug(`New limit order created:
+                    Order ID: ${order.orderId}
+                    User ID: ${order.userId}
+                    Wallet ID: ${order.walletId}
+                    Token: ${order.tokenMint}
+                    Amount: ${order.solAmount} SOL
+                    Limit Price: $${order.limitPrice}
+                    Slippage: ${order.slippage}%
+                    Status: ${order.status}
+                    Created At: ${order.createdAt}`);
+                
             await this.processNewLimitOrder(order);
+            } else if (operation === 'UPDATE') {
+                logger.debug(`Limit order updated:
+                    Order ID: ${order.orderId}
+                    New Status: ${order.status}
+                    Updated At: ${order.updatedAt}
+                    ${order.transactionSignature ? `Transaction: ${order.transactionSignature}` : ''}
+                    ${order.executedAt ? `Executed At: ${order.executedAt}` : ''}`);
+                
+                // If order was executed or failed, check if we need to unsubscribe from token
+                if (['executed', 'failed', 'cancelled'].includes(order.status)) {
+                    await this.checkTokenUsage();
+                }
         } else if (operation === 'DELETE') {
-            // Check if token is still in use by other orders or copy trading
+                logger.debug(`Limit order deleted:
+                    Order ID: ${order.orderId}
+                    User ID: ${order.userId}
+                    Token: ${order.tokenMint}
+                    Final Status: ${order.status}`);
+                
+                // Check if token is still in use by other orders
             await this.checkTokenUsage();
+            }
+        } catch (error) {
+            logger.error(`Error handling limit order change for order ${order.orderId}:`, error);
         }
     }
 
@@ -319,27 +420,59 @@ export class OrderService {
         const { operation, copyTrading } = payload;
         logger.info(`Handling copy trading change: ${operation} for copy trading ID ${copyTrading.id}`);
         
+        try {
         if (operation === 'INSERT' && copyTrading.enabled) {
+                logger.debug(`New copy trading created:
+                    ID: ${copyTrading.id}
+                    Source Wallet: ${copyTrading.sourceWallet}
+                    Target Wallet: ${copyTrading.targetWallet}
+                    Amount Multiplier: ${copyTrading.amountMultiplier}
+                    Enabled: ${copyTrading.enabled}`);
+                
+                await this.startCopyTrading(copyTrading);
+            } else if (operation === 'UPDATE') {
+                logger.debug(`Copy trading updated:
+                    ID: ${copyTrading.id}
+                    Enabled: ${copyTrading.enabled}
+                    Amount Multiplier: ${copyTrading.amountMultiplier}`);
+                
+                if (!copyTrading.enabled) {
+                    await this.stopCopyTrading(copyTrading.id);
+                } else {
             await this.startCopyTrading(copyTrading);
-        } else if (operation === 'UPDATE' && !copyTrading.enabled) {
+                }
+            } else if (operation === 'DELETE') {
+                logger.debug(`Copy trading deleted:
+                    ID: ${copyTrading.id}
+                    Source Wallet: ${copyTrading.sourceWallet}
+                    Target Wallet: ${copyTrading.targetWallet}`);
+                
             await this.stopCopyTrading(copyTrading.id);
-            // Check if token is still in use
-            await this.checkTokenUsage();
+            }
+        } catch (error) {
+            logger.error(`Error handling copy trading change for ID ${copyTrading.id}:`, error);
         }
     }
 
     private async processNewLimitOrder(order: LimitOrder) {
         try {
             logger.info(`Processing new limit order: ${order.orderId}`);
-        // Subscribe to price updates for this token
+            
+            // Subscribe to price updates for this token if not already subscribed
+            if (!this.priceService.isTokenSubscribed(order.tokenMint)) {
         this.priceService.subscribeToToken(order.tokenMint);
-            logger.info(`Subscribed to price updates for token: ${order.tokenMint}`);
+                logger.debug(`Subscribed to price updates for token: ${order.tokenMint}`);
+            } else {
+                logger.debug(`Already subscribed to price updates for token: ${order.tokenMint}`);
+            }
 
         // Check if order can be executed immediately
         const currentPrice = this.priceService.getTokenPrice(order.tokenMint);
         if (currentPrice) {
-                logger.info(`Initial price check for ${order.tokenMint}: $${currentPrice.price}`);
+                logger.debug(`Initial price check for ${order.tokenMint}: $${currentPrice.price}`);
             await this.checkAndExecuteOrder(order, currentPrice.price);
+            } else {
+                logger.debug(`No initial price available for token ${order.tokenMint}, will be checked in next monitoring cycle`);
             }
         } catch (error) {
             logger.error('Error processing new limit order:', error);
@@ -357,24 +490,28 @@ export class OrderService {
             for (const dbOrder of activeOrders) {
                 const order = this.convertToLimitOrder(dbOrder);
             const currentPrice = this.priceService.getTokenPrice(order.tokenMint);
+                
                 if (!currentPrice) {
                     logger.warn(`No price available for token ${order.tokenMint}`);
                     continue;
                 }
 
-                logger.info(`Checking price for token: ${order.tokenMint}`);
-                logger.info(`Current price: $${currentPrice.price}`);
+                logger.debug(`Checking order ${order.orderId} for token: ${order.tokenMint}`);
+                logger.debug(`Current price: $${currentPrice.price}, Limit price: $${order.limitPrice}`);
 
                 const currentPriceValue = parseFloat(currentPrice.price.toString());
 
                 if (order.action === 'BUY' && currentPriceValue <= order.limitPrice) {
+                    logger.info(`Executing BUY order ${order.orderId} at price $${currentPriceValue}`);
                     await this.executeOrder(order);
                 } else if (order.action === 'SELL' && currentPriceValue >= order.limitPrice) {
+                    logger.info(`Executing SELL order ${order.orderId} at price $${currentPriceValue}`);
                     await this.executeOrder(order);
                 }
             }
         } catch (error) {
             logger.error('Error checking active orders:', error);
+            throw error;
         }
     }
 
