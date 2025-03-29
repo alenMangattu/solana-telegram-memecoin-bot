@@ -175,15 +175,70 @@ public class Buy implements StateHandler {
         ObjectNode stateData = stateService.getStateData(userId);
         if (stateData == null || !stateData.has("tokenInfo")) {
             log.debug("No token selected for user {}", userId);
-            MessageUtils.sendMessage(update, "Enter the token mint address:");
+            MessageUtils.sendMessage(update, "Please enter a valid Solana token address:");
             return;
         }
         
         // Get token information
         JsonNode tokenInfo = stateData.get("tokenInfo");
-        String tokenName = tokenInfo.get("tokenName").asText();
-        String tokenSymbol = tokenInfo.get("tokenSymbol").asText();
-        double tokenPrice = tokenInfo.get("priceUSD").asDouble();
+        
+        // Additional validation checks
+        if (!tokenInfo.has("name") || !tokenInfo.has("symbol") || !tokenInfo.has("price")) {
+            String message = """
+                    ❌ *Invalid Token Information*
+                    
+                    The token information is incomplete or invalid.
+                    Please try with a different token address.
+                    """;
+            
+            // Create keyboard with back button
+            ButtonHandler[][] keyboard = new ButtonHandler[][] {
+                {
+                    new ButtonHandler() {
+                        @Override public String getButtonText() { return "🔙 Back to Trading"; }
+                        @Override public String getCallbackData() { return "back_to_trading"; }
+                        @Override public void handleCallback(Update update) { 
+                            handleCancelBuy(update, update.getCallbackQuery().getFrom().getId());
+                        }
+                    }
+                }
+            };
+            
+            MessageUtils.sendInlineKeyboard(update, message, keyboard);
+            stateService.setState(userId, ChatState.AWAITING_VALID_TOKEN);
+            return;
+        }
+        
+        String tokenName = tokenInfo.get("name").asText();
+        String tokenSymbol = tokenInfo.get("symbol").asText();
+        double tokenPrice = tokenInfo.get("price").asDouble();
+        
+        // Validate token price
+        if (tokenPrice <= 0) {
+            String message = """
+                    ❌ *Invalid Token Price*
+                    
+                    This token currently has no valid price.
+                    Trading is not available at this time.
+                    """;
+            
+            // Create keyboard with back button
+            ButtonHandler[][] keyboard = new ButtonHandler[][] {
+                {
+                    new ButtonHandler() {
+                        @Override public String getButtonText() { return "🔙 Back to Trading"; }
+                        @Override public String getCallbackData() { return "back_to_trading"; }
+                        @Override public void handleCallback(Update update) { 
+                            handleCancelBuy(update, update.getCallbackQuery().getFrom().getId());
+                        }
+                    }
+                }
+            };
+            
+            MessageUtils.sendInlineKeyboard(update, message, keyboard);
+            stateService.setState(userId, ChatState.AWAITING_VALID_TOKEN);
+            return;
+        }
         
         // Get user settings for buy amounts and slippage
         double[] buyAmounts = {0.1, 0.5, 2.0}; // Default values
@@ -239,17 +294,34 @@ public class Buy implements StateHandler {
         double tokenAmount = (selectedAmount * solanaPrice) / effectivePrice;
         
         // Create message with new compact format
+        String limitOrderSection = isLimitOrder ? String.format("""
+                📊 *Limit Order Details*
+                💰 Amount: %.4f SOL
+                📈 Limit Price: $%.6f
+                ⏳ Status: Pending
+                🔄 Will execute when price reaches $%.6f
+                
+                ⚠️ *COMING SOON: Limit Order Feature*
+                The limit order feature is currently under development and not yet available.
+                Your order will be saved but not executed until the feature is released.
+                """, 
+                selectedAmount, 
+                limitPrice,
+                limitPrice) : "";
+
         String message = String.format("""
                 🚀 SWAP SOL → $%s
                 
                 ⚡ Trade Details:
                 🔒 You pay: %.4f SOL ($%.2f)
-                ✅ You receive: %.2f $%s (estimated)
+                ✅ You receive: %.6f $%s (estimated)
                 Rate: 1 $%s = $%.6f
                 
                 ⚙️ Settings:
                 🔄 Max slippage: %.1f%%
                 ⏱️ Transaction deadline: 20 minutes
+                
+                %s
                 
                 ⚠️ Warning: Transactions cannot be reversed once confirmed.
                 """,
@@ -259,8 +331,9 @@ public class Buy implements StateHandler {
                 tokenAmount,
                 tokenSymbol,
                 tokenSymbol,
-                effectivePrice,
-                selectedSlippage
+                tokenPrice,
+                selectedSlippage,
+                limitOrderSection
         );
 
         log.debug("Prepared buy screen message for user {}: {}", userId, message);
@@ -448,8 +521,11 @@ public class Buy implements StateHandler {
         
         // If enabling limit order and no limit price set, set it to current token price
         if (!current && (!stateData.has("limitPrice") || stateData.get("limitPrice").asDouble() <= 0)) {
-            double tokenPrice = stateData.get("tokenInfo").get("priceUSD").asDouble();
-            stateData.put("limitPrice", tokenPrice);
+            JsonNode tokenInfo = stateData.get("tokenInfo");
+            if (tokenInfo != null && tokenInfo.has("priceUSD")) {
+                double currentPrice = tokenInfo.get("priceUSD").asDouble();
+                stateData.put("limitPrice", currentPrice);
+            }
         }
         
         stateService.setStateData(userId, stateData);
@@ -460,8 +536,9 @@ public class Buy implements StateHandler {
                 MessageUtils.deleteMessage(update);
             }
             
-            String tokenSymbol = stateData.get("tokenInfo").get("tokenSymbol").asText();
-            double tokenPrice = stateData.get("tokenInfo").get("priceUSD").asDouble();
+            JsonNode tokenInfo = stateData.get("tokenInfo");
+            String tokenSymbol = tokenInfo.has("tokenSymbol") ? tokenInfo.get("tokenSymbol").asText() : "Unknown";
+            double tokenPrice = tokenInfo.has("priceUSD") ? tokenInfo.get("priceUSD").asDouble() : 0.0;
             
             String message = String.format("""
                     📝 *Set Limit Order Price*
@@ -618,8 +695,20 @@ public class Buy implements StateHandler {
         }
         
         JsonNode tokenInfo = stateData.get("tokenInfo");
-        String tokenSymbol = tokenInfo.get("tokenSymbol").asText();
-        String tokenAddress = tokenInfo.get("tokenAddress").asText();
+        String tokenSymbol = tokenInfo.has("symbol") ? tokenInfo.get("symbol").asText() : "Unknown";
+        String tokenAddress = stateData.has("tokenAddress") ? stateData.get("tokenAddress").asText() : null;
+        
+        if (tokenAddress == null) {
+            MessageUtils.sendMessage(update, "❌ Error: Token address not found in state.");
+            return;
+        }
+        
+        // Validate token address format
+        if (!solanaUtils.isValidSolanaAddress(tokenAddress)) {
+            MessageUtils.sendMessage(update, "❌ Error: Invalid token address format.");
+            return;
+        }
+        
         double buyAmount = stateData.has("buyAmount") ? stateData.get("buyAmount").asDouble() : 0.1;
         
         // Delete current message 
@@ -676,24 +765,23 @@ public class Buy implements StateHandler {
                 );
                 
                 String limitOrderMessage = String.format("""
-                        📋 *Limit Order Placed!*
+                        ⚠️ *COMING SOON: Limit Order Feature*
                         
-                        Your order to buy %s is now active:
+                        The limit order feature is currently under development and not yet available.
+                        Your order has been saved in the database but will not be executed until the feature is released.
                         
+                        Order details:
                         💰 Amount: %.4f SOL
                         📊 Limit Price: $%.6f
                         🔄 Slippage: %d%%
                         🔑 Order ID: %s
                         
-                        Your order will execute automatically when the price reaches $%.6f
-                        You will be notified when your order is filled.
+                        We'll notify you when this feature becomes available.
                         """,
-                        tokenSymbol,
                         buyAmount,
                         limitPrice,
                         slippage,
-                        order.getOrderId(),
-                        limitPrice
+                        order.getOrderId()
                 );
                 
                 MessageUtils.sendMessage(update, limitOrderMessage);
@@ -720,33 +808,54 @@ public class Buy implements StateHandler {
                     walletPrivateKey,
                     SolanaUtils.TransactionPriority.valueOf(priority)
                 );
-                
-                if (response.isSuccess()) {
-                    // Send success message
-                    String successMessage = String.format("""
-                            ✅ *Transaction Complete!*
-                            
-                            Successfully swapped *%.4f SOL* for *%.2f %s*
-                            Transaction ID: `%s`
-                            
-                            You can view this transaction on the explorer:
-                            [View on Solscan](https://solscan.io/tx/%s)
-                            """, 
-                            buyAmount, 
-                            response.getAmount(),
-                            tokenSymbol,
-                            response.getSignature(),
-                            response.getSignature());
+
+                if (!response.isSuccess()) {
+                    String errorMessage = response.getError();
+                    String errorType = response.getErrorType();
                     
-                    MessageUtils.sendMessage(update, successMessage);
-                } else {
-                    MessageUtils.sendMessage(update, "❌ Transaction failed. Please try again.");
+                    switch (errorType) {
+                        case "INSUFFICIENT_FUNDS":
+                            errorMessage = "❌ Insufficient SOL balance to complete the transaction.";
+                            break;
+                        case "INVALID_ADDRESS":
+                            errorMessage = "❌ Invalid token address. Please check and try again.";
+                            break;
+                        case "UNKNOWN_ERROR":
+                            errorMessage = "❌ An unexpected error occurred. Please try again later.";
+                            break;
+                        default:
+                            errorMessage = response.getError() != null ? response.getError() : "❌ Transaction failed. Please try again.";
+                    }
+                    
+                    MessageUtils.sendMessage(update, errorMessage);
+                    return;
                 }
+
+                String successMessage = String.format(
+                    "✅ Buy order executed successfully!\n\n" +
+                    "Amount: %.2f %s\n" +
+                    "Price: $%.6f\n" +
+                    "Transaction: %s",
+                    response.getAmount(),
+                    tokenSymbol,
+                    response.getPrice(),
+                    response.getSignature()
+                );
+                
+                MessageUtils.sendMessage(update, successMessage);
             }
             
         } catch (Exception e) {
             log.error("Error processing transaction", e);
-            MessageUtils.sendMessage(update, "❌ Transaction failed: " + e.getMessage());
+            String errorMessage = String.format("""
+                ❌ *Transaction Failed*
+                
+                An unexpected error occurred while processing your transaction:
+                `%s`
+                
+                Please try again later or contact support if the issue persists.
+                """, e.getMessage());
+            MessageUtils.sendMessage(update, errorMessage);
         }
         
         // Reset state to TOKEN_INFO_PAGE when done

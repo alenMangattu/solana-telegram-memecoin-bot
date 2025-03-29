@@ -134,51 +134,82 @@ export class SwapService {
         solAmount: number,
         slippage: number,
         walletPrivateKey: string,
-        priorityFee: number = 100000
+        priorityFee: number 
     ) {
         try {
+            logger.debug('Starting swap execution with parameters:', {
+                tokenMint,
+                solAmount,
+                slippage,
+                priorityFee,
+                timestamp: new Date().toISOString()
+            });
+
             // Enhanced input validation
             if (!await this.isValidSolanaAddress(tokenMint)) {
+                logger.debug('Invalid token mint address:', { tokenMint });
                 throw new InvalidAddressError(`Invalid token mint address: ${tokenMint}`);
             }
 
             if (!this.isValidPrivateKey(walletPrivateKey)) {
-                throw new Error("Invalid wallet private key format");
+                logger.debug('Invalid wallet private key format');
+                throw new InvalidAddressError("Invalid wallet private key format");
             }
 
             // Validate slippage
             if (slippage < 0 || slippage > 100) {
+                logger.debug('Invalid slippage value:', { slippage });
                 throw new Error("Slippage must be between 0 and 100");
+            }
+
+            // Validate solAmount
+            if (solAmount <= 0) {
+                logger.debug('Invalid SOL amount:', { solAmount });
+                throw new Error("SOL amount must be greater than 0");
             }
 
             const keypair = Keypair.fromSecretKey(bs58.decode(walletPrivateKey));
             const amountInLamports = Math.floor(solAmount * 1e9);
 
+            logger.debug('Wallet and amount details:', {
+                walletAddress: keypair.publicKey.toBase58(),
+                amountInLamports,
+                amountInSOL: solAmount
+            });
+
             // Check if wallet has sufficient SOL
             await this.checkSufficientBalance(keypair.publicKey, amountInLamports);
+            logger.debug('Wallet balance check passed');
 
             // Get token decimals for accurate amount calculation
             const tokenDecimals = await this.getTokenDecimals(tokenMint);
+            logger.debug('Token decimals retrieved:', { tokenDecimals });
 
             // Get latest blockhash once for all transactions
             const { blockhash, lastValidBlockHeight } = await this.connection.getLatestBlockhash();
-
-            logger.debug(`Starting swap execution...`);
-            logger.debug(`Parameters: tokenMint=${tokenMint}, solAmount=${solAmount}, slippage=${slippage}, priorityFee=${priorityFee}`);
+            logger.debug('Latest blockhash retrieved:', { blockhash, lastValidBlockHeight });
             
             // Step 1: Get the swap computation data
+            logger.debug('Requesting swap computation from Raydium API');
             const { data: swapResponse } = await axios.get<SwapCompute>(
                 `${API_URLS.SWAP_HOST}/compute/swap-base-in?inputMint=${WSOLMint.toBase58()}&outputMint=${tokenMint}&amount=${amountInLamports}&slippageBps=${slippage * 100}&txVersion=V0`
             );
-            logger.debug(`Swap computation response: ${JSON.stringify(swapResponse)}`);
+            logger.debug('Swap computation response received:', {
+                success: swapResponse.success,
+                version: swapResponse.version,
+                swapType: swapResponse.data.swapType,
+                inputAmount: swapResponse.data.inputAmount,
+                outputAmount: swapResponse.data.outputAmount,
+                priceImpactPct: swapResponse.data.priceImpactPct
+            });
             
             if (!swapResponse.success) {
+                logger.error('Swap computation failed:', { msg: swapResponse.msg });
                 throw new Error(`Swap computation failed: ${swapResponse.msg}`);
             }
             
-            logger.debug(`Swap computation result: Expected output amount: ${swapResponse.data.outputAmount}`);
-            
             // Step 2: Get transaction for the swap
+            logger.debug('Requesting swap transaction from Raydium API');
             const { data: swapTransactions } = await axios.post<{
                 id: string;
                 version: string;
@@ -187,21 +218,26 @@ export class SwapService {
             }>(`${API_URLS.SWAP_HOST}/transaction/swap-base-in`, {
                 computeUnitPriceMicroLamports: String(priorityFee),
                 swapResponse,
-                txVersion: 'V0', // Use versioned transactions
+                txVersion: 'V0',
                 wallet: keypair.publicKey.toBase58(),
-                wrapSol: true, // We're starting with SOL, so we need to wrap it
-                unwrapSol: false, // We're receiving a token, not SOL
+                wrapSol: true,
+                unwrapSol: false,
             });
-            logger.debug(`Swap transaction response: ${JSON.stringify(swapTransactions)}`);
+            logger.debug('Swap transaction response received:', {
+                success: swapTransactions.success,
+                version: swapTransactions.version,
+                transactionCount: swapTransactions.data.length
+            });
             
             if (!swapTransactions.success) {
+                logger.error('Failed to generate swap transaction');
                 throw new Error('Failed to generate swap transaction');
             }
             
             // Step 3: Execute all transactions in the sequence
             const txids: string[] = [];
             const allTxBuf = swapTransactions.data.map(tx => Buffer.from(tx.transaction, 'base64'));
-            logger.debug(`Total transactions to execute: ${allTxBuf.length}`);
+            logger.debug(`Starting transaction execution sequence: ${allTxBuf.length} transactions`);
             
             for (let i = 0; i < allTxBuf.length; i++) {
                 const txBuf = allTxBuf[i];
@@ -212,6 +248,7 @@ export class SwapService {
                 logger.debug(`Transaction ${i + 1} signed`);
                 
                 // Send the transaction
+                logger.debug(`Sending transaction ${i + 1}`);
                 const txid = await this.connection.sendTransaction(transaction, {
                     skipPreflight: false,
                     preflightCommitment: 'confirmed',
@@ -219,19 +256,27 @@ export class SwapService {
                 });
                 
                 // Wait for confirmation
+                logger.debug(`Waiting for transaction ${i + 1} confirmation`);
                 await this.connection.confirmTransaction({
                     blockhash,
                     lastValidBlockHeight,
                     signature: txid,
                 });
                 
-                logger.debug(`Transaction ${i + 1} confirmed`);
+                logger.debug(`Transaction ${i + 1} confirmed:`, { txid });
                 txids.push(txid);
             }
             
             // Calculate accurate output amount using correct decimals
             const outputAmount = parseFloat(swapResponse.data.outputAmount) / Math.pow(10, tokenDecimals);
             const price = (outputAmount * Math.pow(10, 9)) / amountInLamports;
+
+            logger.debug('Swap execution completed successfully:', {
+                outputAmount,
+                price,
+                priceInSol: 1 / price,
+                txids
+            });
 
             return {
                 success: true,
@@ -242,6 +287,12 @@ export class SwapService {
                 txids
             };
         } catch (error) {
+            logger.error('Swap execution error:', {
+                error: error instanceof Error ? error.message : String(error),
+                stack: error instanceof Error ? error.stack : undefined,
+                timestamp: new Date().toISOString()
+            });
+
             if (error instanceof InsufficientFundsError) {
                 return {
                     success: false,
@@ -258,7 +309,6 @@ export class SwapService {
                 };
             }
 
-            logger.error('Swap execution error:', error);
             return {
                 success: false,
                 error: error instanceof Error ? error.message : String(error),

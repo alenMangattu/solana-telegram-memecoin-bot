@@ -603,11 +603,17 @@ public class CopyTradingHandler {
                 
                 // Then send success message
                 MessageUtils.sendMessage(update, String.format("""
-                        ✅ Copy trading configuration added successfully!
+                        ⚠️ *COMING SOON: Copy Trading Feature*
                         
+                        The copy trading feature is currently under development and not yet available.
+                        Your configuration has been saved but will not be active until the feature is released.
+                        
+                        Configuration details:
                         Source: `%s` (your wallet)
                         Target: `%s` (wallet to copy)
                         Multiplier: %.2fx
+                        
+                        We'll notify you when this feature becomes available.
                         """, 
                         displaySourceWallet,
                         displayTargetWallet,

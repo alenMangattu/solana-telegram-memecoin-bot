@@ -10,8 +10,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -26,12 +29,14 @@ import com.lunax.telegramBot.service.StateService;
 import com.lunax.telegramBot.service.UserService;
 import com.lunax.telegramBot.service.WalletService;
 import com.lunax.telegramBot.utils.SolanaUtils;
+import com.lunax.telegramBot.utils.WalletKeyManager;
 import com.lunax.telegramBot.utils.components.ButtonHandler;
 import com.lunax.telegramBot.utils.components.MessageUtils;
 import com.lunax.telegramBot.component.navigation.components.Home;
 
 @Component
 public class Wallets implements StateHandler {
+    private static final Logger log = LoggerFactory.getLogger(Wallets.class);
 
     @Autowired
     private UserService userService;
@@ -59,6 +64,9 @@ public class Wallets implements StateHandler {
 
     @Autowired
     private CacheManager cacheManager;
+
+    @Autowired
+    private WalletKeyManager walletKeyManager;
 
     @Override
     public void executeVoid(Update update) {
@@ -136,30 +144,23 @@ public class Wallets implements StateHandler {
         
         // Add wallet management buttons if wallets exist
         if (!wallets.isEmpty()) {
-            // Add wallet label editing button
-            List<InlineKeyboardButton> editRow = new ArrayList<>();
-            InlineKeyboardButton editButton = new InlineKeyboardButton();
-            editButton.setText("✏️ Edit Label");
-            editButton.setCallbackData("edit_wallet_menu");
-            editRow.add(editButton);
-            
-            // Add switch current wallet button
+            // Add switch current wallet button if multiple wallets exist
             if (wallets.size() > 1) {
+                List<InlineKeyboardButton> switchRow = new ArrayList<>();
                 InlineKeyboardButton switchButton = new InlineKeyboardButton();
                 switchButton.setText("🔄 Switch Wallet");
                 switchButton.setCallbackData("switch_wallet");
-                editRow.add(switchButton);
+                switchRow.add(switchButton);
+                keyboard.add(switchRow);
             }
             
-            keyboard.add(editRow);
-            
-            // Add delete wallet button
-            List<InlineKeyboardButton> deleteRow = new ArrayList<>();
-            InlineKeyboardButton deleteButton = new InlineKeyboardButton();
-            deleteButton.setText("🗑️ Delete Wallet");
-            deleteButton.setCallbackData("delete_wallet_menu");
-            deleteRow.add(deleteButton);
-            keyboard.add(deleteRow);
+            // Add wallet configuration button
+            List<InlineKeyboardButton> configRow = new ArrayList<>();
+            InlineKeyboardButton configButton = new InlineKeyboardButton();
+            configButton.setText("⚙️ Wallet Configuration");
+            configButton.setCallbackData("wallet_config_menu");
+            configRow.add(configButton);
+            keyboard.add(configRow);
         }
         
         // Add back button
@@ -219,8 +220,8 @@ public class Wallets implements StateHandler {
         MessageUtils.registerCallbackHandler("set_current_wallet:(.*)", this::handleSetCurrentWallet);
         MessageUtils.registerCallbackHandler("delete_wallet:(.*)", this::handleDeleteWallet);
         MessageUtils.registerCallbackHandler("switch_wallet", this::handleSwitchWallet);
-        MessageUtils.registerCallbackHandler("edit_wallet_menu", this::handleEditWalletMenu);
-        MessageUtils.registerCallbackHandler("delete_wallet_menu", this::handleDeleteWalletMenu);
+        MessageUtils.registerCallbackHandler("wallet_config_menu", this::handleWalletConfigMenu);
+        MessageUtils.registerCallbackHandler("show_private_key:(.*)", this::handleShowPrivateKey);
     }
     
     /**
@@ -320,6 +321,24 @@ public class Wallets implements StateHandler {
                 MessageUtils.sendMessage(update, "You need at least two wallets to switch between them.");
                 return;
             }
+
+            // Check if current wallet still exists
+            boolean currentWalletExists = false;
+            for (Wallet wallet : userWallets) {
+                if (wallet.getWalletId().equals(user.getCurrentWallet())) {
+                    currentWalletExists = true;
+                    break;
+                }
+            }
+
+            // If current wallet doesn't exist anymore, set the first wallet as current
+            if (!currentWalletExists) {
+                user.setCurrentWallet(userWallets.get(0).getWalletId());
+                userRepository.save(user);
+                walletService.clearSessionCache();
+                executeVoid(update);
+                return;
+            }
             
             // Find current wallet index
             int currentIndex = -1;
@@ -338,10 +357,6 @@ public class Wallets implements StateHandler {
             user.setCurrentWallet(nextWalletId);
             userRepository.save(user);
             
-            // After updating user's current wallet
-            // Home home = ApplicationContextProvider.getBean(Home.class);
-            // home.clearCacheForUser(telegramId);
-            
             // Clear session cache
             walletService.clearSessionCache();
             
@@ -349,27 +364,32 @@ public class Wallets implements StateHandler {
             executeVoid(update);
             
         } catch (Exception e) {
-            MessageUtils.sendMessage(update, "❌ Error switching wallet: " + e.getMessage());
+            log.error("Error switching wallet: {}", e.getMessage());
+            MessageUtils.sendMessage(update, "❌ Error switching wallet. Please try again.");
+            // Refresh the wallet list to ensure UI is in sync
+            executeVoid(update);
         }
     }
     
     /**
-     * Handles the edit wallet menu display
+     * Handles the wallet configuration menu display
      * @param update The update
      * @param matcher The regex matcher
      */
-    public void handleEditWalletMenu(Update update, java.util.regex.Matcher matcher) {
+    public void handleWalletConfigMenu(Update update, java.util.regex.Matcher matcher) {
         Long telegramId = update.getCallbackQuery().getFrom().getId();
         User user = userService.findByTelegramId(telegramId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         
         List<Wallet> wallets = walletService.findByUser(user);
         if (wallets.isEmpty()) {
-            MessageUtils.sendMessage(update, "❌ You don't have any wallets to edit.");
+            MessageUtils.sendMessage(update, "❌ You don't have any wallets to configure.");
             return;
         }
         
-        StringBuilder message = new StringBuilder("*Select a wallet to edit:*\n\n");
+        StringBuilder message = new StringBuilder("*⚙️ Wallet Configuration*\n\n");
+        message.append("Select a wallet to manage its settings:\n\n");
+        
         List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
         
         for (int i = 0; i < wallets.size(); i++) {
@@ -380,17 +400,40 @@ public class Wallets implements StateHandler {
             // Add wallet number and label to message
             message.append(i + 1).append(". ").append(label);
             if (wallet.getWalletId().equals(user.getCurrentWallet())) {
-                message.append(" (Current)");
+                message.append(" (Current Wallet cannot be deleted)");
             }
             message.append("\n");
             
-            // Add button for this wallet
-            List<InlineKeyboardButton> row = new ArrayList<>();
-            InlineKeyboardButton button = new InlineKeyboardButton();
-            button.setText("✏️ Edit #" + (i + 1));
-            button.setCallbackData("edit_wallet_label:" + wallet.getWalletId());
-            row.add(button);
-            keyboard.add(row);
+            // Create a row of buttons for this wallet
+            List<InlineKeyboardButton> walletRow = new ArrayList<>();
+            
+            // Add wallet number button (non-functional)
+            InlineKeyboardButton numberButton = new InlineKeyboardButton();
+            numberButton.setText("#" + (i + 1));
+            numberButton.setCallbackData("wallet_number:" + wallet.getWalletId());
+            walletRow.add(numberButton);
+            
+            // Add edit label button
+            InlineKeyboardButton editButton = new InlineKeyboardButton();
+            editButton.setText("✏️ Edit");
+            editButton.setCallbackData("edit_wallet_label:" + wallet.getWalletId());
+            walletRow.add(editButton);
+            
+            // Add show private key button
+            InlineKeyboardButton keyButton = new InlineKeyboardButton();
+            keyButton.setText("🔑 Key");
+            keyButton.setCallbackData("show_private_key:" + wallet.getWalletId());
+            walletRow.add(keyButton);
+            
+            // Add delete button (only if not current wallet)
+            if (!wallet.getWalletId().equals(user.getCurrentWallet())) {
+                InlineKeyboardButton deleteButton = new InlineKeyboardButton();
+                deleteButton.setText("🗑️ Delete");
+                deleteButton.setCallbackData("delete_wallet:" + wallet.getWalletId());
+                walletRow.add(deleteButton);
+            }
+            
+            keyboard.add(walletRow);
         }
         
         // Add back button
@@ -406,65 +449,47 @@ public class Wallets implements StateHandler {
     }
     
     /**
-     * Handles the delete wallet menu display
+     * Handles showing the private key for a specific wallet
      * @param update The update
-     * @param matcher The regex matcher
+     * @param matcher The regex matcher containing the wallet ID
      */
-    public void handleDeleteWalletMenu(Update update, java.util.regex.Matcher matcher) {
+    public void handleShowPrivateKey(Update update, java.util.regex.Matcher matcher) {
         Long telegramId = update.getCallbackQuery().getFrom().getId();
-        User user = userService.findByTelegramId(telegramId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        String walletId = matcher.group(1);
         
-        List<Wallet> wallets = walletService.findByUser(user);
-        if (wallets.isEmpty()) {
-            MessageUtils.sendMessage(update, "❌ You don't have any wallets to delete.");
-            return;
-        }
-        
-        // If user only has one wallet, don't allow deletion
-        if (wallets.size() == 1) {
-            MessageUtils.sendMessage(update, "❌ You cannot delete your only wallet. Please create or import another wallet first.");
-            return;
-        }
-        
-        StringBuilder message = new StringBuilder("*Select a wallet to delete:*\n\n");
-        message.append("⚠️ WARNING: This action cannot be undone!\n\n");
-        
-        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
-        
-        for (int i = 0; i < wallets.size(); i++) {
-            Wallet wallet = wallets.get(i);
-            String label = (wallet.getWalletLabel() != null && !wallet.getWalletLabel().isEmpty()) 
-                ? wallet.getWalletLabel() : "Unnamed Wallet";
+        try {
+            // Get the private key
+            String privateKey = walletKeyManager.getPrivateKey(UUID.fromString(walletId));
             
-            // Skip current wallet as it can't be deleted
-            if (wallet.getWalletId().equals(user.getCurrentWallet())) {
-                message.append(i + 1).append(". ").append(label).append(" (Current - cannot delete)\n");
-                continue;
-            }
+            // Create a warning message with the private key
+            StringBuilder message = new StringBuilder();
+            message.append("⚠️ *EXTREME SECURITY WARNING* ⚠️\n\n");
+            message.append("🔐 *Your Private Key:*\n");
+            message.append("`").append(privateKey).append("`\n\n");
+            message.append("⚠️ *IMPORTANT:*\n");
+            message.append("• This message will be deleted in 5 minutes\n");
+            message.append("• Never share this key with anyone\n");
+            message.append("• Anyone with this key can control your wallet\n");
+            message.append("• Store this key securely if you need to save it\n");
+            message.append("• We recommend using a hardware wallet for better security\n\n");
+            message.append("✅ Key will be automatically deleted in 5 minutes");
             
-            // Add wallet number and label to message
-            message.append(i + 1).append(". ").append(label).append("\n");
+            // Send the message
+            Message privateKeyMessage = MessageUtils.sendMessage(update, message.toString());
             
-            // Add button for this wallet
-            List<InlineKeyboardButton> row = new ArrayList<>();
-            InlineKeyboardButton button = new InlineKeyboardButton();
-            button.setText("🗑️ Delete #" + (i + 1));
-            button.setCallbackData("delete_wallet:" + wallet.getWalletId());
-            row.add(button);
-            keyboard.add(row);
+            // Schedule deletion after 5 minutes
+            new Thread(() -> {
+                try {
+                    Thread.sleep(5 * 60 * 1000); // 5 minutes
+                    MessageUtils.deleteMessage(privateKeyMessage);
+                } catch (InterruptedException e) {
+                    log.error("Error in private key deletion thread: {}", e.getMessage());
+                }
+            }).start();
+            
+        } catch (Exception e) {
+            MessageUtils.sendMessage(update, "❌ Error retrieving private key: " + e.getMessage());
         }
-        
-        // Add back button
-        List<InlineKeyboardButton> backRow = new ArrayList<>();
-        InlineKeyboardButton backButton = new InlineKeyboardButton();
-        backButton.setText("⬅️ Back");
-        backButton.setCallbackData("wallets");
-        backRow.add(backButton);
-        keyboard.add(backRow);
-        
-        ButtonHandler[][] buttonHandlers = convertKeyboardToButtonHandlers(keyboard);
-        MessageUtils.editMessage(update, message.toString(), buttonHandlers);
     }
 
     // Add a proper method to clear the cache

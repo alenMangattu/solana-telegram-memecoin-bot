@@ -1,3 +1,8 @@
+/**
+ * COMING SOON: Limit Order Feature
+ * This feature is currently under development and not yet available.
+ * Orders can be created but will remain in the database until the feature is fully implemented.
+ */
 package com.lunax.telegramBot.model.db;
 
 import java.math.BigDecimal;

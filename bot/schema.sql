@@ -69,15 +69,17 @@ FOR EACH ROW EXECUTE FUNCTION validate_current_wallet();
 -- ================================================
 CREATE TABLE copy_trading (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL,
-    source_wallet UUID NOT NULL,
-    target_wallet VARCHAR(255) NOT NULL,
-    enabled BOOLEAN DEFAULT TRUE,
-    amount_multiplier DECIMAL(10, 2) NOT NULL DEFAULT 1.00,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_source_wallet FOREIGN KEY (source_wallet) REFERENCES wallets(wallet_id) ON DELETE CASCADE,
-    CONSTRAINT fk_user_copy_trading FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    user_id SERIAL NOT NULL,
+    source_wallet TEXT NOT NULL REFERENCES wallets(wallet_id),
+    target_wallet TEXT NOT NULL REFERENCES wallets(wallet_id),
+    enabled BOOLEAN DEFAULT true NOT NULL,
+    amount_multiplier NUMERIC NOT NULL DEFAULT '1',
+    has_error BOOLEAN DEFAULT false,
+    error_count INTEGER DEFAULT 0,
+    last_error_at TIMESTAMP,
+    error_message TEXT,
+    created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+    updated_at TIMESTAMP DEFAULT NOW() NOT NULL
 );
 
 -- 9. Create the "user_state" table.
@@ -124,22 +126,24 @@ CREATE TABLE user_settings (
 DROP TABLE IF EXISTS limit_orders CASCADE;
 
 CREATE TABLE limit_orders (
-    order_id VARCHAR(255) PRIMARY KEY,
-    user_id INTEGER NOT NULL,
-    wallet_id UUID NOT NULL,
-    token_mint VARCHAR(255) NOT NULL,
-    sol_amount DECIMAL(19, 9) NOT NULL,
-    limit_price DECIMAL(19, 9) NOT NULL,
-    slippage DECIMAL(5, 2) NOT NULL,
-    status VARCHAR(50) NOT NULL DEFAULT 'active',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    order_id TEXT PRIMARY KEY,
+    user_id SERIAL NOT NULL,
+    wallet_id TEXT NOT NULL REFERENCES wallets(wallet_id),
+    token_mint TEXT NOT NULL,
+    action TEXT CHECK (action IN ('BUY', 'SELL')) NOT NULL,
+    sol_amount NUMERIC NOT NULL,
+    limit_price NUMERIC NOT NULL,
+    slippage NUMERIC NOT NULL,
+    status TEXT NOT NULL, -- 'active', 'pending', 'executed', 'failed'
+    transaction_signature TEXT,
     executed_at TIMESTAMP,
-    transaction_signature VARCHAR(255),
-    CONSTRAINT fk_order_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    CONSTRAINT fk_order_wallet FOREIGN KEY (wallet_id) REFERENCES wallets(wallet_id) ON DELETE CASCADE
+    has_error BOOLEAN DEFAULT false,
+    error_count INTEGER DEFAULT 0,
+    last_error_at TIMESTAMP,
+    error_message TEXT,
+    created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+    updated_at TIMESTAMP DEFAULT NOW() NOT NULL
 );
-
 -- Create index for faster querying by status
 CREATE INDEX idx_limit_orders_status ON limit_orders(status);
 -- Create index for faster querying by user
