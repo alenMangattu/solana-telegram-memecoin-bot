@@ -9,6 +9,7 @@ import logger from './utils/logger';
 import dotenv from 'dotenv';
 import { TokenInfoService } from './utils/tokeninfo';
 import { SwapService } from './utils/trading/swapService';
+import { InsufficientFundsError, InvalidAddressError } from './utils/errors';
 
 dotenv.config();
 
@@ -251,15 +252,58 @@ const swapSchema = z.object({
 
 app.post('/api/swap/execute', async (req, res) => {
     try {
-        logger.debug('Received swap execution request:', req.body);
-        const data = swapSchema.parse(req.body);
+        logger.debug('Received swap execution request:', {
+            body: req.body,
+            headers: req.headers,
+            timestamp: new Date().toISOString()
+        });
         
-        // Map priority levels to Solana priority fees (in micro-lamports)
+        const data = swapSchema.parse(req.body);
+        logger.debug('Validated swap request data:', {
+            tokenMint: data.tokenMint,
+            solAmount: data.solAmount,
+            slippage: data.slippage,
+            priority: data.priority,
+            walletPrivateKeyLength: data.walletPrivateKey.length
+        });
+        
+        // Additional validation for token mint
+        if (!data.tokenMint || data.tokenMint.length < 32 || data.tokenMint.length > 44) {
+            logger.debug('Invalid token mint format:', {
+                tokenMint: data.tokenMint,
+                length: data.tokenMint?.length
+            });
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid token mint address format',
+                errorType: 'INVALID_TOKEN_MINT'
+            });
+        }
+
+        // Additional validation for wallet private key
+        if (!data.walletPrivateKey || data.walletPrivateKey.length < 32) {
+            logger.debug('Invalid wallet private key format:', {
+                walletPrivateKeyLength: data.walletPrivateKey?.length
+            });
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid wallet private key format',
+                errorType: 'INVALID_PRIVATE_KEY'
+            });
+        }
+        
+        // Map priority levels to SOL amounts (in lamports)
         const priorityFees = {
-            'MIN': 1000,      // 1,000 micro-lamports
-            'MID': 100000,    // 100,000 micro-lamports 
-            'MAX': 1000000    // 1,000,000 micro-lamports
+            'MAX': 0.02 * 1e9,    // 0.02 SOL
+            'MID': 0.01 * 1e9,    // 0.01 SOL
+            'MIN': 0.005 * 1e9    // 0.005 SOL
         };
+        
+        logger.debug('Calculated priority fee:', {
+            priority: data.priority,
+            feeInLamports: priorityFees[data.priority],
+            feeInSOL: priorityFees[data.priority] / 1e9
+        });
         
         const result = await swapService.executeSwap(
             data.tokenMint,
@@ -269,14 +313,62 @@ app.post('/api/swap/execute', async (req, res) => {
             priorityFees[data.priority]
         );
         
-        logger.debug('Swap execution result:', result);
-        res.json(result);
+        logger.debug('Swap execution completed:', {
+            success: result.success,
+            signature: result.signature,
+            amountOut: result.amountOut,
+            timestamp: new Date().toISOString()
+        });
+        
+        return res.json(result);
     } catch (error) {
-        logger.error('Swap execution error:', error);
-        res.status(500).json({ 
+        logger.error('Error in swap execution:', {
+            error: error instanceof Error ? error.message : 'Unknown error',
+            stack: error instanceof Error ? error.stack : undefined,
+            timestamp: new Date().toISOString()
+        });
+
+        if (error instanceof z.ZodError) {
+            logger.debug('Validation error:', {
+                errors: error.errors,
+                receivedData: req.body
+            });
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid input data',
+                errorType: 'VALIDATION_ERROR',
+                details: error.errors
+            });
+        }
+
+        if (error instanceof Error) {
+            if (error.name === 'InsufficientFundsError') {
+                logger.debug('Insufficient funds error:', {
+                    message: error.message
+                });
+                return res.status(400).json({
+                    success: false,
+                    error: '❌ Insufficient SOL balance. Please add more SOL to your wallet.',
+                    errorType: 'INSUFFICIENT_FUNDS'
+                });
+            }
+
+            if (error.name === 'InvalidAddressError') {
+                logger.debug('Invalid address error:', {
+                    message: error.message
+                });
+                return res.status(400).json({
+                    success: false,
+                    error: '❌ Invalid token address. Please check and try again.',
+                    errorType: 'INVALID_ADDRESS'
+                });
+            }
+        }
+
+        return res.status(500).json({
             success: false,
-            error: 'Failed to execute swap',
-            details: error instanceof Error ? error.message : String(error)
+            error: '❌ An unexpected error occurred. Please try again later.',
+            errorType: 'UNKNOWN_ERROR'
         });
     }
 });

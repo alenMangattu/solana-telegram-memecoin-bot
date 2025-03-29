@@ -143,44 +143,6 @@ public class TokenInfo implements StateHandler {
                 Message loadingMessage = MessageUtils.sendLoadingMessage(update);
 
                 try {
-                        // Store token address in user state
-                        stateData.put("tokenAddress", tokenAddress);
-                        
-                        // Convert token info to JsonNode and store in state
-                        ObjectNode tokenInfoJson = objectMapper.valueToTree(tokenInfo);
-                        stateData.set("tokenInfo", tokenInfoJson);
-                        stateService.setStateData(userId, stateData);
-
-                        // Add code to get user's wallet address and check for token balance
-                        Long telegramId = update.hasCallbackQuery() ? 
-                                update.getCallbackQuery().getFrom().getId() : 
-                                update.getMessage().getFrom().getId();
-                        
-                        // Fetch user to get wallet address
-                        Optional<User> userOpt = userService.findByTelegramId(telegramId);
-                        double userBalance = 0.0;
-                        boolean userHasToken = false;
-                        
-                        if (userOpt.isPresent()) {
-                                User user = userOpt.get();
-                                String walletAddress = user.getCurrentWalletAddress();
-                                
-                                if (walletAddress != null && !walletAddress.isEmpty()) {
-                                        try {
-                                                userBalance = solanaUtils.getTokenBalance(walletAddress, tokenAddress);
-                                                userHasToken = userBalance > 0;
-                                        } catch (Exception e) {
-                                                log.warn("Could not fetch token balance: {}", e.getMessage());
-                                        }
-                                }
-                        }
-
-                        // Store user balance in state
-                        stateData.put("userTokenBalance", userBalance);
-                        stateService.setStateData(userId, stateData);
-
-                        log.info("Token Info: {}", tokenInfo);
-
                         // Handle all possible values with type checking and defaults
                         String name = tokenInfo.getOrDefault("name", "Unknown").toString();
                         String symbol = tokenInfo.getOrDefault("symbol", "Unknown").toString();
@@ -197,10 +159,16 @@ public class TokenInfo implements StateHandler {
                                                         : 0L)
                                         : 0L;
 
-                        // Get price from token info
-                        String priceUSD = tokenInfo.containsKey("priceUSD") 
-                                        ? tokenInfo.get("priceUSD").toString() 
-                                        : "0.0";
+                        // Get price from token info and convert to double
+                        double price = 0.0;
+                        if (tokenInfo.containsKey("priceUSD")) {
+                            try {
+                                price = Double.parseDouble(tokenInfo.get("priceUSD").toString());
+                            } catch (NumberFormatException e) {
+                                log.error("Failed to parse priceUSD: {}", tokenInfo.get("priceUSD"));
+                                price = 0.0;
+                            }
+                        }
 
                         // Raydium pool info
                         Double tvl = tokenInfo.containsKey("tvl") ? (tokenInfo.get("tvl") instanceof Number
@@ -255,6 +223,61 @@ public class TokenInfo implements StateHandler {
                                                         : 0.0)
                                         : 0.0;
 
+                        // Store token address in user state
+                        stateData.put("tokenAddress", tokenAddress);
+                        
+                        // Convert token info to JsonNode and store in state
+                        ObjectNode tokenInfoJson = objectMapper.createObjectNode();
+                        tokenInfoJson.put("name", name);
+                        tokenInfoJson.put("symbol", symbol);
+                        tokenInfoJson.put("decimals", decimals);
+                        tokenInfoJson.put("price", price);  // Use the correctly parsed price
+                        tokenInfoJson.put("totalSupply", totalSupply);
+                        tokenInfoJson.put("tvl", tvl);
+                        tokenInfoJson.put("24hVolume", volume24h);
+                        tokenInfoJson.put("7dVolume", volume7d);
+                        tokenInfoJson.put("30dVolume", volume30d);
+                        tokenInfoJson.put("24hApr", apr24h);
+                        tokenInfoJson.put("feeRate", feeRate);
+                        tokenInfoJson.put("24hPriceMin", priceMin24h);
+                        tokenInfoJson.put("24hPriceMax", priceMax24h);
+                        tokenInfoJson.put("poolId", poolId);
+                        tokenInfoJson.put("pairedWithSymbol", pairedWith);
+                        tokenInfoJson.put("pairedWithAddress", tokenInfo.containsKey("pairedWithAddress") ? tokenInfo.get("pairedWithAddress").toString() : "N/A");
+                        
+                        stateData.set("tokenInfo", tokenInfoJson);
+                        stateService.setStateData(userId, stateData);
+
+                        // Add code to get user's wallet address and check for token balance
+                        Long telegramId = update.hasCallbackQuery() ? 
+                                update.getCallbackQuery().getFrom().getId() : 
+                                update.getMessage().getFrom().getId();
+                        
+                        // Fetch user to get wallet address
+                        Optional<User> userOpt = userService.findByTelegramId(telegramId);
+                        double userBalance = 0.0;
+                        boolean userHasToken = false;
+                        
+                        if (userOpt.isPresent()) {
+                                User user = userOpt.get();
+                                String walletAddress = user.getCurrentWalletAddress();
+                                
+                                if (walletAddress != null && !walletAddress.isEmpty()) {
+                                        try {
+                                                userBalance = solanaUtils.getTokenBalance(walletAddress, tokenAddress);
+                                                userHasToken = userBalance > 0;
+                                        } catch (Exception e) {
+                                                log.warn("Could not fetch token balance: {}", e.getMessage());
+                                        }
+                                }
+                        }
+
+                        // Store user balance in state
+                        stateData.put("userTokenBalance", userBalance);
+                        stateService.setStateData(userId, stateData);
+
+                        log.info("Token Info: {}", tokenInfo);
+
                         // Define time frequency and time before for historical data
                         String timeFrequency = "15m"; // Default: 15 minutes
                         String timeBefore = "1D"; // Default: 1 day
@@ -300,7 +323,7 @@ public class TokenInfo implements StateHandler {
                         }
 
                         // Extract the most recent price from historical data
-                        String updatedPriceUSD = priceUSD; // Default to the previously set price
+                        String updatedPriceUSD = String.valueOf(price); // Default to the previously set price
                         log.info("Historical data: {}", historicalData);
                         
                         // Updated condition to match the actual structure of the JSON response
@@ -324,7 +347,7 @@ public class TokenInfo implements StateHandler {
                                 stateService.setStateData(userId, stateData);
                                 
                                 // Also update the local variable for use in the message
-                                priceUSD = updatedPriceUSD;
+                                price = Double.parseDouble(updatedPriceUSD);
                             }
                         } else {
                             log.error("Historical data structure unexpected: {}", historicalData);
@@ -334,7 +357,7 @@ public class TokenInfo implements StateHandler {
                         String tokenTicker = symbol; // Use the retrieved symbol
 
                         log.info("Token Ticker: {}", tokenTicker);
-                        log.info("Updated Price USD: {}", priceUSD);
+                        log.info("Updated Price USD: {}", updatedPriceUSD);
 
                         InputStreamResource imageResource = solanaUtils.sendHistoricalDataToChart(tokenAddress,
                                         historicalData, timeFrequency, tokenTicker);
@@ -365,7 +388,7 @@ public class TokenInfo implements StateHandler {
                         String messageWithTokenInfo;
                         
                         // For small numbers (like 0.0003), use scientific notation in the display
-                        double priceValue = Double.parseDouble(priceUSD);
+                        double priceValue = Double.parseDouble(updatedPriceUSD);
                         String formattedPrice;
                         
                         if (priceValue < 0.001) {

@@ -369,18 +369,27 @@ public class TradeMemeCoin implements StateHandler {
             
             // Create token info JSON using the already validated token info
             ObjectNode tokenInfoJson = objectMapper.createObjectNode();
-            tokenInfoJson.put("tokenName", tokenInfo.getOrDefault("name", "Unknown").toString());
-            tokenInfoJson.put("tokenSymbol", tokenInfo.getOrDefault("symbol", "Unknown").toString());
-            tokenInfoJson.put("tokenAddress", tokenAddress);
-            tokenInfoJson.put("tokenDecimals", (Integer) tokenInfo.getOrDefault("decimals", 0));
+            tokenInfoJson.put("name", tokenInfo.getOrDefault("name", "Unknown").toString());
+            tokenInfoJson.put("symbol", tokenInfo.getOrDefault("symbol", "Unknown").toString());
+            tokenInfoJson.put("address", tokenAddress);
+            tokenInfoJson.put("decimals", (Integer) tokenInfo.getOrDefault("decimals", 0));
             
-            // Get token price from the validated token info
-            Double price = tokenInfo.containsKey("price")
-                    ? (tokenInfo.get("price") instanceof Number
-                        ? ((Number) tokenInfo.get("price")).doubleValue()
-                        : 0.0)
-                    : 0.0;
-            tokenInfoJson.put("priceUSD", String.valueOf(price));
+            // Get token price from the validated token info, using priceUSD as the source of truth
+            Double price = 0.0;
+            if (tokenInfo.containsKey("priceUSD")) {
+                Object priceUSDValue = tokenInfo.get("priceUSD");
+                if (priceUSDValue instanceof Number) {
+                    price = ((Number) priceUSDValue).doubleValue();
+                } else if (priceUSDValue instanceof String) {
+                    try {
+                        price = Double.parseDouble((String) priceUSDValue);
+                    } catch (NumberFormatException e) {
+                        log.error("Failed to parse priceUSD string value: {}", priceUSDValue);
+                        price = 0.0;
+                    }
+                }
+            }
+            tokenInfoJson.put("price", price);
             
             // Only check token balance for sell operations
             double balance = 0.0;
