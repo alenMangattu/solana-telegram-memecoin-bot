@@ -331,7 +331,7 @@ public class Buy implements StateHandler {
                 tokenAmount,
                 tokenSymbol,
                 tokenSymbol,
-                effectivePrice,
+                tokenPrice,
                 selectedSlippage,
                 limitOrderSection
         );
@@ -808,33 +808,54 @@ public class Buy implements StateHandler {
                     walletPrivateKey,
                     SolanaUtils.TransactionPriority.valueOf(priority)
                 );
-                
-                if (response.isSuccess()) {
-                    // Send success message
-                    String successMessage = String.format("""
-                            ✅ *Transaction Complete!*
-                            
-                            Successfully swapped *%.4f SOL* for *%.2f %s*
-                            Transaction ID: `%s`
-                            
-                            You can view this transaction on the explorer:
-                            [View on Solscan](https://solscan.io/tx/%s)
-                            """, 
-                            buyAmount, 
-                            response.getAmount(),
-                            tokenSymbol,
-                            response.getSignature(),
-                            response.getSignature());
+
+                if (!response.isSuccess()) {
+                    String errorMessage = response.getError();
+                    String errorType = response.getErrorType();
                     
-                    MessageUtils.sendMessage(update, successMessage);
-                } else {
-                    MessageUtils.sendMessage(update, "❌ Transaction failed. Please try again.");
+                    switch (errorType) {
+                        case "INSUFFICIENT_FUNDS":
+                            errorMessage = "❌ Insufficient SOL balance to complete the transaction.";
+                            break;
+                        case "INVALID_ADDRESS":
+                            errorMessage = "❌ Invalid token address. Please check and try again.";
+                            break;
+                        case "UNKNOWN_ERROR":
+                            errorMessage = "❌ An unexpected error occurred. Please try again later.";
+                            break;
+                        default:
+                            errorMessage = response.getError() != null ? response.getError() : "❌ Transaction failed. Please try again.";
+                    }
+                    
+                    MessageUtils.sendMessage(update, errorMessage);
+                    return;
                 }
+
+                String successMessage = String.format(
+                    "✅ Buy order executed successfully!\n\n" +
+                    "Amount: %.2f %s\n" +
+                    "Price: $%.6f\n" +
+                    "Transaction: %s",
+                    response.getAmount(),
+                    tokenSymbol,
+                    response.getPrice(),
+                    response.getSignature()
+                );
+                
+                MessageUtils.sendMessage(update, successMessage);
             }
             
         } catch (Exception e) {
             log.error("Error processing transaction", e);
-            MessageUtils.sendMessage(update, "❌ Transaction failed: " + e.getMessage());
+            String errorMessage = String.format("""
+                ❌ *Transaction Failed*
+                
+                An unexpected error occurred while processing your transaction:
+                `%s`
+                
+                Please try again later or contact support if the issue persists.
+                """, e.getMessage());
+            MessageUtils.sendMessage(update, errorMessage);
         }
         
         // Reset state to TOKEN_INFO_PAGE when done

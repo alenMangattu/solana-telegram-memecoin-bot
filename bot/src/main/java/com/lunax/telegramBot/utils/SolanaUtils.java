@@ -1015,13 +1015,15 @@ public class SolanaUtils {
         private boolean success;      // Whether the swap was successful
         private String signature;     // Transaction signature
         private String error;         // Error message if any
+        private String errorType;     // Type of error (INSUFFICIENT_FUNDS, INVALID_ADDRESS, etc.)
         private double amount;        // Amount of tokens received
         private double price;         // Execution price
 
-        public SwapResponse(boolean success, String signature, String error, double amount, double price) {
+        public SwapResponse(boolean success, String signature, String error, String errorType, double amount, double price) {
             this.success = success;
             this.signature = signature;
             this.error = error;
+            this.errorType = errorType;
             this.amount = amount;
             this.price = price;
         }
@@ -1053,18 +1055,29 @@ public class SolanaUtils {
             request.setWalletPrivateKey(walletPrivateKey);
             request.setPriority(priority.toString());
 
-            ResponseEntity<SwapResponse> response = makeRequest(
+            ResponseEntity<Map<String, Object>> response = makeRequest(
                 "/api/swap/execute",
                 HttpMethod.POST,
                 request,
-                new ParameterizedTypeReference<SwapResponse>() {}
+                new ParameterizedTypeReference<Map<String, Object>>() {}
             );
 
-            log.debug("Swap response: {}", response.getBody());
-            return response.getBody();
+            Map<String, Object> responseBody = response.getBody();
+            if (responseBody != null) {
+                boolean success = (Boolean) responseBody.getOrDefault("success", false);
+                String signature = (String) responseBody.get("signature");
+                String error = (String) responseBody.get("error");
+                String errorType = (String) responseBody.get("errorType");
+                Double amount = responseBody.get("amountOut") != null ? ((Number) responseBody.get("amountOut")).doubleValue() : 0.0;
+                Double price = responseBody.get("price") != null ? ((Number) responseBody.get("price")).doubleValue() : 0.0;
+
+                return new SwapResponse(success, signature, error, errorType, amount, price);
+            }
+
+            throw new RuntimeException("Invalid response from swap API");
         } catch (Exception e) {
             log.error("Failed to buy token {}: {}", tokenMint, e.getMessage());
-            throw new RuntimeException("Failed to execute swap", e);
+            return new SwapResponse(false, null, "❌ An unexpected error occurred. Please try again later.", "UNKNOWN_ERROR", 0.0, 0.0);
         }
     }
 
@@ -1460,13 +1473,13 @@ public class SolanaUtils {
                 String signature = (String) responseBody.get("signature");
                 double receivedAmount = ((Number) responseBody.get("amount")).doubleValue();
                 
-                return new SwapResponse(success, signature, null, receivedAmount, 0.0);
+                return new SwapResponse(success, signature, null, null, receivedAmount, 0.0);
             }
             
             throw new RuntimeException("Invalid response from swap API");
         } catch (Exception e) {
             log.error("Failed to sell token: {}", e.getMessage());
-            throw new RuntimeException("Failed to sell token", e);
+            return new SwapResponse(false, null, "❌ An unexpected error occurred. Please try again later.", null, 0.0, 0.0);
         }
     }
 }
