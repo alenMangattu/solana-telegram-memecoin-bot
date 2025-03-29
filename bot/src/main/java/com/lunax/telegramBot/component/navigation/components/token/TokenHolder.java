@@ -42,8 +42,13 @@ public class TokenHolder implements StateHandler {
         try {
             // Get token information from state
             ObjectNode stateData = stateService.getStateData(userId);
+            if (stateData == null) {
+                MessageUtils.sendMessage(update, "❌ Error: No state data found.");
+                return;
+            }
+            
             if (!stateData.has("tokenInfo")) {
-                MessageUtils.sendMessage(update, "Error: Token information not found.");
+                MessageUtils.sendMessage(update, "❌ Error: Token information not found.");
                 return;
             }
             
@@ -53,7 +58,20 @@ public class TokenHolder implements StateHandler {
             
             // Fetch token price
             Double priceUSD = tokenInfo.has("priceUSD") ? tokenInfo.get("priceUSD").asDouble() : 0.0;
-            String tokenAddress = tokenInfo.has("tokenAddress") ? tokenInfo.get("tokenAddress").asText() : "Unknown";
+            
+            // Get token address from the root of state data, not from tokenInfo
+            String tokenAddress = stateData.has("tokenAddress") ? stateData.get("tokenAddress").asText() : null;
+            
+            if (tokenAddress == null) {
+                MessageUtils.sendMessage(update, "❌ Error: Token address not found in state.");
+                return;
+            }
+            
+            // Validate token address format
+            if (!solanaUtils.isValidSolanaAddress(tokenAddress)) {
+                MessageUtils.sendMessage(update, "❌ Error: Invalid token address format.");
+                return;
+            }
             
             // Fetch top 10 holders
             List<Map<String, Object>> topHolders = solanaUtils.getTopTokenHolders(tokenAddress, 10);

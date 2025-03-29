@@ -1,3 +1,8 @@
+/**
+ * COMING SOON: Copy Trading Feature
+ * This feature is currently under development and not yet available.
+ * The database structure is in place but the functionality will be implemented in a future release.
+ */
 package com.lunax.telegramBot.model.db;
 
 import jakarta.persistence.*;

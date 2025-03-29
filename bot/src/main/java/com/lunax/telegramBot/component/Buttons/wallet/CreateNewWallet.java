@@ -3,6 +3,7 @@ package com.lunax.telegramBot.component.Buttons.wallet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
@@ -16,7 +17,7 @@ import com.lunax.telegramBot.utils.SolanaUtils;
 import com.lunax.telegramBot.utils.WalletKeyManager;
 import com.lunax.telegramBot.utils.components.ButtonHandler;
 import com.lunax.telegramBot.utils.components.MessageUtils;
-import com.lunax.telegramBot.component.navigation.components.Home;
+import com.lunax.telegramBot.event.NavigationEvent;
 
 import java.util.List;
 
@@ -31,13 +32,15 @@ public class CreateNewWallet implements ButtonHandler {
     private final UserService userService;
     private final SolanaUtils solanaUtils;
     private final SolanaService solanaService;
+    
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
 
     @Value("${encryption.keys.path}")
     private String encryptionKeysPath;
     
     @Value("${wallets.path}")
     private String walletsPath;
-
 
     @Autowired
     public CreateNewWallet(@Value("🔑 Create New Wallet") String buttonText, 
@@ -95,7 +98,7 @@ public class CreateNewWallet implements ButtonHandler {
                 return;
             }
 
-            MessageUtils.editMessage(update, "⏳ Generating wallet...", null);
+            MessageUtils.sendMessage(update, "⏳ Generating wallet...");
             System.out.println("Calling solanaService.createNewWallet for user: " + user.getTelegramId());
 
             Wallet wallet = solanaService.createNewWallet(user, encryptionKeysPath, walletsPath);
@@ -105,18 +108,16 @@ public class CreateNewWallet implements ButtonHandler {
             user.setCurrentWallet(wallet.getWalletId());
             userRepository.save(user);
 
-            // After updating user's current wallet, make sure to evict the cache
-            // Uncomment and fix the reference to Home
-            // Home home = ApplicationContextProvider.getBean(Home.class);
-            // home.clearCacheForUser(telegramUserId);
-
             Thread.sleep(750);
 
             String text = "✨ Wallet generated successfully!\n\nPublic Key: `" + wallet.getWalletAddress() + "`";
             MessageUtils.editMessage(update, text, null);
             MessageUtils.sendMessage(update, "You need to deposit 1 SOL to `" + wallet.getWalletAddress() + 
                 "` wallet to start using it. (click to copy)");
-            // MessageUtils.sendMessage(update, "You can type /home or /start to go to the main menu.");
+
+            // Publish navigation event to refresh wallets page
+            eventPublisher.publishEvent(new NavigationEvent(this, update, "wallets"));
+
         } catch (Exception e) {
             throw new RuntimeException("Failed to create and store wallet securely", e);
         }

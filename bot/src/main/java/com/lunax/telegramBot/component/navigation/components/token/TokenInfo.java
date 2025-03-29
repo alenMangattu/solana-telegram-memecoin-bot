@@ -87,6 +87,9 @@ public class TokenInfo implements StateHandler {
         @Autowired
         private UserService userService;
 
+        @Autowired
+        private ObjectMapper objectMapper;
+
         @SuppressWarnings("null")
         @Override
         public void executeVoid(Update update) {
@@ -125,27 +128,28 @@ public class TokenInfo implements StateHandler {
                         return;
                 }
                 
-                // Check for valid Solana address format (Base58 encoded, proper length)
-                if (!isValidSolanaAddress(tokenAddress)) {
-                        MessageUtils.sendMessage(update, "❌ Invalid token address format. A Solana token address should be a Base58 encoded string typically 32-44 characters long.\n\nPlease enter a valid Solana token address.");
+                // Use the new validateToken method
+                Map<String, Object> validationResult = solanaUtils.validateToken(tokenAddress);
+                if (!(Boolean) validationResult.get("valid")) {
+                        String errorMessage = (String) validationResult.get("errorMessage");
+                        MessageUtils.sendMessage(update, errorMessage);
                         return;
                 }
-
+                
+                // Get the validated token info
+                Map<String, Object> tokenInfo = (Map<String, Object>) validationResult.get("tokenInfo");
+                
                 // Send a loading message and store its ID
                 Message loadingMessage = MessageUtils.sendLoadingMessage(update);
 
                 try {
                         // Store token address in user state
                         stateData.put("tokenAddress", tokenAddress);
+                        
+                        // Convert token info to JsonNode and store in state
+                        ObjectNode tokenInfoJson = objectMapper.valueToTree(tokenInfo);
+                        stateData.set("tokenInfo", tokenInfoJson);
                         stateService.setStateData(userId, stateData);
-
-                        // Fetch token information
-                        Map<String, Object> tokenInfo = solanaUtils.getTokenInformation(tokenAddress);
-                        if (tokenInfo == null || tokenInfo.isEmpty()) {
-                                MessageUtils.editMessage(update,
-                                                "Token not found. Please check the token address and try again.", null);
-                                return;
-                        }
 
                         // Add code to get user's wallet address and check for token balance
                         Long telegramId = update.hasCallbackQuery() ? 
@@ -177,29 +181,6 @@ public class TokenInfo implements StateHandler {
 
                         log.info("Token Info: {}", tokenInfo);
 
-                        // Create a structured JSON object for token information
-                        ObjectNode tokenInfoJson = new ObjectMapper().createObjectNode();
-                        tokenInfoJson.put("tokenName", tokenInfo.getOrDefault("name", "Unknown").toString());
-                        tokenInfoJson.put("tokenSymbol", tokenInfo.getOrDefault("symbol", "Unknown").toString());
-                        tokenInfoJson.put("tokenAddress", tokenAddress);
-                        tokenInfoJson.put("tokenDecimals", (Integer) tokenInfo.getOrDefault("decimals", 0));
-                        tokenInfoJson.put("tokenTotalSupply", (Long) tokenInfo.getOrDefault("totalSupply", 0L));
-
-                        // Retrieve the last price from the BirdEye response
-                        Double price = tokenInfo.containsKey("price")
-                                        ? (tokenInfo.get("price") instanceof Number
-                                            ? ((Number) tokenInfo.get("price")).doubleValue()
-                                            : 0.0)
-                                        : 0.0;
-
-                        // Store price as a String to maintain exact representation
-                        String priceUSD = String.valueOf(price);
-
-                        // Store the structured JSON object in the state
-                        tokenInfoJson.put("priceUSD", priceUSD); // Store the price as a String
-                        stateData.set("tokenInfo", tokenInfoJson);
-                        stateService.setStateData(userId, stateData);
-
                         // Handle all possible values with type checking and defaults
                         String name = tokenInfo.getOrDefault("name", "Unknown").toString();
                         String symbol = tokenInfo.getOrDefault("symbol", "Unknown").toString();
@@ -215,6 +196,11 @@ public class TokenInfo implements StateHandler {
                                                         ? ((Number) tokenInfo.get("totalSupply")).longValue()
                                                         : 0L)
                                         : 0L;
+
+                        // Get price from token info
+                        String priceUSD = tokenInfo.containsKey("priceUSD") 
+                                        ? tokenInfo.get("priceUSD").toString() 
+                                        : "0.0";
 
                         // Raydium pool info
                         Double tvl = tokenInfo.containsKey("tvl") ? (tokenInfo.get("tvl") instanceof Number

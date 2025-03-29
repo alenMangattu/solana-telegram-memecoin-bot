@@ -55,12 +55,18 @@ public enum ChatState {
     // Add new state for token selection
     AWAITING_TOKEN_SELECTION,    // Waiting for token selection from keyboard
     TOKEN_INFO_PAGE,             // New state for token information page
+    AWAITING_VALID_TOKEN,        // Waiting for valid token input after invalid token
     
     // Buy states
     AWAITING_BUY_AMOUNT,
     AWAITING_BUY_SLIPPAGE,
     BUY_CONFIRMATION,
     AWAITING_LIMIT_PRICE,
+    
+    // Sell states
+    AWAITING_SELL_AMOUNT,
+    AWAITING_SELL_SLIPPAGE,
+    SELL_CONFIRMATION,
     
     // New states from the code block
     AWAITING_BUY_AMOUNT_INPUT,

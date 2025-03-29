@@ -19,6 +19,7 @@ import com.lunax.telegramBot.model.db.User;
 import com.lunax.telegramBot.model.repository.CopyTradingRepository;
 import com.lunax.telegramBot.component.navigation.components.trading.CopyTradingHandler;
 import com.lunax.telegramBot.event.CallbackQueryEvent;
+import com.lunax.telegramBot.component.navigation.components.settings.wallet.Wallets;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
@@ -44,6 +45,9 @@ public class NavigationEventListener {
     
     @Autowired
     private CopyTradingHandler copyTradingHandler;
+    
+    @Autowired
+    private Wallets wallets;
     
     // You would add other handlers here as needed
     
@@ -116,10 +120,10 @@ public class NavigationEventListener {
                 tradeMemeCoinService.executeTradeMemeCoin(event.getUpdate());
                 break;
                 
-            // case "delete_limit_order":
-            //     // For delete limit order, we'll use the same component as view, as it includes delete functionality
-            //     viewLimitOrders.executeVoid(event.getUpdate());
-            //     break;
+            case "wallets":
+                // Handle wallets navigation
+                wallets.executeVoid(event.getUpdate());
+                break;
                 
             default:
                 log.warn("Unknown navigation destination: {}", destination);
