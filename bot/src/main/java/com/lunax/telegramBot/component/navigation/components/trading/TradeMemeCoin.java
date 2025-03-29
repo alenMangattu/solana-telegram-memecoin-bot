@@ -315,14 +315,34 @@ public class TradeMemeCoin implements StateHandler {
         
         // Get state data
         ObjectNode stateData = stateService.getStateData(telegramId);
-        if (stateData == null || !stateData.has("tradeType")) {
+        if (stateData == null) {
+            MessageUtils.sendMessage(update, "❌ Error: No state data found.");
+            return;
+        }
+        
+        if (!stateData.has("tradeType")) {
             MessageUtils.sendMessage(update, "❌ Please start the trading process again.");
             return;
         }
         
         // Validate token address format
-        if (!tokenDetailsService.isValidSolanaAddress(tokenAddress)) {
+        if (!solanaUtils.isValidSolanaAddress(tokenAddress)) {
             MessageUtils.sendMessage(update, "❌ Invalid token address format. A Solana token address should be a Base58 encoded string typically 32-44 characters long.\n\nPlease enter a valid Solana token address.");
+            return;
+        }
+        
+        // Validate token using SolanaUtils
+        Map<String, Object> validationResult = solanaUtils.validateToken(tokenAddress);
+        if (!(Boolean) validationResult.get("valid")) {
+            String errorMessage = (String) validationResult.get("errorMessage");
+            MessageUtils.sendMessage(update, "❌ " + errorMessage);
+            return;
+        }
+        
+        // Get the validated token info
+        Map<String, Object> tokenInfo = (Map<String, Object>) validationResult.get("tokenInfo");
+        if (tokenInfo == null) {
+            MessageUtils.sendMessage(update, "❌ Error: Could not retrieve token information.");
             return;
         }
         
@@ -336,25 +356,25 @@ public class TradeMemeCoin implements StateHandler {
         try {
             // Get user
             User user = tokenDetailsService.getUserFromCacheOrDatabase(telegramId);
-            String walletAddress = user.getCurrentWalletAddress();
-            
-            // Fetch token information
-            Map<String, Object> tokenInfo = solanaUtils.getTokenInformation(tokenAddress);
-            if (tokenInfo == null || tokenInfo.isEmpty()) {
-                MessageUtils.editMessage(update,
-                        "❌ Token not found. Please check the token address and try again.", null);
-                stateService.setState(telegramId, ChatState.TRADE_MEMECOIN_START);
+            if (user == null) {
+                MessageUtils.editMessage(update, "❌ Error: User not found.", null);
                 return;
             }
             
-            // Create token info JSON
+            String walletAddress = user.getCurrentWalletAddress();
+            if (walletAddress == null) {
+                MessageUtils.editMessage(update, "❌ Error: No wallet address found.", null);
+                return;
+            }
+            
+            // Create token info JSON using the already validated token info
             ObjectNode tokenInfoJson = objectMapper.createObjectNode();
             tokenInfoJson.put("tokenName", tokenInfo.getOrDefault("name", "Unknown").toString());
             tokenInfoJson.put("tokenSymbol", tokenInfo.getOrDefault("symbol", "Unknown").toString());
             tokenInfoJson.put("tokenAddress", tokenAddress);
             tokenInfoJson.put("tokenDecimals", (Integer) tokenInfo.getOrDefault("decimals", 0));
             
-            // Get token price
+            // Get token price from the validated token info
             Double price = tokenInfo.containsKey("price")
                     ? (tokenInfo.get("price") instanceof Number
                         ? ((Number) tokenInfo.get("price")).doubleValue()
@@ -362,14 +382,19 @@ public class TradeMemeCoin implements StateHandler {
                     : 0.0;
             tokenInfoJson.put("priceUSD", String.valueOf(price));
             
-            // Get token balance with proper error handling
+            // Only check token balance for sell operations
             double balance = 0.0;
-            try {
-                balance = solanaUtils.getTokenBalance(walletAddress, tokenAddress);
-                tokenInfoJson.put("balance", balance);
-            } catch (Exception e) {
-                log.error("Error getting balance for token {}: {}", tokenAddress, e.getMessage());
-                // Don't show error to user, just log it and continue with 0 balance
+            String tradeType = stateData.get("tradeType").asText();
+            if ("sell".equals(tradeType)) {
+                try {
+                    balance = solanaUtils.getTokenBalance(walletAddress, tokenAddress);
+                    tokenInfoJson.put("balance", balance);
+                } catch (Exception e) {
+                    log.error("Error getting balance for token {}: {}", tokenAddress, e.getMessage());
+                    tokenInfoJson.put("balance", 0.0);
+                }
+            } else {
+                // For buy operations, set balance to 0 since we don't need it
                 tokenInfoJson.put("balance", 0.0);
             }
             
@@ -381,7 +406,6 @@ public class TradeMemeCoin implements StateHandler {
             MessageUtils.deleteMessage(loadingMessage);
             
             // Route to the appropriate handler based on trade type
-            String tradeType = stateData.get("tradeType").asText();
             if ("buy".equals(tradeType)) {
                 buyHandler.executeVoid(update);
             } else {

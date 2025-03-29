@@ -599,6 +599,9 @@ public class SolanaUtils {
                     }
                 } else {
                     log.error("No result found for token in Helius: {}", tokenAddress);
+                    tokenInfo.put("error", "Token not found");
+                    tokenInfo.put("errorMessage", "The token address you provided could not be found. Please check the address and try again.");
+                    return tokenInfo;
                 }
             }
             
@@ -674,45 +677,29 @@ public class SolanaUtils {
                         tokenInfo.put("lpAmount", firstPool.get("lpAmount").asDouble());
                         tokenInfo.put("burnPercent", firstPool.get("burnPercent").asDouble());
                     }
-                    
-                    // Step 3: Get detailed pool information
-                    String poolDetailUrl = String.format(
-                        "https://api-v3.raydium.io/pools/info/ids?ids=%s",
-                        poolId
-                    );
-                    
-                    ResponseEntity<JsonNode> poolDetailResponse = new RestTemplate().getForEntity(
-                        poolDetailUrl,
-                        JsonNode.class
-                    );
-                    
-                    log.info("Raydium pool detail response: {}", poolDetailResponse.getBody());
-                    
-                    if (poolDetailResponse.getStatusCode().is2xxSuccessful() && 
-                        poolDetailResponse.getBody() != null && 
-                        poolDetailResponse.getBody().has("data") && 
-                        poolDetailResponse.getBody().get("data").isArray() && 
-                        poolDetailResponse.getBody().get("data").size() > 0) {
-                        
-                        JsonNode poolDetail = poolDetailResponse.getBody().get("data").get(0);
-                        
-                        // Add any additional details not already captured above
-                        tokenInfo.put("mintAmountA", poolDetail.get("mintAmountA").asDouble());
-                        tokenInfo.put("mintAmountB", poolDetail.get("mintAmountB").asDouble());
-                    }
                 } else {
                     log.warn("No pools found for token: {}", tokenAddress);
+                    tokenInfo.put("error", "No liquidity pools found");
+                    tokenInfo.put("errorMessage", "This token has no active liquidity pools. Trading is not available.");
+                    return tokenInfo;
                 }
             } else {
                 log.error("Failed to get pool information for token: {}", tokenAddress);
+                tokenInfo.put("error", "Failed to get pool information");
+                tokenInfo.put("errorMessage", "Unable to fetch token information. Please try again later.");
+                return tokenInfo;
             }
             
         } catch (RestClientException e) {
             log.error("Error making request to API: {}", e.getMessage());
-            tokenInfo.put("error", "Failed to fetch token information: " + e.getMessage());
+            tokenInfo.put("error", "API Error");
+            tokenInfo.put("errorMessage", "Failed to fetch token information. Please try again later.");
+            return tokenInfo;
         } catch (Exception e) {
             log.error("Error processing token information: {}", e.getMessage());
-            tokenInfo.put("error", "Error processing token information: " + e.getMessage());
+            tokenInfo.put("error", "Processing Error");
+            tokenInfo.put("errorMessage", "An error occurred while processing the token information. Please try again.");
+            return tokenInfo;
         }
 
         return tokenInfo;
@@ -1020,6 +1007,9 @@ public class SolanaUtils {
         private String walletPrivateKey; // Private key of the wallet making the purchase
     }
 
+    /**
+     * Response class for swap transactions
+     */
     @Data
     public static class SwapResponse {
         private boolean success;      // Whether the swap was successful
@@ -1027,6 +1017,14 @@ public class SolanaUtils {
         private String error;         // Error message if any
         private double amount;        // Amount of tokens received
         private double price;         // Execution price
+
+        public SwapResponse(boolean success, String signature, String error, double amount, double price) {
+            this.success = success;
+            this.signature = signature;
+            this.error = error;
+            this.amount = amount;
+            this.price = price;
+        }
     }
 
     /**
@@ -1312,6 +1310,163 @@ public class SolanaUtils {
         } catch (Exception e) {
             log.error("Error getting token balance: {}", e.getMessage());
             return 0.0; // Return 0 instead of throwing exception
+        }
+    }
+
+    /**
+     * Validates a Solana token address and returns detailed information about any validation issues
+     * @param tokenAddress The token address to validate
+     * @return Map containing validation status and error message if invalid
+     */
+    public Map<String, Object> validateToken(String tokenAddress) {
+        Map<String, Object> result = new HashMap<>();
+        
+        // Basic format validation
+        if (tokenAddress == null || tokenAddress.isEmpty()) {
+            result.put("valid", false);
+            result.put("error", "Token address cannot be empty");
+            result.put("errorMessage", "Please enter a valid token address.");
+            return result;
+        }
+        
+        // Check if it looks like an @ mention or command
+        if (tokenAddress.contains("@") || tokenAddress.contains("/")) {
+            result.put("valid", false);
+            result.put("error", "Invalid token format");
+            result.put("errorMessage", "The input appears to be a command or mention. Please enter a valid Solana token address.");
+            return result;
+        }
+        
+        // Check length (typical Solana addresses are 32-44 chars)
+        if (tokenAddress.length() < 32 || tokenAddress.length() > 44) {
+            result.put("valid", false);
+            result.put("error", "Invalid address length");
+            result.put("errorMessage", "A Solana token address should be 32-44 characters long. Please check the address and try again.");
+            return result;
+        }
+        
+        // Check if it uses only Base58 characters
+        String base58Chars = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+        for (char c : tokenAddress.toCharArray()) {
+            if (base58Chars.indexOf(c) == -1) {
+                result.put("valid", false);
+                result.put("error", "Invalid characters");
+                result.put("errorMessage", "The token address contains invalid characters. Solana addresses can only contain Base58 characters.");
+                return result;
+            }
+        }
+        
+        // Try to get token information to verify it exists and has liquidity
+        Map<String, Object> tokenInfo = getTokenInformation(tokenAddress);
+        if (tokenInfo == null || tokenInfo.isEmpty()) {
+            result.put("valid", false);
+            result.put("error", "Token not found");
+            result.put("errorMessage", "The token address you provided could not be found. Please check the address and try again.");
+            return result;
+        }
+        
+        // Check if token has liquidity
+        if (!tokenInfo.containsKey("poolId") || tokenInfo.get("poolId").toString().equals("N/A")) {
+            result.put("valid", false);
+            result.put("error", "No liquidity");
+            result.put("errorMessage", "This token has no active liquidity pools. Trading is not available at this time.");
+            return result;
+        }
+        
+        // Token is valid
+        result.put("valid", true);
+        result.put("tokenInfo", tokenInfo);
+        return result;
+    }
+
+    /**
+     * Validates if a string is a proper Solana address
+     * @param address The address to validate
+     * @return true if valid, false otherwise
+     */
+    public boolean isValidSolanaAddress(String address) {
+        // Basic validation for Solana addresses
+        if (address == null || address.isEmpty()) {
+            return false;
+        }
+        
+        // Check if it looks like an @ mention or command
+        if (address.contains("@") || address.contains("/")) {
+            return false;
+        }
+        
+        // Check length (typical Solana addresses are 32-44 chars)
+        if (address.length() < 32 || address.length() > 44) {
+            return false;
+        }
+        
+        // Check if it uses only Base58 characters
+        String base58Chars = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+        for (char c : address.toCharArray()) {
+            if (base58Chars.indexOf(c) == -1) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+
+    /**
+     * Gets all tokens created by an account (where the account is the mint authority)
+     * @param walletAddress The wallet address to check
+     * @return JsonNode containing all tokens created by the account
+     */
+    public JsonNode getTokensCreatedByAccount(String walletAddress) {
+        try {
+            return solanaCliUtils.getTokensCreatedByAccount(walletAddress);
+        } catch (Exception e) {
+            log.error("Failed to get tokens created by account for wallet {}: {}", walletAddress, e.getMessage());
+            return objectMapper.createObjectNode();
+        }
+    }
+
+    /**
+     * Sells a token for SOL
+     * @param tokenAddress The token address to sell
+     * @param amount The amount of tokens to sell
+     * @param slippage The maximum allowed slippage percentage
+     * @param walletPrivateKey The private key of the wallet selling the tokens
+     * @param priority The transaction priority
+     * @return SwapResponse containing the transaction details
+     */
+    public SwapResponse sellToken(String tokenAddress, double amount, int slippage, String walletPrivateKey, TransactionPriority priority) {
+        try {
+            log.info("Initiating token sell for token: {}, amount: {}, slippage: {}%", tokenAddress, amount, slippage);
+            
+            // Create the request body
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("tokenAddress", tokenAddress);
+            requestBody.put("amount", amount);
+            requestBody.put("slippage", slippage);
+            requestBody.put("walletPrivateKey", walletPrivateKey);
+            requestBody.put("priority", priority.name());
+            
+            // Make the request to the swap API
+            ResponseEntity<Map<String, Object>> response = makeRequest(
+                "/api/swap/sell",
+                HttpMethod.POST,
+                requestBody,
+                new ParameterizedTypeReference<Map<String, Object>>() {}
+            );
+            
+            Map<String, Object> responseBody = response.getBody();
+            if (responseBody != null) {
+                boolean success = (Boolean) responseBody.getOrDefault("success", false);
+                String signature = (String) responseBody.get("signature");
+                double receivedAmount = ((Number) responseBody.get("amount")).doubleValue();
+                
+                return new SwapResponse(success, signature, null, receivedAmount, 0.0);
+            }
+            
+            throw new RuntimeException("Invalid response from swap API");
+        } catch (Exception e) {
+            log.error("Failed to sell token: {}", e.getMessage());
+            throw new RuntimeException("Failed to sell token", e);
         }
     }
 }

@@ -935,4 +935,58 @@ public class SolanaCliUtils {
         log.warn("Unable to extract token balance from account info for token: {}", tokenAddress);
         return "0";
     }
+
+    /**
+     * Gets all tokens where the wallet is either the owner or the mint address
+     * @param walletAddress The wallet address to check
+     * @return JsonNode containing all tokens where the wallet is owner or mint
+     */
+    public JsonNode getTokensCreatedByAccount(String walletAddress) {
+        try {
+            // Get all token accounts for this wallet
+            String command = String.format("spl-token accounts --owner %s --output json --url %s", walletAddress, clusterUrl);
+            System.out.println("DEBUG: Command: " + command);
+            ProcessBuilder processBuilder = new ProcessBuilder("/bin/sh", "-c", command);
+            processBuilder.redirectErrorStream(true);
+            Process process = processBuilder.start();
+            
+            StringBuilder output = new StringBuilder();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    System.out.println("DEBUG: Line: " + line);
+                    output.append(line).append("\n");
+                }
+            }
+            
+            int exitCode = process.waitFor();
+            if (exitCode == 0) {
+                // Parse the JSON output
+                String jsonString = output.toString().trim();
+                JsonNode accountsNode = objectMapper.readTree(jsonString);
+                
+                // Filter to only include tokens where the wallet is either owner or mint
+                ArrayNode filteredTokens = objectMapper.createArrayNode();
+                if (accountsNode.has("accounts") && accountsNode.get("accounts").isArray()) {
+                    for (JsonNode account : accountsNode.get("accounts")) {
+                        // Check if the wallet is either the owner or the mint
+                        if (account.has("owner") && account.get("owner").asText().equals(walletAddress) ||
+                            account.has("mint") && account.get("mint").asText().equals(walletAddress)) {
+                            filteredTokens.add(account);
+                        }
+                    }
+                }
+                
+                ObjectNode result = objectMapper.createObjectNode();
+                result.set("accounts", filteredTokens);
+                return result;
+            } else {
+                log.error("Error getting tokens for account. Exit code: {}, Output: {}", exitCode, output);
+                return objectMapper.createObjectNode();
+            }
+        } catch (Exception e) {
+            log.error("Failed to get tokens for account: {}", e.getMessage());
+            return objectMapper.createObjectNode();
+        }
+    }
 }

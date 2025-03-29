@@ -17,6 +17,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.lunax.telegramBot.component.navigation.components.StateHandler;
@@ -143,7 +144,17 @@ public class MemecoinList implements StateHandler {
             log.info("Retrieved token addresses from cache for wallet: {}", walletAddress);
         } else {
             // Fetch from Solana and cache the result
-            tokenAddresses = solanaUtils.getTokenAccounts(walletAddress);
+            JsonNode createdTokens = solanaUtils.getTokensCreatedByAccount(walletAddress);
+            tokenAddresses = new ArrayList<>();
+            
+            if (createdTokens != null && createdTokens.has("accounts") && createdTokens.get("accounts").isArray()) {
+                for (JsonNode account : createdTokens.get("accounts")) {
+                    if (account.has("mint")) {
+                        tokenAddresses.add(account.get("mint").asText());
+                    }
+                }
+            }
+            
             // Save to cache
             if (userTokenAccountsCache != null) {
                 userTokenAccountsCache.put(walletAddress, tokenAddresses);
@@ -153,7 +164,7 @@ public class MemecoinList implements StateHandler {
 
         // Prepare the formatted list of tokens
         StringBuilder formattedList = new StringBuilder();
-        formattedList.append("📜 *Here is the list of your token you are holding (Page " + (page + 1) + "):*\n\n");
+        formattedList.append("📜 *Here are the tokens where you are either the owner or mint (Page " + (page + 1) + "):*\n\n");
 
         int totalTokens = tokenAddresses.size();
         int totalPages = (int) Math.ceil((double) totalTokens / PAGE_SIZE);
@@ -234,7 +245,7 @@ public class MemecoinList implements StateHandler {
                     if (!tokenReplyMessageIdExists) {
                         SendMessage replyMessage = SendMessage.builder()
                                 .chatId(originalMessage.getChatId().toString())
-                                .text("Please enter the token address to see more information:")
+                                .text("Please enter a valid Solana token address to see more information:")
                                 .parseMode("Markdown")
                                 .build();
 
@@ -247,7 +258,6 @@ public class MemecoinList implements StateHandler {
 
                         log.info("Sent token selection message to user {} with message ID {}", telegramId,
                                 sentMessage.getMessageId());
-
                     }
 
                     stateService.setStateData(telegramId, stateData2);

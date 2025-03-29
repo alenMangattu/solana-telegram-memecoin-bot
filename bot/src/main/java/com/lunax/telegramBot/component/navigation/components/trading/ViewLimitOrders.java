@@ -105,6 +105,9 @@ public class ViewLimitOrders implements StateHandler {
         
         // Format the message
         StringBuilder message = new StringBuilder();
+        message.append("⚠️ *COMING SOON: Limit Order Feature*\n");
+        message.append("The limit order feature is currently under development and not yet available.\n");
+        message.append("Your orders are saved but will not be executed until the feature is released.\n\n");
         message.append("📋 *Your Active Limit Orders* ").append("(Page ").append(currentPage + 1).append(" of ").append(totalPages).append(")\n\n");
         message.append("You have *").append(totalOrders).append("* active orders waiting to execute.\n\n");
         
