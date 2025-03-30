@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.lunax.telegramBot.service.StateService;
 import com.lunax.telegramBot.service.UserService;
+import com.lunax.telegramBot.service.UserSettingsService;
 import com.lunax.telegramBot.utils.components.ButtonHandler;
 import com.lunax.telegramBot.model.db.User;
 import com.lunax.telegramBot.model.session.ChatState;
@@ -89,6 +90,9 @@ public class TokenInfo implements StateHandler {
 
         @Autowired
         private ObjectMapper objectMapper;
+
+        @Autowired
+        private UserSettingsService userSettingsService;
 
         @SuppressWarnings("null")
         @Override
@@ -353,14 +357,39 @@ public class TokenInfo implements StateHandler {
                             log.error("Historical data structure unexpected: {}", historicalData);
                         }
 
+                        // Get user settings for EMA and RSI
+                        JsonNode userSettings = null;
+                        if (userOpt.isPresent()) {
+                            User user = userOpt.get();
+                            userSettings = userSettingsService.findByUserId(user.getId()).getSettings();
+                        }
+
+                        // Extract EMA and RSI values from user settings
+                        int[] emaValues = new int[]{1, 3}; // Default values
+                        int rsiPeriod = 3; // Default value
+                        
+                        if (userSettings != null) {
+                            if (userSettings.has("EMA") && userSettings.get("EMA").isArray()) {
+                                JsonNode emaArray = userSettings.get("EMA");
+                                emaValues = new int[emaArray.size()];
+                                for (int i = 0; i < emaArray.size(); i++) {
+                                    emaValues[i] = emaArray.get(i).asInt();
+                                }
+                            }
+                            if (userSettings.has("RSI")) {
+                                rsiPeriod = userSettings.get("RSI").asInt();
+                            }
+                        }
+
                         // Send the historical data to the chart endpoint and get the image
                         String tokenTicker = symbol; // Use the retrieved symbol
 
                         log.info("Token Ticker: {}", tokenTicker);
                         log.info("Updated Price USD: {}", updatedPriceUSD);
+                        log.info("Using EMA values: {}, RSI period: {}", emaValues, rsiPeriod);
 
                         InputStreamResource imageResource = solanaUtils.sendHistoricalDataToChart(tokenAddress,
-                                        historicalData, timeFrequency, tokenTicker);
+                                        historicalData, timeFrequency, tokenTicker, emaValues, rsiPeriod);
                         if (imageResource == null) {
                                 MessageUtils.sendMessage(update, "Failed to retrieve the chart image.");
                                 return; // Stop further processing if image retrieval fails
@@ -417,7 +446,7 @@ public class TokenInfo implements StateHandler {
                                         • Current Price: $%s%s
 
                                         🔄 *Liquidity Pool Info*
-                                        • Pool ID: %s
+                                        • Pool ID: `%s`
                                         • Paired With: %s
                                         • TVL: $%,.2f
                                         • Fee Rate: %.2f%%
