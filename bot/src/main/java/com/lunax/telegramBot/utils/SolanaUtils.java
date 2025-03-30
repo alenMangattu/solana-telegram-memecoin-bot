@@ -756,7 +756,7 @@ public class SolanaUtils {
     }
 
     // Method to send historical data to the chart endpoint
-    public InputStreamResource sendHistoricalDataToChart(String tokenAddress, JsonNode historicalData, String timeFrequency, String tokenTicker) {
+    public InputStreamResource sendHistoricalDataToChart(String tokenAddress, JsonNode historicalData, String timeFrequency, String tokenTicker, int[] emaValues, int rsiPeriod) {
         String chartUrl = "http://localhost:7000/chart";
         
         // Construct the payload
@@ -793,15 +793,26 @@ public class SolanaUtils {
         
         // Set top-level fields
         payload.put("token_ticker", tokenTicker); // Now guaranteed to be non-null
-        payload.put("ema_slow_period", 69); 
-        payload.put("ema_fast_period", 12);
-        payload.put("rsi_period", 14);
+        
+        // Use the provided EMA values
+        if (emaValues != null && emaValues.length >= 2) {
+            payload.put("ema_slow_period", emaValues[0]); 
+            payload.put("ema_fast_period", emaValues[1]);
+        } else {
+            // Default values if not enough EMA values provided
+            payload.put("ema_slow_period", 1); 
+            payload.put("ema_fast_period", 3);
+        }
+        
+        // Use the provided RSI period
+        payload.put("rsi_period", rsiPeriod);
         payload.put("frequency", timeFrequency);
         payload.put("success", true);
         
         payload.put("data", data); // Add the data object to the payload
 
-        log.info("Sending chart request with payload: token_ticker={}, frequency={}", tokenTicker, timeFrequency);
+        log.info("Sending chart request with payload: token_ticker={}, frequency={}, ema_values={}, rsi_period={}", 
+            tokenTicker, timeFrequency, emaValues, rsiPeriod);
 
         // Create RestTemplate with proper message converters for handling binary data
         RestTemplate restTemplate = new RestTemplate();

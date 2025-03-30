@@ -239,48 +239,99 @@ public class Sell implements StateHandler {
             stateService.setState(userId, ChatState.AWAITING_VALID_TOKEN);
             return;
         }
+
+        // Get user's token balance
+        Optional<User> userOpt = userService.findByTelegramId(userId);
+        if (!userOpt.isPresent()) {
+            log.error("Error: User not found for user {}", userId);
+            MessageUtils.sendMessage(update, "❌ User not found. Please setup your wallet first.");
+            return;
+        }
+
+        User user = userOpt.get();
+        if (user.getCurrentWallet() == null) {
+            log.error("Error: No active wallet for user {}", userId);
+            MessageUtils.sendMessage(update, "❌ You don't have an active wallet. Please set up a wallet first.");
+            return;
+        }
+
+        // Get token balance
+        double tokenBalance = 0;
+        try {
+            tokenBalance = solanaUtils.getTokenAmount(user.getCurrentWallet().toString(), stateData.get("tokenAddress").asText());
+            log.info("Token balance for user {}: {} {}", userId, tokenBalance, tokenSymbol);
+        } catch (Exception e) {
+            log.error("Error checking token balance for user {}: {}", userId, e.getMessage());
+            MessageUtils.sendMessage(update, "❌ Error checking token balance. Please try again.");
+            return;
+        }
+
+        if (tokenBalance <= 0) {
+            String message = String.format("""
+                    ❌ *Insufficient Balance*
+                    
+                    You don't have any %s tokens to sell.
+                    Please buy some tokens first.
+                    """, tokenSymbol);
+            
+            // Create keyboard with back button
+            ButtonHandler[][] keyboard = new ButtonHandler[][] {
+                {
+                    new ButtonHandler() {
+                        @Override public String getButtonText() { return "🔙 Back to Trading"; }
+                        @Override public String getCallbackData() { return "back_to_trading"; }
+                        @Override public void handleCallback(Update update) { 
+                            handleCancelSell(update, update.getCallbackQuery().getFrom().getId());
+                        }
+                    }
+                }
+            };
+            
+            MessageUtils.sendInlineKeyboard(update, message, keyboard);
+            stateService.setState(userId, ChatState.TOKEN_INFO_PAGE);
+            return;
+        }
         
         // Get user settings for sell amounts and slippage
-        double[] sellAmounts = {1000, 5000, 10000}; // Default values
-        double defaultSlippage = 20.0; // Default value
-        boolean isLimitOrder = stateData.has("isLimitOrder") ? stateData.get("isLimitOrder").asBoolean() : false;
+        final double[] sellPercentages = {10.0, 50.0, 100.0}; // Default values
+        final int[] sellSlippage = {50}; // Default value in array to allow modification
         
         // Try to get values from user settings
-        Optional<User> userOpt = userService.findByTelegramId(userId);
-        if (userOpt.isPresent()) {
-            User user = userOpt.get();
-            System.out.println("Getting slippage for user ID: " + user.getId());
-            
-            // Get sell slippage from settings
-            int sellSlippage = getSellSlippageFromSettings(user);
-            System.out.println("Explicitly retrieved sell slippage: " + sellSlippage);
-            
-            // Set default slippage from the retrieved value
-            defaultSlippage = sellSlippage;
-            
-            UserSettings settings = userSettingsService.findByUserId(user.getId());
+        Optional<User> userOptions = userService.findByTelegramId(userId);
+        if (userOptions.isPresent()) {
+            User userSettings = userOptions.get();
+            UserSettings settings = userSettingsService.findByUserId(userSettings.getId());
             if (settings != null && settings.getSettings() != null) {
                 JsonNode settingsJson = settings.getSettings();
-                System.out.println("User settings JSON: " + settingsJson);
                 
-                // Get sell amounts from settings
+                // Get sell percentages from settings
                 if (settingsJson.has("sell") && settingsJson.get("sell").isArray()) {
                     JsonNode sellArr = settingsJson.get("sell");
-                    for (int i = 0; i < Math.min(sellArr.size(), 3); i++) {
-                        sellAmounts[i] = sellArr.get(i).asDouble();
+                    double[] tempPercentages = new double[sellArr.size()];
+                    for (int i = 0; i < sellArr.size(); i++) {
+                        tempPercentages[i] = sellArr.get(i).asDouble();
+                    }
+                    System.arraycopy(tempPercentages, 0, sellPercentages, 0, Math.min(tempPercentages.length, sellPercentages.length));
+                }
+                
+                // Get sell slippage from settings
+                if (settingsJson.has("sell_slippage") && settingsJson.get("sell_slippage").isArray()) {
+                    JsonNode slippageArr = settingsJson.get("sell_slippage");
+                    if (slippageArr.size() > 0) {
+                        sellSlippage[0] = slippageArr.get(0).asInt();
                     }
                 }
             }
         }
-        
+
         // Get current values from state (if set)
-        double selectedAmount = stateData.has("sellAmount") ? stateData.get("sellAmount").asDouble() : sellAmounts[0];
-        double selectedSlippage = stateData.has("slippage") ? stateData.get("slippage").asDouble() : defaultSlippage;
+        double selectedPercentage = stateData.has("sellPercentage") ? stateData.get("sellPercentage").asDouble() : 100.0;
+        boolean isLimitOrder = stateData.has("isLimitOrder") ? stateData.get("isLimitOrder").asBoolean() : false;
         double limitPrice = stateData.has("limitPrice") ? stateData.get("limitPrice").asDouble() : tokenPrice;
         
         // Update state with current values
-        stateData.put("sellAmount", selectedAmount);
-        stateData.put("slippage", selectedSlippage);
+        stateData.put("sellPercentage", selectedPercentage);
+        stateData.put("slippage", sellSlippage[0]);
         stateData.put("isLimitOrder", isLimitOrder);
         if (isLimitOrder) {
             stateData.put("limitPrice", limitPrice);
@@ -290,12 +341,13 @@ public class Sell implements StateHandler {
         // Calculate SOL amount
         double solanaPrice = solanaUtils.getSolanaPrice();
         double effectivePrice = isLimitOrder ? limitPrice : tokenPrice;
-        double solAmount = (selectedAmount * effectivePrice) / solanaPrice;
+        double sellAmount = tokenBalance * (selectedPercentage / 100.0);
+        double solAmount = (sellAmount * effectivePrice) / solanaPrice;
         
         // Create message with new compact format
         String limitOrderSection = isLimitOrder ? String.format("""
                 📊 *Limit Order Details*
-                💰 Amount: %.4f %s
+                💰 Amount: %.4f %s (%.1f%%)
                 📈 Limit Price: $%.6f
                 ⏳ Status: Pending
                 🔄 Will execute when price reaches $%.6f
@@ -304,8 +356,9 @@ public class Sell implements StateHandler {
                 The limit order feature is currently under development and not yet available.
                 Your order will be saved but not executed until the feature is released.
                 """, 
-                selectedAmount,
+                sellAmount,
                 tokenSymbol,
+                selectedPercentage,
                 limitPrice,
                 limitPrice) : "";
 
@@ -313,7 +366,7 @@ public class Sell implements StateHandler {
                 🚀 SWAP $%s → SOL
                 
                 ⚡ Trade Details:
-                🔒 You pay: %.4f $%s ($%.2f)
+                🔒 You pay: %.4f $%s (%.1f%% of %.4f)
                 ✅ You receive: %.4f SOL (estimated)
                 Rate: 1 $%s = $%.6f
                 
@@ -326,53 +379,54 @@ public class Sell implements StateHandler {
                 ⚠️ Warning: Transactions cannot be reversed once confirmed.
                 """,
                 tokenSymbol,
-                selectedAmount,
+                sellAmount,
                 tokenSymbol,
-                selectedAmount * effectivePrice,
+                selectedPercentage,
+                tokenBalance,
                 solAmount,
                 tokenSymbol,
                 effectivePrice,
-                selectedSlippage,
+                sellSlippage[0],
                 limitOrderSection
         );
 
         log.debug("Prepared sell screen message for user {}: {}", userId, message);
         
-        // Create buttons with preset sell amounts
+        // Create buttons with percentage options
         ButtonHandler[][] keyboard = new ButtonHandler[][] {
             {
                 new ButtonHandler() {
-                    @Override public String getButtonText() { return sellAmounts[0] + " " + tokenSymbol; }
-                    @Override public String getCallbackData() { return "sell_amount_" + sellAmounts[0]; }
+                    @Override public String getButtonText() { return String.format("%.1f%%", sellPercentages[0]); }
+                    @Override public String getCallbackData() { return "sell_percent_" + sellPercentages[0]; }
                     @Override public void handleCallback(Update update) { 
-                        updateSellAmount(update, update.getCallbackQuery().getFrom().getId(), String.valueOf(sellAmounts[0])); 
+                        updateSellPercentage(update, update.getCallbackQuery().getFrom().getId(), String.valueOf(sellPercentages[0])); 
                     }
                 },
                 new ButtonHandler() {
-                    @Override public String getButtonText() { return sellAmounts[1] + " " + tokenSymbol; }
-                    @Override public String getCallbackData() { return "sell_amount_" + sellAmounts[1]; }
+                    @Override public String getButtonText() { return String.format("%.1f%%", sellPercentages[1]); }
+                    @Override public String getCallbackData() { return "sell_percent_" + sellPercentages[1]; }
                     @Override public void handleCallback(Update update) { 
-                        updateSellAmount(update, update.getCallbackQuery().getFrom().getId(), String.valueOf(sellAmounts[1])); 
+                        updateSellPercentage(update, update.getCallbackQuery().getFrom().getId(), String.valueOf(sellPercentages[1])); 
                     }
                 },
                 new ButtonHandler() {
-                    @Override public String getButtonText() { return sellAmounts[2] + " " + tokenSymbol; }
-                    @Override public String getCallbackData() { return "sell_amount_" + sellAmounts[2]; }
+                    @Override public String getButtonText() { return String.format("%.1f%%", sellPercentages[2]); }
+                    @Override public String getCallbackData() { return "sell_percent_" + sellPercentages[2]; }
                     @Override public void handleCallback(Update update) { 
-                        updateSellAmount(update, update.getCallbackQuery().getFrom().getId(), String.valueOf(sellAmounts[2])); 
+                        updateSellPercentage(update, update.getCallbackQuery().getFrom().getId(), String.valueOf(sellPercentages[2])); 
                     }
                 }
             },
             {
                 new ButtonHandler() {
-                    @Override public String getButtonText() { return "Custom Amount"; }
+                    @Override public String getButtonText() { return "Custom %"; }
                     @Override public String getCallbackData() { return CUSTOM_AMOUNT; }
                     @Override public void handleCallback(Update update) { 
                         handleCustomAmount(update, update.getCallbackQuery().getFrom().getId()); 
                     }
                 },
                 new ButtonHandler() {
-                    @Override public String getButtonText() { return "Slippage: " + selectedSlippage + "%"; }
+                    @Override public String getButtonText() { return "Slippage: " + sellSlippage[0] + "%"; }
                     @Override public String getCallbackData() { return CUSTOM_SLIPPAGE; }
                     @Override public void handleCallback(Update update) { 
                         handleCustomSlippage(update, update.getCallbackQuery().getFrom().getId()); 
@@ -602,14 +656,14 @@ public class Sell implements StateHandler {
         }
         
         String message = """
-                💰 *Enter Custom Amount*
+                💰 *Enter Custom Percentage*
                 
-                Please enter the amount of tokens you want to sell:
+                Please enter the percentage of tokens you want to sell (0-100):
                 
-                Example: 1000
+                Example: 75
                 """;
         
-        log.debug("Prompting user {} for custom amount", userId);
+        log.debug("Prompting user {} for custom percentage", userId);
         MessageUtils.sendMessage(update, message);
         stateService.setState(userId, ChatState.AWAITING_SELL_AMOUNT);
     }
@@ -684,6 +738,37 @@ public class Sell implements StateHandler {
         stateService.setState(userId, ChatState.AWAITING_SELL_SLIPPAGE);
     }
     
+    private void updateSellPercentage(Update update, Long userId, String percentageStr) {
+        log.debug("Updating sell percentage for user {} to {}", userId, percentageStr);
+        
+        try {
+            // Parse the percentage
+            double percentage = Double.parseDouble(percentageStr.replace(",", ".").trim());
+            
+            if (percentage <= 0 || percentage > 100) {
+                MessageUtils.sendMessage(update, "❌ Percentage must be between 0 and 100");
+                return;
+            }
+            
+            // Update state with new percentage
+            ObjectNode stateData = stateService.getStateData(userId);
+            stateData.put("sellPercentage", percentage);
+            stateService.setStateData(userId, stateData);
+            
+            if (update.hasCallbackQuery()) {
+                MessageUtils.deleteMessage(update);
+            }
+            
+            // Show updated sell screen
+            showSellScreen(update, userId);
+            
+        } catch (NumberFormatException e) {
+            log.debug("Invalid percentage format: {}", percentageStr);
+            MessageUtils.sendMessage(update, "❌ Please enter a valid percentage (example: 50)");
+            stateService.setState(userId, ChatState.AWAITING_SELL_AMOUNT);
+        }
+    }
+    
     private void handleConfirmSell(Update update, Long userId) {
         // Get token info and sell parameters from state
         ObjectNode stateData = stateService.getStateData(userId);
@@ -711,7 +796,7 @@ public class Sell implements StateHandler {
             return;
         }
         
-        double sellAmount = stateData.has("sellAmount") ? stateData.get("sellAmount").asDouble() : 1000;
+        double sellPercentage = stateData.has("sellPercentage") ? stateData.get("sellPercentage").asDouble() : 100.0;
         
         // Delete current message 
         if (update.hasCallbackQuery()) {
@@ -739,12 +824,12 @@ public class Sell implements StateHandler {
             double tokenBalance = solanaUtils.getTokenAmount(user.getCurrentWallet().toString(), tokenAddress);
             log.info("Token balance for user {}: {} {}", userId, tokenBalance, tokenSymbol);
             
-            if (tokenBalance < sellAmount) {
+            if (tokenBalance < sellPercentage) {
                 log.error("Error: Insufficient token balance for user {}. Has: {}, Wants to sell: {}", 
-                    userId, tokenBalance, sellAmount);
+                    userId, tokenBalance, sellPercentage);
                 MessageUtils.sendMessage(update, String.format(
                     "❌ Insufficient balance. You have %.4f %s but trying to sell %.4f %s",
-                    tokenBalance, tokenSymbol, sellAmount, tokenSymbol));
+                    tokenBalance, tokenSymbol, sellPercentage, tokenSymbol));
                 return;
             }
         } catch (Exception e) {
@@ -788,7 +873,7 @@ public class Sell implements StateHandler {
                     user.getTelegramId(),
                     walletId,
                     tokenAddress,
-                    BigDecimal.valueOf(sellAmount),
+                    BigDecimal.valueOf(sellPercentage),
                     BigDecimal.valueOf(limitPrice),
                     BigDecimal.valueOf(slippage),
                     OrderAction.SELL
@@ -801,15 +886,14 @@ public class Sell implements StateHandler {
                         Your order has been saved in the database but will not be executed until the feature is released.
                         
                         Order details:
-                        💰 Amount: %.4f %s
+                        💰 Amount: %.1f%% of your balance
                         📊 Limit Price: $%.6f
                         🔄 Slippage: %d%%
                         🔑 Order ID: %s
                         
                         We'll notify you when this feature becomes available.
                         """,
-                        sellAmount,
-                        tokenSymbol,
+                        sellPercentage,
                         limitPrice,
                         slippage,
                         order.getOrderId()
@@ -830,23 +914,21 @@ public class Sell implements StateHandler {
                 String processingMessage = String.format("""
                         🔄 *Processing Your Transaction*
                         
-                        Swapping *%.4f %s* for *SOL*
+                        Selling *%.1f%%* of your %s balance
                         Current Price: $%.6f
-                        Expected SOL: ~%.4f
                         
                         Please wait while we process your transaction...
                         """, 
-                        sellAmount,
+                        sellPercentage,
                         tokenSymbol,
-                        currentPrice,
-                        (sellAmount * currentPrice) / solanaUtils.getSolanaPrice());
+                        currentPrice);
                 
                 MessageUtils.sendMessage(update, processingMessage);
                 
                 // Execute the actual swap with real private key
                 SolanaUtils.SwapResponse response = solanaUtils.sellToken(
                     tokenAddress,
-                    sellAmount,
+                    sellPercentage,
                     slippage,
                     walletPrivateKey,
                     SolanaUtils.TransactionPriority.valueOf(priority)
@@ -857,13 +939,14 @@ public class Sell implements StateHandler {
                     String successMessage = String.format("""
                             ✅ *Transaction Complete!*
                             
-                            Successfully swapped *%.4f %s* for *%.4f SOL*
+                            Successfully sold *%.1f%%* of your %s balance
+                            Received: *%.4f SOL*
                             Transaction ID: `%s`
                             
                             You can view this transaction on the explorer:
                             [View on Solscan](https://solscan.io/tx/%s)
                             """, 
-                            sellAmount,
+                            sellPercentage,
                             tokenSymbol,
                             response.getAmount(),
                             response.getSignature(),

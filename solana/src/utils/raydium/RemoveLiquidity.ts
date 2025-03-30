@@ -2,16 +2,29 @@ import { PublicKey } from "@solana/web3.js";
 import { initSdk, txVersion } from '../../config'
 import Decimal from 'decimal.js'
 import BN from 'bn.js'
+import logger from '../logger'
+import { isValidAmm } from './utils'
 
 export const removeLiquidity = async (
     poolId: string,
     removePercentage: number, // 0-100 percentage of liquidity to remove
-    walletPrivateKey: string
+    walletPrivateKey: string,
+    priorityFee: number = 46591500 // Default priority fee
 ) => {
-    const raydium = await initSdk()
-
     try {
+        const raydium = await initSdk()
+        logger.info('Removing liquidity with params:', { poolId, removePercentage })
+
+        // Get pool info
         const poolInfo = await raydium.liquidity.getPoolInfoFromRpc({ poolId })
+        
+        if (!poolInfo || !poolInfo.poolInfo) {
+            throw new Error("Pool info not found");
+        }
+
+        if (!isValidAmm(poolInfo.poolInfo.programId)) {
+            throw new Error('Target pool is not a valid AMM pool');
+        }
         
         // Get user's LP token balance
         const lpTokenAccount = await raydium.connection.getTokenAccountsByOwner(
@@ -27,6 +40,10 @@ export const removeLiquidity = async (
             lpTokenAccount.value[0].pubkey
         );
 
+        if (!tokenBalance.value.uiAmount || tokenBalance.value.uiAmount <= 0) {
+            throw new Error("No LP tokens available to remove");
+        }
+
         // Calculate amount to remove based on percentage
         const withdrawLpAmount = new BN(
             new Decimal(tokenBalance.value.uiAmount || 0)
@@ -35,6 +52,16 @@ export const removeLiquidity = async (
                 .mul(new Decimal(10).pow(tokenBalance.value.decimals))
                 .toFixed(0)
         );
+
+        if (withdrawLpAmount.lte(new BN(0))) {
+            throw new Error("Invalid remove amount calculated");
+        }
+
+        logger.info('Calculated remove amount:', {
+            currentBalance: tokenBalance.value.uiAmount,
+            removePercentage,
+            withdrawLpAmount: withdrawLpAmount.toString()
+        });
 
         // Calculate expected output amounts based on pool ratios
         const [baseRatio, quoteRatio] = [
@@ -59,12 +86,23 @@ export const removeLiquidity = async (
             baseAmountMin: new BN(withdrawAmountA.mul(1 - lpSlippage).toFixed(0)),
             quoteAmountMin: new BN(withdrawAmountB.mul(1 - lpSlippage).toFixed(0)),
             txVersion,
+            computeBudgetConfig: {
+                units: 600000,
+                microLamports: priorityFee,
+            }
         })
 
-        const { txId } = await execute({ sendAndConfirm: true })
+        const { txId } = await execute({ 
+            sendAndConfirm: true,
+            skipPreflight: false,
+            preflightCommitment: 'confirmed',
+            maxRetries: 5
+        })
+
+        logger.info('Liquidity removed successfully:', { txId })
         return txId
     } catch (error) {
-        console.error('Error removing liquidity:', error);
-        throw error;
+        logger.error('Error removing liquidity:', error)
+        throw error
     }
 } 

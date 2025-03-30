@@ -34,6 +34,7 @@ export class SolanaUtils {
     private connection: Connection;
     private heliusApiKey?: string;
     private heliusRpc: HeliusRpcInterface | null;
+    private clusterUrl: string;
 
     constructor(rpcUrl: string, heliusApiKey?: string) {
         // Force higher timeout and commitment levels
@@ -43,6 +44,7 @@ export class SolanaUtils {
         });
         this.heliusApiKey = heliusApiKey;
         this.heliusRpc = heliusApiKey ? new HeliusRpcInterface(heliusApiKey, rpcUrl) : null;
+        this.clusterUrl = process.env.CLUSTER_URL || '';
     }
 
     getConnection(): Connection {
@@ -212,14 +214,60 @@ export class SolanaUtils {
      */
     async getSolUsdPrice(): Promise<number> {
         try {
-            // Fetch SOL price from a reliable price oracle
-            const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd');
+            // Fetch SOL price from Raydium API
+            const response = await fetch('https://api-v3.raydium.io/mint/price?mints=So11111111111111111111111111111111111111112', {
+                method: 'GET',
+                headers: {
+                    'accept': 'application/json'
+                }
+            });
             const data = await response.json();
-            return data.solana.usd;
+            if (data.success && data.data['So11111111111111111111111111111111111111112']) {
+                return parseFloat(data.data['So11111111111111111111111111111111111111112']);
+            } else {
+                throw new Error('Failed to fetch valid SOL price from Raydium');
+            }
         } catch (error) {
             logger.error('Error fetching SOL price:', error);
             // Return a fallback price if fetching fails
             return 150.0; // Default fallback value
+        }
+    }
+
+    /**
+     * Get token account information for a specific user and token
+     * @param walletAddress The wallet address
+     * @param tokenMint The token mint address
+     * @return Token account information or null if not found
+     */
+    async getTokenAccount(walletAddress: string, tokenMint: string): Promise<any> {
+        try {
+            const response = await axios.get(
+                `${this.clusterUrl}/v2/accounts/${walletAddress}/tokens/${tokenMint}`
+            );
+            return response.data;
+        } catch (error) {
+            logger.error('Error getting token account:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Get token balance for a specific user and token
+     * @param walletAddress The wallet address
+     * @param tokenMint The token mint address
+     * @return Token balance or 0 if not found
+     */
+    async getTokenAmount(walletAddress: string, tokenMint: string): Promise<number> {
+        try {
+            const accountInfo = await this.getTokenAccount(walletAddress, tokenMint);
+            if (accountInfo && accountInfo.amount) {
+                return parseFloat(accountInfo.amount);
+            }
+            return 0;
+        } catch (error) {
+            logger.error('Error getting token amount:', error);
+            return 0;
         }
     }
 }

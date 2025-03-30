@@ -252,8 +252,22 @@ public class TraidingPerferences implements StateHandler, ButtonHandler {
             // Speed button
             List<InlineKeyboardButton> speedRow = new ArrayList<>();
             InlineKeyboardButton speedBtn = new InlineKeyboardButton();
-            String speed = settingsJson.has("speed") ? settingsJson.get("speed").asText() : "MEDIUM";
-            speedBtn.setText("Transaction Speed: " + speed);
+            String speed = settingsJson.has("speed") ? settingsJson.get("speed").asText() : "MID";
+            double cost;
+            switch (speed) {
+                case "MIN":
+                    cost = 0.005;
+                    break;
+                case "MID":
+                    cost = 0.01;
+                    break;
+                case "MAX":
+                    cost = 0.02;
+                    break;
+                default:
+                    cost = 0.01;
+            }
+            speedBtn.setText(String.format("Transaction Speed: %s (%.3f SOL)", speed, cost));
             speedBtn.setCallbackData("edit_speed");
             speedRow.add(speedBtn);
             keyboard.add(speedRow);
@@ -697,88 +711,40 @@ public class TraidingPerferences implements StateHandler, ButtonHandler {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         
         UserSettings userSettings = getUserSettings(user);
+        JsonNode settingsJson = userSettings.getSettings();
         
-        // Create speed selection buttons
-        ButtonHandler[][] keyboard = new ButtonHandler[4][1];
+        // Get current speed or default to MID
+        String currentSpeed = settingsJson.has("speed") ? settingsJson.get("speed").asText() : "MID";
         
-        keyboard[0][0] = new ButtonHandler() {
-            @Override public String getButtonText() { return "FAST (Higher fees)"; }
-            @Override public String getCallbackData() { return "speed_fast"; }
-            @Override public void handleCallback(Update update) { 
-                updateSpeed(update, telegramId, "FAST");
-            }
-        };
-        
-        keyboard[1][0] = new ButtonHandler() {
-            @Override public String getButtonText() { return "MEDIUM (Default)"; }
-            @Override public String getCallbackData() { return "speed_medium"; }
-            @Override public void handleCallback(Update update) { 
-                updateSpeed(update, telegramId, "MEDIUM");
-            }
-        };
-        
-        keyboard[2][0] = new ButtonHandler() {
-            @Override public String getButtonText() { return "SLOW (Lower fees)"; }
-            @Override public String getCallbackData() { return "speed_slow"; }
-            @Override public void handleCallback(Update update) { 
-                updateSpeed(update, telegramId, "SLOW");
-            }
-        };
-        
-        keyboard[3][0] = new ButtonHandler() {
-            @Override public String getButtonText() { return "❌ Cancel"; }
-            @Override public String getCallbackData() { return "trading_preferences"; }
-            @Override public void handleCallback(Update update) {}
-        };
-        
-        // Register these handlers
-        MessageUtils.registerCallbackHandler("speed_fast", (u, m) -> updateSpeed(u, telegramId, "FAST"));
-        MessageUtils.registerCallbackHandler("speed_medium", (u, m) -> updateSpeed(u, telegramId, "MEDIUM"));
-        MessageUtils.registerCallbackHandler("speed_slow", (u, m) -> updateSpeed(u, telegramId, "SLOW"));
-        
-        StringBuilder message = new StringBuilder("*Select Transaction Speed*\n\n");
-        message.append("FAST: Higher fees, faster confirmation\n");
-        message.append("MEDIUM: Balanced speed and fees\n");
-        message.append("SLOW: Lower fees, may take longer\n\n");
-        message.append("Current setting: ").append(userSettings.getSettings().has("speed") ? 
-                                                   userSettings.getSettings().get("speed").asText() : "MEDIUM");
-        
-        MessageUtils.editMessage(update, message.toString(), keyboard);
-    }
-    
-    /**
-     * Update transaction speed setting
-     */
-    private void updateSpeed(Update update, Long telegramId, String speed) {
-        User user = userService.findByTelegramId(telegramId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        
-        try {
-            // Get user settings and update the speed
-            UserSettings userSettings = getUserSettings(user);
-            JsonNode settingsJsonNode = userSettings.getSettings();
-            ObjectNode settingsJson = (ObjectNode) settingsJsonNode;
-            
-            // Update the speed
-            settingsJson.put("speed", speed);
-            
-            // Save updated settings
-            userSettings.setSettings(settingsJson);
-            userSettingsService.save(userSettings);
-            
-            MessageUtils.sendMessage(update, "✅ Transaction speed updated to " + speed);
-            
-            // Reset state
-            stateService.setState(telegramId, ChatState.IDLE);
-            
-            // Show updated trading preferences
-            sendTradingPreferencesView(update, telegramId);
-            
-        } catch (Exception e) {
-            log.error("Error processing speed selection", e);
-            MessageUtils.sendMessage(update, "❌ Error updating speed: " + e.getMessage());
-            stateService.setState(telegramId, ChatState.IDLE);
+        // Determine next speed in cycle
+        String nextSpeed;
+        double cost;
+        switch (currentSpeed) {
+            case "MIN":
+                nextSpeed = "MID";
+                cost = 0.01;
+                break;
+            case "MID":
+                nextSpeed = "MAX";
+                cost = 0.02;
+                break;
+            case "MAX":
+                nextSpeed = "MIN";
+                cost = 0.005;
+                break;
+            default:
+                nextSpeed = "MID";
+                cost = 0.01;
         }
+        
+        // Update settings
+        ObjectNode updatedSettings = (ObjectNode) settingsJson;
+        updatedSettings.put("speed", nextSpeed);
+        userSettings.setSettings(updatedSettings);
+        userSettingsService.save(userSettings);
+        
+        // Show updated trading preferences with new speed
+        sendTradingPreferencesView(update, telegramId);
     }
     
     /**
@@ -1013,8 +979,22 @@ public class TraidingPerferences implements StateHandler, ButtonHandler {
             // Speed button
             List<InlineKeyboardButton> speedRow = new ArrayList<>();
             InlineKeyboardButton speedBtn = new InlineKeyboardButton();
-            String speed = settingsJson.has("speed") ? settingsJson.get("speed").asText() : "MEDIUM";
-            speedBtn.setText("Transaction Speed: " + speed);
+            String speed = settingsJson.has("speed") ? settingsJson.get("speed").asText() : "MID";
+            double cost;
+            switch (speed) {
+                case "MIN":
+                    cost = 0.005;
+                    break;
+                case "MID":
+                    cost = 0.01;
+                    break;
+                case "MAX":
+                    cost = 0.02;
+                    break;
+                default:
+                    cost = 0.01;
+            }
+            speedBtn.setText(String.format("Transaction Speed: %s (%.3f SOL)", speed, cost));
             speedBtn.setCallbackData("edit_speed");
             speedRow.add(speedBtn);
             keyboard.add(speedRow);
@@ -1030,7 +1010,12 @@ public class TraidingPerferences implements StateHandler, ButtonHandler {
             // Convert to button handlers and display
             ButtonHandler[][] buttonHandlers = convertKeyboardToButtonHandlers(keyboard);
             
-            // Send a new message instead of editing
+            // Delete the old message if it exists
+            if (update.hasCallbackQuery()) {
+                MessageUtils.deleteMessage(update);
+            }
+            
+            // Send a new message
             MessageUtils.sendInlineKeyboard(update, "*Trading Preferences*\n\nClick on any item to edit it:", buttonHandlers);
             
         } catch (Exception e) {

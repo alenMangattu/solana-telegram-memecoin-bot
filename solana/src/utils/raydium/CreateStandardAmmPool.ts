@@ -2,13 +2,15 @@ import {
     WSOLMint,
     FEE_DESTINATION_ID,
     OPEN_BOOK_PROGRAM,
+    DEVNET_PROGRAM_ID,
 } from '@raydium-io/raydium-sdk-v2'
 import { initSdk, txVersion } from '../../config'
-import { PublicKey, Keypair, Connection } from '@solana/web3.js'
+import { PublicKey, Keypair, Connection, ComputeBudgetProgram } from '@solana/web3.js'
 import BN from 'bn.js'
 import bs58 from 'bs58'
 import logger from '../logger'
-import { sendUnconfirmedTransaction, confirmLater, createTransaction, sendAndConfirmTransaction } from './utils'
+import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
+
 // CPMM Program ID for Standard AMM
 const CPMM_PROGRAM_ID = new PublicKey('CPMDWBwJDtYax9qW7AyRuVC19Cc4L4Vcy4n2BHAbHkCW')
 
@@ -61,11 +63,12 @@ export const createAmmPool = async (
     fromAmount: number,   // SOL amount
     toAmount: number,     // Your token amount
     walletPrivateKey: string,
-    decimals: number
+    decimals: number,
+    priorityFee: number = 46591500 // Default priority fee
 ) => {
-    const raydium = await initSdk()
-
     try {
+        const raydium = await initSdk()
+
         // Validate input parameters
         if (!fromToken || !toToken) {
             throw new Error('Token addresses are required');
@@ -87,6 +90,23 @@ export const createAmmPool = async (
         const fromTokenPubkey = toPublicKey(fromToken, 'fromToken')
         const toTokenPubkey = toPublicKey(toToken, 'toToken')
 
+        // Validate token program IDs
+        const fromTokenInfo = await raydium.token.getTokenInfo(fromTokenPubkey.toBase58())
+        const toTokenInfo = await raydium.token.getTokenInfo(toTokenPubkey.toBase58())
+
+        if (fromTokenInfo.programId !== TOKEN_PROGRAM_ID.toBase58() || 
+            toTokenInfo.programId !== TOKEN_PROGRAM_ID.toBase58()) {
+            throw new Error('AMM pools with openbook market only support TOKEN_PROGRAM_ID mints');
+        }
+
+        // Validate initial liquidity
+        const baseAmount = new BN(Math.floor(toAmount * Math.pow(10, decimals)))
+        const quoteAmount = new BN(Math.floor(fromAmount * Math.pow(10, 9)))
+
+        if (baseAmount.mul(quoteAmount).lte(new BN(1).mul(new BN(10 ** decimals)).pow(new BN(2)))) {
+            throw new Error('Initial liquidity too low, try adding more baseAmount/quoteAmount');
+        }
+
         logger.info('Creating market...');
         const { execute: executeMarket, extInfo: marketInfo } = await raydium.marketV2.create({
             baseInfo: {
@@ -95,42 +115,37 @@ export const createAmmPool = async (
             },
             quoteInfo: {
                 mint: fromTokenPubkey,
-                decimals: 9, // SOL has 9 decimals
+                decimals: 9,
             },
-            lotSize: 1, // Adjusted from example
+            lotSize: 1,
             tickSize: 0.01,
-            dexProgramId: OPEN_BOOK_PROGRAM,
+            dexProgramId: raydium.cluster === 'mainnet' ? OPEN_BOOK_PROGRAM : DEVNET_PROGRAM_ID.OPENBOOK_MARKET,
             txVersion,
             computeBudgetConfig: {
-                units: 800000, // Increased compute units
-                microLamports: 100000,
+                units: 800000,
+                microLamports: priorityFee,
             }
         });
 
-        // Execute market creation with fire-and-forget approach
+        // Execute market creation with proper error handling
         logger.info('Executing market creation...');
-        const { txIds } = await executeMarket({ 
-            sequentially: false,
-            skipPreflight: true  // Skip preflight checks for faster processing,
+        const { txIds } = await executeMarket({
+            sequentially: true
         });
         
         logger.info('Market creation transaction IDs:', txIds);
         
-        // Confirm later with retries
+        // Confirm transactions with retries
         for (const txId of txIds) {
-            await confirmLater(raydium.connection, txId);
+            await confirmTransaction(raydium.connection, txId);
         }
 
         logger.info('Market Info:', marketInfo);
 
-        // Convert amounts to BN with proper decimal places
-        const baseAmount = new BN(Math.floor(toAmount * Math.pow(10, decimals)))
-        const quoteAmount = new BN(Math.floor(fromAmount * Math.pow(10, 9)))
-
         // Create pool with updated configuration
         const { execute, extInfo } = await raydium.cpmm.createPool({
             programId: CPMM_PROGRAM_ID,
-            poolFeeAccount: FEE_DESTINATION_ID,
+            poolFeeAccount: raydium.cluster === 'mainnet' ? FEE_DESTINATION_ID : DEVNET_PROGRAM_ID.FEE_DESTINATION_ID,
             mintA: {
                 address: toTokenPubkey.toBase58(),
                 decimals: decimals,
@@ -153,17 +168,15 @@ export const createAmmPool = async (
             txVersion,
             computeBudgetConfig: {
                 units: 800000,
-                microLamports: 100000,
+                microLamports: priorityFee,
             }
         });
 
         logger.info('Executing pool creation...');
-        const { txId: poolTxId } = await execute({ 
-            sendAndConfirm: false, // Skip confirmation
-            skipPreflight: true    // Optional: Bypass preflight checks
+        const { txId } = await execute({
+            sendAndConfirm: true
         });
 
-        // await confirmLater(raydium.connection, poolTxId); // Confirm later with retries
         logger.info("Pool created successfully with ID:", extInfo.address.poolId.toBase58());
         return extInfo.address.poolId.toBase58();
 

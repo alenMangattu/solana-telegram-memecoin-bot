@@ -10,12 +10,16 @@ import com.lunax.telegramBot.component.Buttons.HomePageButtons.MemeCoinCreations
 import com.lunax.telegramBot.component.Buttons.HomePageButtons.MemeCoinCreations.YesOrNoButtons.RevokeMintAuthority;
 import com.lunax.telegramBot.utils.components.ButtonHandler;
 import com.lunax.telegramBot.component.navigation.components.mymemecoin.PaginationButtonHandler;
+import com.lunax.telegramBot.component.navigation.components.settings.TraidingPerferences;
 import com.lunax.telegramBot.component.navigation.components.token.TradePaginationButtonHandler;
 import com.lunax.telegramBot.component.Buttons.HomePageButtons.TradeMemeCoinButton;
 import com.lunax.telegramBot.component.navigation.components.trading.TradeMemeCoin;
 import com.lunax.telegramBot.component.navigation.components.trading.CopyTradingHandler;
 import com.lunax.telegramBot.service.CopyTradingHandlerService;
 import com.lunax.telegramBot.component.navigation.components.trading.CopyTradingPaginationHandler;
+import com.lunax.telegramBot.utils.components.MessageUtils;
+import com.lunax.telegramBot.service.StateService;
+import com.lunax.telegramBot.model.session.ChatState;
 
 import jakarta.annotation.PostConstruct;
 import java.util.HashMap;
@@ -25,7 +29,6 @@ import java.util.ArrayList;
 import java.util.function.BiConsumer;
 
 import org.telegram.telegrambots.meta.api.objects.Update;
-import com.lunax.telegramBot.model.session.ChatState;
 import com.lunax.telegramBot.component.navigation.components.StateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +43,9 @@ public class HandlerRegistry {
 
     @Autowired
     private CopyTradingHandlerService copyTradingHandlerService;
+
+    @Autowired
+    private StateService stateService;
 
     private static final Logger log = LoggerFactory.getLogger(HandlerRegistry.class);
 
@@ -195,6 +201,137 @@ public class HandlerRegistry {
         
         handlers.put("trade_page_", tradePaginationButtonHandler);
         handlers.put("copy_trading_page_", copyTradingPaginationHandler);
+
+        // Register My Portfolio handler
+        registerHandler("my_portfolio", new ButtonHandler() {
+            @Override
+            public void handleCallback(Update update) {
+                getTradeMemeCoin().handleMyPortfolio(update, 0);
+            }
+
+            @Override
+            public String getButtonText() {
+                return "My Portfolio";
+            }
+
+            @Override
+            public String getCallbackData() {
+                return "my_portfolio";
+            }
+        });
+
+        // Register portfolio pagination handler
+        registerDynamicHandler("portfolio_page_", (update, data) -> {
+            String[] parts = data.split("_");
+            int page = Integer.parseInt(parts[2]);
+            getTradeMemeCoin().handleMyPortfolio(update, page);
+        });
+
+        // Register token info button handler
+        registerHandler("token_info", new ButtonHandler() {
+            @Override
+            public void handleCallback(Update update) {
+                Long telegramId = update.getCallbackQuery().getFrom().getId();
+                stateService.setState(telegramId, ChatState.AWAITING_TOKEN_SELECTION);
+                MessageUtils.sendMessage(update, "Please enter a Solana token address: ");
+            }
+
+            @Override
+            public String getButtonText() {
+                return "Token Info";
+            }
+
+            @Override
+            public String getCallbackData() {
+                return "token_info";
+            }
+        });
+
+        // Register edit_speed handler
+        registerHandler("edit_speed", new ButtonHandler() {
+            @Override
+            public void handleCallback(Update update) {
+                TraidingPerferences tradingPreferences = applicationContext.getBean(TraidingPerferences.class);
+                tradingPreferences.handleEditSpeed(update, null);
+            }
+
+            @Override
+            public String getButtonText() {
+                return "Edit Speed";
+            }
+
+            @Override
+            public String getCallbackData() {
+                return "edit_speed";
+            }
+        });
+
+        // Register edit_ema handler
+        registerHandler("edit_ema", new ButtonHandler() {
+            @Override
+            public void handleCallback(Update update) {
+                TraidingPerferences tradingPreferences = applicationContext.getBean(TraidingPerferences.class);
+                tradingPreferences.handleEditEma(update, null);
+            }
+
+            @Override
+            public String getButtonText() {
+                return "Edit EMA";
+            }
+
+            @Override
+            public String getCallbackData() {
+                return "edit_ema";
+            }
+        });
+
+        // Register edit_rsi handler
+        registerHandler("edit_rsi", new ButtonHandler() {
+            @Override
+            public void handleCallback(Update update) {
+                TraidingPerferences tradingPreferences = applicationContext.getBean(TraidingPerferences.class);
+                tradingPreferences.handleEditRsi(update, null);
+            }
+
+            @Override
+            public String getButtonText() {
+                return "Edit RSI";
+            }
+
+            @Override
+            public String getCallbackData() {
+                return "edit_rsi";
+            }
+        });
+    }
+    
+    /**
+     * Helper method to register a handler for a trading preferences action
+     * This automates the process of creating and registering handlers for trading preferences
+     */
+    private void registerTradingPreferencesHandler(String callbackData, String buttonText, String methodName) {
+        registerHandler(callbackData, new ButtonHandler() {
+            @Override
+            public void handleCallback(Update update) {
+                try {
+                    TraidingPerferences tradingPreferences = applicationContext.getBean(TraidingPerferences.class);
+                    java.lang.reflect.Method method = TraidingPerferences.class.getMethod(methodName, Update.class, java.util.regex.Matcher.class);
+                    method.invoke(tradingPreferences, update, null);
+                } catch (Exception e) {
+                    log.error("Error invoking trading preferences handler for {}", callbackData, e);
+                }
+            }
+
+            @Override
+            public String getButtonText() {
+                return buttonText;
+            }
+
+            @Override
+            public String getCallbackData() {
+                return callbackData;
+            }
+        });
     }
     
     public ButtonHandler getHandler(String callbackData) {
