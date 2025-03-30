@@ -66,9 +66,6 @@ public class TradeMemeCoin implements StateHandler {
     
     @Override
     public void executeVoid(Update update, int page) {
-        // Print cache contents at the start to help with debugging
-        tokenDetailsService.printCacheContents();
-        
         // Get user ID and chat ID
         Long telegramId = update.hasCallbackQuery() ? 
             update.getCallbackQuery().getFrom().getId() : 
@@ -101,86 +98,13 @@ public class TradeMemeCoin implements StateHandler {
             stateData = objectMapper.createObjectNode();
         }
         
-        // Check if this is the first time we're calling this method
-        boolean isFirstCall = !stateData.has("tradeMessageId");
-        Integer existingMessageId = isFirstCall ? null : stateData.get("tradeMessageId").asInt();
-        
-        // Show loading message or update existing message
-        Message loadingMessage;
-        if (isFirstCall) {
-            // For first call, delete any existing message (if from callback) and send new one
-            if (update.hasCallbackQuery()) {
-                MessageUtils.deleteMessage(update);
-            }
-            loadingMessage = MessageUtils.sendMessage(update, "⟳ Loading your tokens...");
-        } else {
-            // For subsequent calls, edit the existing message
-            MessageUtils.editMessageText(chatId, existingMessageId, "⟳ Loading your tokens...", null);
-            // Use existing message ID since we know it
-            loadingMessage = null;
-        }
-        
         try {
-            // Get token details (either from cache or by fetching)
-            List<Map<String, Object>> tokenDetails = tokenDetailsService.getTokenDetailsWithCache(walletAddress);
-            
-            int totalPages = (int) Math.ceil((double) tokenDetails.size() / PAGE_SIZE);
-            if (totalPages == 0) totalPages = 1; // At least one page even if empty
-            
-            // Calculate start and end indices for current page
-            int startIndex = page * PAGE_SIZE;
-            int endIndex = Math.min(startIndex + PAGE_SIZE, tokenDetails.size());
-            
             // Create formatted message
-            StringBuilder formattedList = new StringBuilder();
-            formattedList.append("*Your Tokens*\n\n");
-            
-            if (tokenDetails.isEmpty()) {
-                formattedList.append("You don't have any tokens yet. Use the buttons below to trade.");
-            } else {
-                for (int i = startIndex; i < endIndex; i++) {
-                    Map<String, Object> token = tokenDetails.get(i);
-                    String address = (String) token.get("address");
-                    double balance = (Double) token.get("balance");
-                    double priceUSD = (Double) token.get("priceUSD");
-                    
-                    // Format the token info
-                    formattedList.append(String.format(
-                        "%d. `%s`\n   Balance: %.4f\n   Price: $%.6f\n\n",
-                        i + 1, address, balance, priceUSD
-                    ));
-                }
-                
-                // Add pagination info
-                formattedList.append(String.format("Page %d of %d", page + 1, totalPages));
-            }
+            String formattedMessage = "*Trading Options*\n\nSelect an option from the buttons below:";
             
             // Create keyboard markup with buttons
             InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
             List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
-            
-            // Pagination buttons if needed
-            if (totalPages > 1) {
-                List<InlineKeyboardButton> paginationRow = new ArrayList<>();
-                
-                // Previous page button
-                if (page > 0) {
-                    paginationRow.add(InlineKeyboardButton.builder()
-                        .text("◀️ Previous")
-                        .callbackData("trade_page_" + (page - 1))
-                        .build());
-                }
-                
-                // Next page button
-                if (page < totalPages - 1) {
-                    paginationRow.add(InlineKeyboardButton.builder()
-                        .text("Next ▶️")
-                        .callbackData("trade_page_" + (page + 1))
-                        .build());
-                }
-                
-                buttons.add(paginationRow);
-            }
             
             // Limit Order buttons - Row 1
             List<InlineKeyboardButton> actionRow1 = new ArrayList<>();
@@ -210,53 +134,53 @@ public class TradeMemeCoin implements StateHandler {
                 .build());
             buttons.add(actionRow3);
             
-            // Buy and Sell buttons - Row 4
+            // My Portfolio button - Row 4
             List<InlineKeyboardButton> actionRow4 = new ArrayList<>();
             actionRow4.add(InlineKeyboardButton.builder()
-                .text("🔄 Buy")
-                .callbackData("buy_token")
-                .build());
-            actionRow4.add(InlineKeyboardButton.builder()
-                .text("💰 Sell")
-                .callbackData("sell_token")
+                .text("My Portfolio")
+                .callbackData("my_portfolio")
                 .build());
             buttons.add(actionRow4);
             
-            // Back to Home button - Row 5
+            // Buy and Sell buttons - Row 5
             List<InlineKeyboardButton> actionRow5 = new ArrayList<>();
             actionRow5.add(InlineKeyboardButton.builder()
-                .text("Back to Home")
-                .callbackData("back_to_home")
+                .text("🔄 Buy")
+                .callbackData("buy_token")
+                .build());
+            actionRow5.add(InlineKeyboardButton.builder()
+                .text("💰 Sell")
+                .callbackData("sell_token")
                 .build());
             buttons.add(actionRow5);
             
+            // Back to Home button - Row 6
+            List<InlineKeyboardButton> actionRow6 = new ArrayList<>();
+            actionRow6.add(InlineKeyboardButton.builder()
+                .text("Back to Home")
+                .callbackData("back_to_home")
+                .build());
+            buttons.add(actionRow6);
+            
             markup.setKeyboard(buttons);
             
-            // Edit the loading message with the token list
-            EditMessageText editMessage = new EditMessageText();
-            editMessage.setChatId(chatId.toString());
-            editMessage.setMessageId(loadingMessage.getMessageId());
-            editMessage.setText(formattedList.toString());
-            editMessage.setParseMode("Markdown");
-            editMessage.setReplyMarkup(markup);
-            
-            try {
-                MessageUtils.getBotInstance().execute(editMessage);
-            } catch (TelegramApiException e) {
-                log.error("Error showing token list: {}", e.getMessage());
-                MessageUtils.sendMessage(update, "❌ Error displaying token list: " + e.getMessage());
+            // If we have a callback query, delete the old message and send a new one
+            if (update.hasCallbackQuery()) {
+                MessageUtils.deleteMessage(update);
             }
             
-            // After sending/editing the final message with token details, store the message ID
-            if (loadingMessage != null) {
-                stateData.put("tradeMessageId", loadingMessage.getMessageId());
-            } else if (existingMessageId != null) {
-                stateData.put("tradeMessageId", existingMessageId);
+            // Send new message with trading options
+            MessageUtils.sendMessage(update, formattedMessage, markup);
+            
+            // Store the new message ID in state
+            if (update.hasMessage()) {
+                stateData.put("tradeMessageId", update.getMessage().getMessageId());
+                stateService.setStateData(telegramId, stateData);
             }
             
         } catch (Exception e) {
-            log.error("Error loading tokens: {}", e.getMessage());
-            MessageUtils.editMessage(update, "❌ Error loading tokens: " + e.getMessage(), null);
+            log.error("Error loading trading options: {}", e.getMessage());
+            MessageUtils.sendMessage(update, "❌ Error loading trading options: " + e.getMessage());
         }
     }
     
@@ -457,5 +381,120 @@ public class TradeMemeCoin implements StateHandler {
      */
     public CopyTradingHandler getCopyTradingHandler() {
         return copyTradingHandler;
+    }
+
+    /**
+     * Handle the My Portfolio button click
+     */
+    public void handleMyPortfolio(Update update, int page) {
+        Long telegramId = update.getCallbackQuery().getFrom().getId();
+        Long chatId = update.getCallbackQuery().getMessage().getChatId();
+        
+        // Get user
+        User user = tokenDetailsService.getUserFromCacheOrDatabase(telegramId);
+        if (user == null) {
+            log.error("User not found for Telegram ID: {}", telegramId);
+            MessageUtils.sendMessage(update, "❌ User not found. Please start the bot again.");
+            return;
+        }
+        
+        // Check if user has a wallet
+        String walletAddress = user.getCurrentWalletAddress();
+        if (walletAddress == null) {
+            log.error("Current wallet not set for user: {}", telegramId);
+            MessageUtils.sendMessage(update, "❌ You need to create or select a wallet first!");
+            return;
+        }
+        
+        try {
+            // Delete the current message
+            MessageUtils.deleteMessage(update);
+            
+            // Send loading message
+            Message loadingMessage = MessageUtils.sendMessage(update, "⟳ Loading your portfolio from blockchain... _(This may take a few seconds)_");
+            
+            // Get token details (either from cache or by fetching)
+            List<Map<String, Object>> tokenDetails = tokenDetailsService.getTokenDetailsWithCache(walletAddress);
+            
+            // Delete loading message
+            if (loadingMessage != null) {
+                MessageUtils.deleteMessage(loadingMessage);
+            }
+            
+            int totalPages = (int) Math.ceil((double) tokenDetails.size() / PAGE_SIZE);
+            if (totalPages == 0) totalPages = 1; // At least one page even if empty
+            
+            // Calculate start and end indices for current page
+            int startIndex = page * PAGE_SIZE;
+            int endIndex = Math.min(startIndex + PAGE_SIZE, tokenDetails.size());
+            
+            // Create formatted message with code blocks
+            StringBuilder formattedList = new StringBuilder();
+            formattedList.append("*My Portfolio*\n\n");
+            
+            if (tokenDetails.isEmpty()) {
+                formattedList.append("You don't have any tokens yet. Use the buttons below to trade.");
+            } else {
+                for (int i = startIndex; i < endIndex; i++) {
+                    Map<String, Object> token = tokenDetails.get(i);
+                    String address = (String) token.get("address");
+                    double balance = (Double) token.get("balance");
+                    double priceUSD = (Double) token.get("priceUSD");
+                    
+                    // Format the token info in code blocks
+                    formattedList.append(String.format(
+                        "```\n%d. %s\nBalance: %.4f\nPrice: $%.6f\n```\n\n",
+                        i + 1, address, balance, priceUSD
+                    ));
+                }
+                
+                // Add pagination info
+                formattedList.append(String.format("Page %d of %d", page + 1, totalPages));
+            }
+            
+            // Create keyboard markup with buttons
+            InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+            List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
+            
+            // Pagination buttons if needed
+            if (totalPages > 1) {
+                List<InlineKeyboardButton> paginationRow = new ArrayList<>();
+                
+                // Previous page button
+                if (page > 0) {
+                    paginationRow.add(InlineKeyboardButton.builder()
+                        .text("◀️ Previous")
+                        .callbackData("portfolio_page_" + (page - 1))
+                        .build());
+                }
+                
+                // Next page button
+                if (page < totalPages - 1) {
+                    paginationRow.add(InlineKeyboardButton.builder()
+                        .text("Next ▶️")
+                        .callbackData("portfolio_page_" + (page + 1))
+                        .build());
+                }
+                
+                buttons.add(paginationRow);
+            }
+            
+            // Back to Trading button
+            List<InlineKeyboardButton> backRow = new ArrayList<>();
+            backRow.add(InlineKeyboardButton.builder()
+                .text("Back to Trading")
+                .callbackData("back_to_trading")
+                .build());
+            buttons.add(backRow);
+            
+            markup.setKeyboard(buttons);
+            
+            // Send new message with portfolio
+            MessageUtils.sendMessage(update, formattedList.toString(), markup);
+            
+        } catch (Exception e) {
+            log.error("Error loading portfolio: {}", e.getMessage());
+            MessageUtils.sendMessage(update, "❌ Error loading portfolio: " + e.getMessage());
+        }
     }
 }

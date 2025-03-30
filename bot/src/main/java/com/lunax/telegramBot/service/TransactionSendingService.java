@@ -140,7 +140,7 @@ public class TransactionSendingService {
      * Check and execute limit orders that have met their price conditions
      * This would run periodically in a production system
      */
-    @Scheduled(fixedRate = 60000) // Run every minute
+    // @Scheduled(fixedRate = 60000) // Run every minute
     public void checkAndExecuteLimitOrders() {
         log.info("Checking for limit orders to execute...");
         
