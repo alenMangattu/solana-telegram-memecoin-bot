@@ -146,82 +146,117 @@ app.post('/api/liquidity/remove', async (req, res) => {
     }
 });
 
-// Add memecoin creation schema
+// Add memecoin creation schema with better validation
 const createMemecoinSchema = z.object({
-    walletPrivateKey: z.string(),
-    name: z.string(),
-    symbol: z.string(),
+    walletPrivateKey: z.string().min(32, "Invalid private key length"),
+    name: z.string().min(1, "Name is required").max(32, "Name too long"),
+    symbol: z.string().min(1, "Symbol is required").max(10, "Symbol too long"),
     decimals: z.number().int().min(0).max(9),
     supply: z.number().positive(),
-    metadataUri: z.string().url(),
+    metadataUri: z.string().url("Invalid metadata URI format"),
     revokeMintAuthority: z.boolean().optional().default(false),
     revokeFreezeAuthority: z.boolean().optional().default(false),
-    chatId: z.number()
+    chatId: z.number().int().positive()
 });
 
-// Add the memecoin creation endpoint
-// app.post('/api/memecoin/create', async (req, res) => {
-//     try {
-//         const data = createMemecoinSchema.parse(req.body);
-        
-//         const tokenAddress = await memecoinService.createMemecoin(
-//             data.walletPrivateKey,
-//             data.name,
-//             data.symbol,
-//             data.decimals,
-//             data.supply,
-//             data.metadataUri,
-//             data.revokeMintAuthority,
-//             data.revokeFreezeAuthority,
-//             data.chatId
-//         );
-        
-//         res.json({ 
-//             success: true,
-//             tokenAddress 
-//         });
-//     } catch (error) {
-//         logger.error('Memecoin creation error:', error);
-//         res.status(500).json({ 
-//             success: false,
-//             error: 'Failed to create memecoin',
-//             details: error instanceof Error ? error.message : String(error)
-//         });
-//     }
-// });
-
+// Update the memecoin creation endpoint
 app.post('/api/memecoin/create', async (req, res) => {
     try {
-      const {
-        walletPrivateKey,
-        name,
-        symbol,
-        decimals,
-        supply,
-        metadataUri,
-        revokeMintAuthority,
-        revokeFreezeAuthority,
-        chatId,
-      } = req.body;
-  
-      const tokenAddress = await memecoinService.createMemecoin(
-        walletPrivateKey,
-        name,
-        symbol,
-        decimals,
-        supply,
-        metadataUri,
-        revokeMintAuthority,
-        revokeFreezeAuthority,
-        chatId
-      );
-  
-      res.json({ success: true, tokenAddress });
+        logger.debug('Received memecoin creation request:', {
+            body: req.body,
+            headers: req.headers,
+            timestamp: new Date().toISOString()
+        });
+        
+        const data = createMemecoinSchema.parse(req.body);
+        logger.debug('Validated memecoin creation data:', {
+            name: data.name,
+            symbol: data.symbol,
+            decimals: data.decimals,
+            supply: data.supply,
+            metadataUri: data.metadataUri,
+            revokeMintAuthority: data.revokeMintAuthority,
+            revokeFreezeAuthority: data.revokeFreezeAuthority,
+            chatId: data.chatId
+        });
+
+        const tokenAddress = await memecoinService.createMemecoin(
+            data.walletPrivateKey,
+            data.name,
+            data.symbol,
+            data.decimals,
+            data.supply,
+            data.metadataUri,
+            data.revokeMintAuthority,
+            data.revokeFreezeAuthority,
+            data.chatId
+        );
+
+        logger.info('Memecoin created successfully:', {
+            tokenAddress,
+            name: data.name,
+            symbol: data.symbol,
+            chatId: data.chatId
+        });
+
+        res.json({ 
+            success: true,
+            tokenAddress,
+            name: data.name,
+            symbol: data.symbol,
+            decimals: data.decimals,
+            supply: data.supply,
+            metadataUri: data.metadataUri,
+            revokeMintAuthority: data.revokeMintAuthority,
+            revokeFreezeAuthority: data.revokeFreezeAuthority,
+            chatId: data.chatId,
+            createdAt: new Date().toISOString()
+        });
     } catch (error) {
-      logger.error('Error in creating memecoin', error);
-      res.status(500).json({ success: false, error: error instanceof Error ? error.message : String(error) });
+        logger.error('Error in memecoin creation:', {
+            error: error instanceof Error ? error.message : 'Unknown error',
+            stack: error instanceof Error ? error.stack : undefined,
+            timestamp: new Date().toISOString()
+        });
+
+        if (error instanceof z.ZodError) {
+            logger.debug('Validation error:', {
+                errors: error.errors,
+                receivedData: req.body
+            });
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid input data',
+                errorType: 'VALIDATION_ERROR',
+                details: error.errors
+            });
+        }
+
+        if (error instanceof Error) {
+            if (error.message.includes('Insufficient SOL balance')) {
+                return res.status(400).json({
+                    success: false,
+                    error: '❌ Insufficient SOL balance. Minimum 0.01 SOL required.',
+                    errorType: 'INSUFFICIENT_FUNDS'
+                });
+            }
+
+            if (error.message.includes('Invalid token address')) {
+                return res.status(400).json({
+                    success: false,
+                    error: '❌ Invalid token address format.',
+                    errorType: 'INVALID_ADDRESS'
+                });
+            }
+        }
+
+        return res.status(500).json({
+            success: false,
+            error: '❌ Failed to create memecoin. Please try again later.',
+            errorType: 'UNKNOWN_ERROR'
+        });
     }
-  });
+});
 
 // Example of instantiation
 const tokenInfoService = new TokenInfoService(solanaUtils);
@@ -431,6 +466,138 @@ app.get('/api/token/price/:id', async (req, res) => {
         res.status(500).json({ 
             error: 'Failed to fetch token price',
             details: error instanceof Error ? error.message : String(error)
+        });
+    }
+});
+
+// Add input validation schema for selling tokens
+const sellTokenSchema = z.object({
+    tokenMint: z.string(),
+    percentage: z.number().min(0).max(100),
+    slippage: z.number().min(0).max(100),
+    walletPrivateKey: z.string(),
+    priority: z.enum(['MIN', 'MID', 'MAX']).default('MID')
+});
+
+app.post('/api/swap/sell', async (req, res) => {
+    try {
+        logger.debug('Received sell token request:', {
+            body: req.body,
+            headers: req.headers,
+            timestamp: new Date().toISOString()
+        });
+        
+        const data = sellTokenSchema.parse(req.body);
+        logger.debug('Validated sell request data:', {
+            tokenMint: data.tokenMint,
+            percentage: data.percentage,
+            slippage: data.slippage,
+            priority: data.priority,
+            walletPrivateKeyLength: data.walletPrivateKey.length
+        });
+        
+        // Additional validation for token mint
+        if (!data.tokenMint || data.tokenMint.length < 32 || data.tokenMint.length > 44) {
+            logger.debug('Invalid token mint format:', {
+                tokenMint: data.tokenMint,
+                length: data.tokenMint?.length
+            });
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid token mint address format',
+                errorType: 'INVALID_TOKEN_MINT'
+            });
+        }
+
+        // Additional validation for wallet private key
+        if (!data.walletPrivateKey || data.walletPrivateKey.length < 32) {
+            logger.debug('Invalid wallet private key format:', {
+                walletPrivateKeyLength: data.walletPrivateKey?.length
+            });
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid wallet private key format',
+                errorType: 'INVALID_PRIVATE_KEY'
+            });
+        }
+        
+        // Map priority levels to SOL amounts (in lamports)
+        const priorityFees = {
+            'MAX': 0.02 * 1e9,    // 0.02 SOL
+            'MID': 0.01 * 1e9,    // 0.01 SOL
+            'MIN': 0.005 * 1e9    // 0.005 SOL
+        };
+        
+        logger.debug('Calculated priority fee:', {
+            priority: data.priority,
+            feeInLamports: priorityFees[data.priority],
+            feeInSOL: priorityFees[data.priority] / 1e9
+        });
+        
+        const result = await swapService.executeSell(
+            data.tokenMint,
+            data.percentage,
+            data.slippage,
+            data.walletPrivateKey,
+            priorityFees[data.priority]
+        );
+        
+        logger.debug('Sell execution completed:', {
+            success: result.success,
+            signature: result.signature,
+            amountOut: result.amountOut,
+            timestamp: new Date().toISOString()
+        });
+        
+        return res.json(result);
+    } catch (error) {
+        logger.error('Error in sell execution:', {
+            error: error instanceof Error ? error.message : 'Unknown error',
+            stack: error instanceof Error ? error.stack : undefined,
+            timestamp: new Date().toISOString()
+        });
+
+        if (error instanceof z.ZodError) {
+            logger.debug('Validation error:', {
+                errors: error.errors,
+                receivedData: req.body
+            });
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid input data',
+                errorType: 'VALIDATION_ERROR',
+                details: error.errors
+            });
+        }
+
+        if (error instanceof Error) {
+            if (error.name === 'InsufficientFundsError') {
+                logger.debug('Insufficient funds error:', {
+                    message: error.message
+                });
+                return res.status(400).json({
+                    success: false,
+                    error: '❌ Insufficient token balance. Please check your balance.',
+                    errorType: 'INSUFFICIENT_FUNDS'
+                });
+            }
+
+            if (error.name === 'InvalidAddressError') {
+                logger.debug('Invalid address error:', {
+                    message: error.message
+                });
+                return res.status(400).json({
+                    success: false,
+                    error: '❌ Invalid token address. Please check and try again.',
+                    errorType: 'INVALID_ADDRESS'
+                });
+            }
+        }
+
+        return res.status(500).json({
+            success: false,
+            error: '❌ An unexpected error occurred. Please try again later.',
+            errorType: 'UNKNOWN_ERROR'
         });
     }
 });

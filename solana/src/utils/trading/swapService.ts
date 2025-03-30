@@ -4,11 +4,16 @@ import logger from '../logger';
 import bs58 from 'bs58';
 import { 
     WSOLMint,
-    API_URLS
+    API_URLS,
+    Router,
+    TokenAmount,
+    Token,
+    toApiV3Token,
+    toFeeConfig
 } from '@raydium-io/raydium-sdk-v2';
 import axios from 'axios';
 import type { LiquidityPoolKeys } from '@raydium-io/raydium-sdk-v2';
-import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID } from '@solana/spl-token';
 
 // Custom URL for Raydium liquidity pools
 const LIQUIDITY_URL = '/v2/ammV3/pools';
@@ -40,6 +45,39 @@ interface SwapCompute {
     };
 }
 
+// Interface for pool info response
+interface PoolInfoResponse {
+    id: string;
+    success: boolean;
+    data: {
+        count: number;
+        data: Array<{
+            type: string;
+            programId: string;
+            id: string;
+            mintA: {
+                address: string;
+                decimals: number;
+                symbol: string;
+                name: string;
+            };
+            mintB: {
+                address: string;
+                decimals: number;
+                symbol: string;
+                name: string;
+            };
+            price: number;
+            feeRate: number;
+            lpMint: {
+                address: string;
+                decimals: number;
+            };
+        }>;
+        hasNextPage: boolean;
+    };
+}
+
 // Add custom error types
 export class InsufficientFundsError extends Error {
     constructor(message: string) {
@@ -52,6 +90,13 @@ export class InvalidAddressError extends Error {
     constructor(message: string) {
         super(message);
         this.name = 'InvalidAddressError';
+    }
+}
+
+export class PoolNotFoundError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = 'PoolNotFoundError';
     }
 }
 
@@ -122,6 +167,26 @@ export class SwapService {
     }
 
     /**
+     * Get pool info for a token
+     */
+    private async getPoolInfo(tokenMint: string): Promise<PoolInfoResponse> {
+        try {
+            const response = await axios.get<PoolInfoResponse>(
+                `https://api-v3.raydium.io/pools/info/mint?mint1=${tokenMint}&poolType=all&poolSortField=default&sortType=desc&pageSize=1&page=1`,
+                {
+                    headers: {
+                        'accept': 'application/json'
+                    }
+                }
+            );
+            return response.data;
+        } catch (error) {
+            logger.error(`Failed to get pool info: ${error}`);
+            throw error;
+        }
+    }
+
+    /**
      * Execute a swap of SOL for a specific token
      * @param tokenMint The token address to buy
      * @param solAmount Amount of SOL to spend in lamports
@@ -180,6 +245,19 @@ export class SwapService {
             // Check if wallet has sufficient SOL
             await this.checkSufficientBalance(keypair.publicKey, amountInLamports);
             logger.debug('Wallet balance check passed');
+
+            // Get pool info
+            const poolInfo = await this.getPoolInfo(tokenMint);
+            if (!poolInfo.success || poolInfo.data.count === 0) {
+                throw new PoolNotFoundError(`No pool found for token ${tokenMint}`);
+            }
+
+            const pool = poolInfo.data.data[0];
+            logger.debug('Pool info retrieved:', {
+                poolId: pool.id,
+                price: pool.price,
+                feeRate: pool.feeRate
+            });
 
             // Get token decimals for accurate amount calculation
             const tokenDecimals = await this.getTokenDecimals(tokenMint);
@@ -243,25 +321,36 @@ export class SwapService {
                 const txBuf = allTxBuf[i];
                 const transaction = VersionedTransaction.deserialize(txBuf);
                 
-                // Sign the transaction
-                transaction.sign([keypair]);
-                logger.debug(`Transaction ${i + 1} signed`);
-                
-                // Send the transaction
-                logger.debug(`Sending transaction ${i + 1}`);
-                const txid = await this.connection.sendTransaction(transaction, {
-                    skipPreflight: false,
-                    preflightCommitment: 'confirmed',
-                    maxRetries: 3
+                // Add compute budget instructions if not present
+                const computeBudgetIx = ComputeBudgetProgram.setComputeUnitPrice({
+                    microLamports: priorityFee
+                });
+                const computeBudgetLimitIx = ComputeBudgetProgram.setComputeUnitLimit({
+                    units: 600000 // Standard limit for Raydium swaps
                 });
                 
-                // Wait for confirmation
+                // Create a new transaction with compute budget instructions
+                const newTransaction = new VersionedTransaction(transaction.message);
+                
+                // Sign the transaction
+                newTransaction.sign([keypair]);
+                logger.debug(`Transaction ${i + 1} signed`);
+                
+                // Send the transaction with increased timeout
+                logger.debug(`Sending transaction ${i + 1}`);
+                const txid = await this.connection.sendTransaction(newTransaction, {
+                    skipPreflight: false,
+                    preflightCommitment: 'confirmed',
+                    maxRetries: 5 // Increased retries
+                });
+                
+                // Wait for confirmation with increased timeout
                 logger.debug(`Waiting for transaction ${i + 1} confirmation`);
                 await this.connection.confirmTransaction({
                     blockhash,
                     lastValidBlockHeight,
                     signature: txid,
-                });
+                }, 'confirmed'); // Use confirmed commitment
                 
                 logger.debug(`Transaction ${i + 1} confirmed:`, { txid });
                 txids.push(txid);
@@ -284,7 +373,13 @@ export class SwapService {
                 amountOut: outputAmount,
                 price,
                 priceInSol: 1 / price,
-                txids
+                txids,
+                poolInfo: {
+                    poolId: pool.id,
+                    poolPrice: pool.price,
+                    feeRate: pool.feeRate,
+                    lpMint: pool.lpMint.address
+                }
             };
         } catch (error) {
             logger.error('Swap execution error:', {
@@ -306,6 +401,14 @@ export class SwapService {
                     success: false,
                     error: error.message,
                     errorType: 'INVALID_ADDRESS'
+                };
+            }
+
+            if (error instanceof PoolNotFoundError) {
+                return {
+                    success: false,
+                    error: error.message,
+                    errorType: 'POOL_NOT_FOUND'
                 };
             }
 
@@ -365,73 +468,252 @@ export class SwapService {
     }
 
     /**
-     * Find a pool for a token
+     * Execute a swap of a token for SOL
+     * @param tokenMint The token address to sell
+     * @param percentage Percentage of tokens to sell (0-100)
+     * @param slippage Slippage tolerance percentage
+     * @param walletPrivateKey Private key of the wallet making the sale
+     * @param priorityFee Transaction priority fee in microlamports
      */
-    private async findPool(tokenMint: string): Promise<LiquidityPoolKeys | null> {
+    async executeSell(
+        tokenMint: string,
+        percentage: number,
+        slippage: number,
+        walletPrivateKey: string,
+        priorityFee: number
+    ) {
         try {
-            logger.info(`Finding pool for token ${tokenMint}`);
-            
-            // Use Raydium V3 API to find the pool
-            const response = await axios.get(
-                `https://api-v3.raydium.io/pools/info/mint?mint1=${tokenMint}&poolType=all&poolSortField=default&sortType=desc&pageSize=1&page=1`,
-                {
-                    headers: {
-                        'accept': 'application/json'
-                    }
-                }
-            );
-            
-            if (response.data && response.data.data && response.data.data.length > 0) {
-                const poolData = response.data.data[0];
-                logger.info(`Found pool for token ${tokenMint}: ${poolData.id}`);
-                
-                return {
-                    id: new PublicKey(poolData.id),
-                    baseMint: new PublicKey(tokenMint),
-                    quoteMint: new PublicKey(poolData.mint2), // Usually WSOL
-                    lpMint: new PublicKey(poolData.lpMint),
-                    baseDecimals: poolData.decimals1,
-                    quoteDecimals: poolData.decimals2,
-                    // Add other required fields
-                } as LiquidityPoolKeys;
-            }
-            
-            logger.warn(`No pool found for token ${tokenMint}`);
-            return null;
-        } catch (error) {
-            logger.error('Error finding pool:', error);
-            return null;
-        }
-    }
+            logger.debug('Starting sell execution with parameters:', {
+                tokenMint,
+                percentage,
+                slippage,
+                priorityFee,
+                timestamp: new Date().toISOString()
+            });
 
-    // Method to use birdeye API to find pool
-    private async findPoolFromBirdeye(tokenMint: string): Promise<LiquidityPoolKeys | null> {
-        try {
-            // Use Birdeye API to get pool info
-            const response = await fetch(`https://public-api.birdeye.so/defi/raydium_pools?token_address=${tokenMint}`);
-            const data = await response.json();
+            // Enhanced input validation
+            if (!await this.isValidSolanaAddress(tokenMint)) {
+                logger.debug('Invalid token mint address:', { tokenMint });
+                throw new InvalidAddressError(`Invalid token mint address: ${tokenMint}`);
+            }
+
+            if (!this.isValidPrivateKey(walletPrivateKey)) {
+                logger.debug('Invalid wallet private key format');
+                throw new InvalidAddressError("Invalid wallet private key format");
+            }
+
+            // Validate percentage
+            if (percentage < 0 || percentage > 100) {
+                logger.debug('Invalid percentage value:', { percentage });
+                throw new Error("Percentage must be between 0 and 100");
+            }
+
+            // Validate slippage
+            if (slippage < 0 || slippage > 100) {
+                logger.debug('Invalid slippage value:', { slippage });
+                throw new Error("Slippage must be between 0 and 100");
+            }
+
+            const keypair = Keypair.fromSecretKey(bs58.decode(walletPrivateKey));
             
-            if (data.success && data.data && data.data.length > 0) {
-                const poolData = data.data[0];
-                logger.info(`Found pool for token ${tokenMint} via Birdeye API`);
-                
-                // Convert to Raydium pool keys format
-                return {
-                    id: new PublicKey(poolData.pool_id),
-                    baseMint: new PublicKey(tokenMint),
-                    quoteMint: new PublicKey(WSOLMint),
-                    lpMint: new PublicKey(poolData.lp_mint),
-                    baseDecimals: poolData.token_decimals,
-                    quoteDecimals: 9, // SOL has 9 decimals
-                    // Other required fields
-                } as LiquidityPoolKeys;
+            // Get token account and balance
+            const tokenAccount = await this.solanaUtils.getTokenAccount(
+                keypair.publicKey.toBase58(),
+                tokenMint
+            );
+
+            if (!tokenAccount) {
+                throw new InsufficientFundsError("No token account found");
+            }
+
+            const tokenBalance = await this.solanaUtils.getTokenAmount(
+                keypair.publicKey.toBase58(),
+                tokenMint
+            );
+
+            if (tokenBalance <= 0) {
+                throw new InsufficientFundsError("No tokens available to sell");
+            }
+
+            // Calculate amount to sell based on percentage
+            const amountToSell = tokenBalance * (percentage / 100);
+            logger.debug('Calculated sell amount:', {
+                tokenBalance,
+                percentage,
+                amountToSell
+            });
+
+            // Get pool info
+            const poolInfo = await this.getPoolInfo(tokenMint);
+            if (!poolInfo.success || poolInfo.data.count === 0) {
+                throw new PoolNotFoundError(`No pool found for token ${tokenMint}`);
+            }
+
+            const pool = poolInfo.data.data[0];
+            logger.debug('Pool info retrieved:', {
+                poolId: pool.id,
+                price: pool.price,
+                feeRate: pool.feeRate
+            });
+
+            // Get token decimals for accurate amount calculation
+            const tokenDecimals = await this.getTokenDecimals(tokenMint);
+            logger.debug('Token decimals retrieved:', { tokenDecimals });
+
+            // Get latest blockhash once for all transactions
+            const { blockhash, lastValidBlockHeight } = await this.connection.getLatestBlockhash();
+            logger.debug('Latest blockhash retrieved:', { blockhash, lastValidBlockHeight });
+            
+            // Step 1: Get the swap computation data
+            logger.debug('Requesting swap computation from Raydium API');
+            const { data: swapResponse } = await axios.get<SwapCompute>(
+                `${API_URLS.SWAP_HOST}/compute/swap-base-out?inputMint=${tokenMint}&outputMint=${WSOLMint.toBase58()}&amount=${Math.floor(amountToSell * Math.pow(10, tokenDecimals))}&slippageBps=${slippage * 100}&txVersion=V0`
+            );
+            logger.debug('Swap computation response received:', {
+                success: swapResponse.success,
+                version: swapResponse.version,
+                swapType: swapResponse.data.swapType,
+                inputAmount: swapResponse.data.inputAmount,
+                outputAmount: swapResponse.data.outputAmount,
+                priceImpactPct: swapResponse.data.priceImpactPct
+            });
+            
+            if (!swapResponse.success) {
+                logger.error('Swap computation failed:', { msg: swapResponse.msg });
+                throw new Error(`Swap computation failed: ${swapResponse.msg}`);
             }
             
-            logger.warn(`No pool found for token ${tokenMint} via Birdeye API`);
-            return null;
+            // Step 2: Get transaction for the swap
+            logger.debug('Requesting swap transaction from Raydium API');
+            const { data: swapTransactions } = await axios.post<{
+                id: string;
+                version: string;
+                success: boolean;
+                data: { transaction: string }[];
+            }>(`${API_URLS.SWAP_HOST}/transaction/swap-base-out`, {
+                computeUnitPriceMicroLamports: String(priorityFee),
+                swapResponse,
+                txVersion: 'V0',
+                wallet: keypair.publicKey.toBase58(),
+                wrapSol: false,
+                unwrapSol: true,
+            });
+            logger.debug('Swap transaction response received:', {
+                success: swapTransactions.success,
+                version: swapTransactions.version,
+                transactionCount: swapTransactions.data.length
+            });
+            
+            if (!swapTransactions.success) {
+                logger.error('Failed to generate swap transaction');
+                throw new Error('Failed to generate swap transaction');
+            }
+            
+            // Step 3: Execute all transactions in the sequence
+            const txids: string[] = [];
+            const allTxBuf = swapTransactions.data.map(tx => Buffer.from(tx.transaction, 'base64'));
+            logger.debug(`Starting transaction execution sequence: ${allTxBuf.length} transactions`);
+            
+            for (let i = 0; i < allTxBuf.length; i++) {
+                const txBuf = allTxBuf[i];
+                const transaction = VersionedTransaction.deserialize(txBuf);
+                
+                // Add compute budget instructions if not present
+                const computeBudgetIx = ComputeBudgetProgram.setComputeUnitPrice({
+                    microLamports: priorityFee
+                });
+                const computeBudgetLimitIx = ComputeBudgetProgram.setComputeUnitLimit({
+                    units: 600000 // Standard limit for Raydium swaps
+                });
+                
+                // Create a new transaction with compute budget instructions
+                const newTransaction = new VersionedTransaction(transaction.message);
+                
+                // Sign the transaction
+                newTransaction.sign([keypair]);
+                logger.debug(`Transaction ${i + 1} signed`);
+                
+                // Send the transaction with increased timeout
+                logger.debug(`Sending transaction ${i + 1}`);
+                const txid = await this.connection.sendTransaction(newTransaction, {
+                    skipPreflight: false,
+                    preflightCommitment: 'confirmed',
+                    maxRetries: 5 // Increased retries
+                });
+                
+                // Wait for confirmation with increased timeout
+                logger.debug(`Waiting for transaction ${i + 1} confirmation`);
+                await this.connection.confirmTransaction({
+                    blockhash,
+                    lastValidBlockHeight,
+                    signature: txid,
+                }, 'confirmed'); // Use confirmed commitment
+                
+                logger.debug(`Transaction ${i + 1} confirmed:`, { txid });
+                txids.push(txid);
+            }
+            
+            // Calculate accurate output amount using correct decimals
+            const outputAmount = parseFloat(swapResponse.data.outputAmount) / 1e9; // SOL has 9 decimals
+            const price = (outputAmount * Math.pow(10, tokenDecimals)) / amountToSell;
+
+            logger.debug('Sell execution completed successfully:', {
+                outputAmount,
+                price,
+                priceInSol: 1 / price,
+                txids
+            });
+
+            return {
+                success: true,
+                signature: txids[txids.length - 1],
+                amountOut: outputAmount,
+                price,
+                priceInSol: 1 / price,
+                txids,
+                poolInfo: {
+                    poolId: pool.id,
+                    poolPrice: pool.price,
+                    feeRate: pool.feeRate,
+                    lpMint: pool.lpMint.address
+                }
+            };
         } catch (error) {
-            logger.error('Error finding pool via Birdeye:', error);
-            return null;
+            logger.error('Sell execution error:', {
+                error: error instanceof Error ? error.message : String(error),
+                stack: error instanceof Error ? error.stack : undefined,
+                timestamp: new Date().toISOString()
+            });
+
+            if (error instanceof InsufficientFundsError) {
+                return {
+                    success: false,
+                    error: error.message,
+                    errorType: 'INSUFFICIENT_FUNDS'
+                };
+            }
+
+            if (error instanceof InvalidAddressError) {
+                return {
+                    success: false,
+                    error: error.message,
+                    errorType: 'INVALID_ADDRESS'
+                };
+            }
+
+            if (error instanceof PoolNotFoundError) {
+                return {
+                    success: false,
+                    error: error.message,
+                    errorType: 'POOL_NOT_FOUND'
+                };
+            }
+
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : String(error),
+                errorType: 'UNKNOWN'
+            };
         }
     }
 } 

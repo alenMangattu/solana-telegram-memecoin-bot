@@ -3,22 +3,51 @@ import {
     toToken,
     Percent,
     WSOLMint,
+    type ApiV3PoolInfoStandardItem,
+    type AmmV4Keys,
+    type AmmV5Keys,
 } from '@raydium-io/raydium-sdk-v2'
 import { initSdk, txVersion } from '../../config'
 import { PublicKey } from '@solana/web3.js'
 import Decimal from 'decimal.js'
+import logger from '../logger'
+import { isValidAmm } from './utils'
 
-async function getPoolByTokenMint(raydium: any, tokenMint: string): Promise<string | null> {
+async function getPoolByTokenMint(raydium: any, tokenMint: string): Promise<{ poolInfo: ApiV3PoolInfoStandardItem; poolKeys?: AmmV4Keys | AmmV5Keys }> {
     try {
-        const allPools = await raydium.liquidity.fetchAllPools()
-        const pool = allPools.find((p: any) => 
-            p.baseMint.toString() === tokenMint && p.quoteMint.toString() === WSOLMint.toString() ||
-            p.quoteMint.toString() === tokenMint && p.baseMint.toString() === WSOLMint.toString()
-        )
-        return pool ? pool.id.toString() : null
+        if (raydium.cluster === 'mainnet') {
+            const allPools = await raydium.liquidity.fetchAllPools()
+            const pool = allPools.find((p: any) => 
+                p.baseMint.toString() === tokenMint && p.quoteMint.toString() === WSOLMint.toString() ||
+                p.quoteMint.toString() === tokenMint && p.baseMint.toString() === WSOLMint.toString()
+            )
+            
+            if (!pool) {
+                throw new Error("Pool not found for token")
+            }
+
+            const data = await raydium.api.fetchPoolById({ ids: pool.id.toString() })
+            return { poolInfo: data[0] as ApiV3PoolInfoStandardItem }
+        } else {
+            const allPools = await raydium.liquidity.fetchAllPools()
+            const pool = allPools.find((p: any) => 
+                p.baseMint.toString() === tokenMint && p.quoteMint.toString() === WSOLMint.toString() ||
+                p.quoteMint.toString() === tokenMint && p.baseMint.toString() === WSOLMint.toString()
+            )
+            
+            if (!pool) {
+                throw new Error("Pool not found for token")
+            }
+
+            const data = await raydium.liquidity.getPoolInfoFromRpc({ poolId: pool.id.toString() })
+            return { 
+                poolInfo: data.poolInfo,
+                poolKeys: data.poolKeys
+            }
+        }
     } catch (error) {
-        console.error('Error fetching pools:', error)
-        return null
+        logger.error('Error fetching pools:', error)
+        throw error
     }
 }
 
@@ -26,58 +55,81 @@ export const addLiquidity = async (
     tokenMint: string,
     tokenAmount: number,
     solAmount: number,
-    walletPrivateKey: string
+    walletPrivateKey: string,
+    priorityFee: number = 46591500 // Default priority fee
 ) => {
-    const raydium = await initSdk()
+    try {
+        const raydium = await initSdk()
+        logger.info('Adding liquidity with params:', { tokenMint, tokenAmount, solAmount })
 
-    // Find pool by token mint
-    const poolId = await getPoolByTokenMint(raydium, tokenMint)
-    if (!poolId) {
-        throw new Error("Pool not found for token")
-    }
+        // Find pool by token mint
+        const { poolInfo, poolKeys } = await getPoolByTokenMint(raydium, tokenMint)
+        
+        if (!isValidAmm(poolInfo.programId)) {
+            throw new Error('Target pool is not a valid AMM pool')
+        }
 
-    // Get pool info using pool ID
-    const poolInfo = await raydium.liquidity.getPoolInfoFromRpc({ 
-        poolId: poolId // Use poolId as a string directly
-    })
+        // Calculate amounts with proper decimals
+        const tokenAmountWithDecimals = new Decimal(tokenAmount)
+            .mul(10 ** poolInfo.mintA.decimals)
+            .toFixed(0)
 
-    if (!poolInfo) {
-        throw new Error("Pool info not found")
-    }
+        const solAmountWithDecimals = new Decimal(solAmount)
+            .mul(10 ** poolInfo.mintB.decimals)
+            .toFixed(0)
 
-    // Calculate minimum amounts with 1% slippage
-    const slippage = new Percent(1, 100)
-    const tokenAmountWithSlippage = new Decimal(tokenAmount)
-        .mul(0.99)
-        .mul(10 ** poolInfo.poolInfo.mintA.decimals)
-        .toFixed(0)
+        // Calculate minimum amounts with 1% slippage
+        const slippage = new Percent(1, 100)
+        const tokenAmountWithSlippage = new Decimal(tokenAmount)
+            .mul(0.99)
+            .mul(10 ** poolInfo.mintA.decimals)
+            .toFixed(0)
 
-    const solAmountWithSlippage = new Decimal(solAmount)
-        .mul(0.99)
-        .mul(10 ** poolInfo.poolInfo.mintB.decimals)
-        .toFixed(0)
+        const solAmountWithSlippage = new Decimal(solAmount)
+            .mul(0.99)
+            .mul(10 ** poolInfo.mintB.decimals)
+            .toFixed(0)
 
-    const { execute } = await raydium.liquidity.addLiquidity({
-        poolInfo: poolInfo.poolInfo,
-        poolKeys: poolInfo.poolKeys,
-        amountInA: new TokenAmount(
-            toToken(poolInfo.poolInfo.mintA),
-            new Decimal(tokenAmount).mul(10 ** poolInfo.poolInfo.mintA.decimals).toFixed(0)
-        ),
-        amountInB: new TokenAmount(
-            toToken(poolInfo.poolInfo.mintB),
-            new Decimal(solAmount).mul(10 ** poolInfo.poolInfo.mintB.decimals).toFixed(0)
-        ),
-        otherAmountMin: new TokenAmount(
-            toToken(poolInfo.poolInfo.mintB),
+        logger.info('Calculated amounts:', {
+            tokenAmountWithDecimals,
+            solAmountWithDecimals,
+            tokenAmountWithSlippage,
             solAmountWithSlippage
-        ),
-        fixedSide: 'a',
-        txVersion,
-    })
+        })
 
-    const { txId } = await execute({ sendAndConfirm: true })
-    return txId
+        const { execute } = await raydium.liquidity.addLiquidity({
+            poolInfo,
+            poolKeys,
+            amountInA: new TokenAmount(
+                toToken(poolInfo.mintA),
+                tokenAmountWithDecimals
+            ),
+            amountInB: new TokenAmount(
+                toToken(poolInfo.mintB),
+                solAmountWithDecimals
+            ),
+            otherAmountMin: new TokenAmount(
+                toToken(poolInfo.mintB),
+                solAmountWithSlippage
+            ),
+            fixedSide: 'a',
+            txVersion,
+            computeBudgetConfig: {
+                units: 600000,
+                microLamports: priorityFee,
+            }
+        })
+
+        const { txId } = await execute({ 
+            sendAndConfirm: true
+        })
+
+        logger.info('Liquidity added successfully:', { txId })
+        return txId
+    } catch (error) {
+        logger.error('Error adding liquidity:', error)
+        throw error
+    }
 }
 
 /** uncomment code below to execute */
